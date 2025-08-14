@@ -62,6 +62,7 @@ CREATE TABLE public.coins_balance_changes (
                                               CONSTRAINT coins_balance_changes_pkey PRIMARY KEY (id),
                                               CONSTRAINT coins_balance_changes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.players(id)
 );
+
 CREATE TABLE public.devices (
                                 id bigint NOT NULL DEFAULT nextval('devices_id_seq'::regclass),
                                 user_id bigint NOT NULL,
@@ -81,6 +82,7 @@ CREATE TABLE public.devices (
                                 CONSTRAINT devices_pkey PRIMARY KEY (id),
                                 CONSTRAINT devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.players(id)
 );
+
 CREATE TABLE public.in_app_purchases (
                                          id bigint NOT NULL DEFAULT nextval('in_app_purchases_id_seq'::regclass),
                                          user_id bigint NOT NULL,
@@ -95,6 +97,7 @@ CREATE TABLE public.in_app_purchases (
                                          CONSTRAINT in_app_purchases_pkey PRIMARY KEY (id),
                                          CONSTRAINT in_app_purchases_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.players(id)
 );
+
 CREATE TABLE public.play_history (
                                      id bigint NOT NULL DEFAULT nextval('play_history_id_seq'::regclass),
                                      user_id bigint NOT NULL,
@@ -107,6 +110,17 @@ CREATE TABLE public.play_history (
                                      CONSTRAINT play_history_pkey PRIMARY KEY (id),
                                      CONSTRAINT play_history_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.players(id)
 );
+
+CREATE TABLE public.vouchers (
+                                 id bigint NOT NULL DEFAULT nextval('vouchers_id_seq'::regclass),
+                                 cost double precision NOT NULL,
+                                 provider character varying NOT NULL,
+                                 img_url character varying NOT NULL,
+                                 created_at timestamp with time zone DEFAULT now(),
+                                 updated_at timestamp with time zone DEFAULT now(),
+                                 CONSTRAINT vouchers_pkey PRIMARY KEY (id)
+);
+
 CREATE TABLE public.users_vouchers (
                                        id bigint NOT NULL DEFAULT nextval('users_vouchers_id_seq'::regclass),
                                        user_id bigint NOT NULL,
@@ -117,12 +131,13 @@ CREATE TABLE public.users_vouchers (
                                        CONSTRAINT users_vouchers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.players(id),
                                        CONSTRAINT users_vouchers_voucher_id_fkey FOREIGN KEY (voucher_id) REFERENCES public.vouchers(id)
 );
-CREATE TABLE public.vouchers (
-                                 id bigint NOT NULL DEFAULT nextval('vouchers_id_seq'::regclass),
-                                 cost double precision NOT NULL,
-                                 provider character varying NOT NULL,
-                                 img_url character varying NOT NULL,
-                                 created_at timestamp with time zone DEFAULT now(),
-                                 updated_at timestamp with time zone DEFAULT now(),
-                                 CONSTRAINT vouchers_pkey PRIMARY KEY (id)
-);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_players_email ON players(email);
+CREATE INDEX IF NOT EXISTS idx_players_visitor_id ON players(visitor_id);
+CREATE INDEX IF NOT EXISTS idx_devices_user_id ON devices(user_id);
+CREATE INDEX IF NOT EXISTS idx_devices_udid ON devices(udid);
+CREATE INDEX IF NOT EXISTS idx_coins_balance_changes_user_id ON coins_balance_changes(user_id);
+CREATE INDEX IF NOT EXISTS idx_play_history_user_id ON play_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_play_history_created_at ON play_history(created_at);
+CREATE INDEX IF NOT EXISTS idx_in_app_purchases_user_id ON in_app_purchases(user_id);

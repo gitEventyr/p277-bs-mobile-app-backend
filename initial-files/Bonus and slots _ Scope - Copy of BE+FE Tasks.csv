@@ -1,0 +1,133 @@
+Issue Type,Summary,Priority,Reporter,Assignee,Description,Epic Link,Sprint
+Task,Project Setup,Medium,alex.k,oleksii.ko,"Backend setup (Node.js)
+Infrastructure (DB setup)",OLIVE-689,974
+Task,Application Initiation,Medium,alex.k,oleksii.ko,"Application need to be Nest.js framework, just initiate a nest.js framework , install necessary libs for Postgres and , for Redis DB, configure the sessions, configure the environment variables and their usages, configure cookieParser, configure helmet lib, configure middleware handlers, configure global pipes like error handlers or response wrappers and validation pipes, configure cors, connect the swagger, prepare the build and run commands",OLIVE-689,974
+Task,Dockerization,Medium,alex.k,oleksii.ko,dockerize ,OLIVE-689,974
+Task,DBs initiation,Medium,alex.k,oleksii.ko,"Initially needed 2 DBs :
+1. Postgres
+2. Redis
+
+implemt their connection setups end entity relations in Nest.js using TypeORM or similiar orm for SQL DBs, for Redis no orms needed, just connection and interaction with it",OLIVE-689,974
+Task,Linting and code styling,Medium,alex.k,oleksii.ko,"use esLinter to keep the code clean and structured, implement command in package.json to make code pretty using that command ",OLIVE-689,974
+Task,Modules separation,Medium,alex.k,oleksii.ko,"Strictly use Nest.js concepts, keep modules usage for each conceptual flow, for example:
+ 1. for users flow (login, signup, etc) use users module
+ 2. for offers flow create new module by name offers and keep the logic and the dependecises encapsulated from other modules
+ 3. for game play use other module, and so on and so on for each conceptual flow
+higly use dependecy injections and encapsulations, to have decoupled and reusable code logic",OLIVE-689,974
+Task,DB entities definition,Medium,alex.k,oleksii.ko,"Define the intites in DB, create the tables following the DB diagram chart, then define the ORM classes using TypeORM in the codebase",OLIVE-689,974
+Task,Registration flow,Medium,alex.k,oleksii.ko,"Registartion flow requires such steps:
+1. create an POST endpoint such es /register 
+2. accept such request body parameters name, email, password, deviceUDID
+3. validate that parameters (email has email format, password is secure format, etc.)
+4. add interaction with a third-party dashboard to transfer additional information and receive visitor_id then use the visitor_id to create a user record in DB:
+   4.1. here the query parameters to receive in this enpdpoint:
+       - `pid`
+       - `c`
+       - `af_channel`
+       - `af_adset`
+       - `af_ad`
+       - `af_keywords`
+       - `is_retargeting`
+       - `af_click_lookback`
+       - `af_viewthrough_lookback`
+       - `af_sub1` - decide what kind of field it will be
+       - `af_sub2`- decide what kind of field it will be
+       - `af_sub3`- decide what kind of field it will be
+       - `af_sub4`- decide what kind of field it will be
+       - `af_sub5`- decide what kind of field it will be
+   4.2. take the following data using some 3rd party geo locator API:
+      os
+     device
+     ipaddress
+   4.3. reuse the following parameters by taking them from request body in this endpoint:
+     email
+     firstname
+     phone
+     subscription_agreement
+     tnc_agreement
+  4.4. use all the parameters described above sub sections to make request to the 3rd party dashboard API to fetch the visitor_id value
+5. create new record in DB using the params
+6. encrypt the password then save it in DB, no any plain text password in DB
+7. email to the user about successful registartion (optional)
+8. all error cases should be handles gracefully , no any 500 error code should happen in runtime
+9. create device record in the DB, using the deviceUDID param, and also take the user agent(UA) and ip values from the request context, then detect the geo locaition and device ino based on that ip + UA info
+10. Generate JWT token based on the user info and send it back the Unity, wither keep the JWT token in cookies or just direct send it as a response ",OLIVE-689,974
+Task,Login flow,Medium,alex.k,oleksii.ko,"Login flow requires such eteps:
+1. create a POST endpoint such as /login
+2. accept such parameters : email, password, deviceUDID
+3. find the user having same email which comes from parameter
+4. encrypt the incoming password param and compare it with the existing one belonging to the user 
+5. take the ip and user agnet (UA) from the request context to use it in devices creation/manipulation
+7. check deviceUDID + userId combination in devices table , if it des not exists then create new device record 
+8. email to the user about the successful login (optional)
+9. all error cases should be handles gracefully , no any 500 error code should happen in runtime
+10. Generate JWT token based on the user info and send it back the Unity, wither keep the JWT token in cookies or just direct send it as a response ",OLIVE-689,974
+Task,Create Auth Guard,Medium,alex.k,oleksii.ko,"The auth guard requires such steps:
+1. create some generic decorator or guard middleware in Nest.js which will check the user's authorization
+2. the logic of the quesrd should parse the JWT then chek its underlaying info in DB to see if the user exists, if yes then allo if not then reject wot 401 error code
+3. for additional security measurment: the JWT generation logic can store somesessions in REDIS then in the guard middlewar it can check that sessions existance to make sure that the JWT generated only reason of registration or login and not generated manually for penetration purposes 
+4. the guard middleware must pass the proper user's info (id, email, etc. ) to the next handler function which can be the controller handler funtion",OLIVE-689,974
+Task,Forgot Password,Medium,alex.k,oleksii.ko,"Forgot password requires such steps:
+1. create POST endpoint such as /forgot-password
+2. create POST endpoint such as /forgot-password/validate
+3. in the first endpoint accept only email param
+4. in the 2nd endpont accept email, code and password params
+5. in the 1st endpoint the logic must generate some random 6 digit number then save it in Redis by population of the user email as a Redis key, and should set proper TTL for that Redic record
+6. in the 2nd endpoint the logic should take the email parameter then find its proper saved Redis record then compare the incoming code param with the Redis record's value, if matches than update the user password, if does not match then throw error
+7. the update password also should follow the encryption priciples, first encrypt the password then save it in DB
+8. email flow ",OLIVE-689,974
+Task,Gamplay+balance changes flow,Medium,alex.k,oleksii.ko,"Gamplay requires such steps:
+1. evary bet must be resolved on Unity side and extact the win or loss amount
+2. create authorized POST endpoints such as /increas-balance and /decreas-balance
+3. the endpoint must guarded by the auth guard described above
+4. the underlaying logic should make DB transactional update for the user to update (increment or decrement) the proper user's coins_balance column, follow the DB diagram for that
+5. logic can generate recors in the table  coin_balance_changes (optional)",OLIVE-689,974
+Task,Check user authorization,Medium,alex.k,oleksii.ko,"Authorization check requires such steps:
+1. create authorized GET endpoint such as /auth
+2. the underlaying logic should pass through the auth guard middleware and should extract user information from DB and return it, this way the client application anytime can know if the user is logged in or not ",OLIVE-689,974
+Task,Fetch user balances,Medium,alex.k,oleksii.ko,"Fetch user balances requires such steps:
+1. create authorized GET endpoint such es /balances
+2. the underlaying logic should just find the user in DB in users table and in a response sand back the coins_balance, scratch_cards, and id",OLIVE-689,974
+Task,Login for Admin dashboard ,Medium,alex.k,oleksii.ko,"Email + password + db for admin ,and DB entities setup",OLIVE-689,974
+Task,Create Auth Guard for Admin dashboard ,Medium,alex.k,oleksii.ko,"The auth guard requires such steps:
+1. create some generic decorator or guard middleware in Nest.js which will check the user's authorization
+2. the logic of the quesrd should parse the JWT then chek its underlaying info in DB to see if the user exists, if yes then allo if not then reject wot 401 error code
+3. for additional security measurment: the JWT generation logic can store somesessions in REDIS then in the guard middlewar it can check that sessions existance to make sure that the JWT generated only reason of registration or login and not generated manually for penetration purposes 
+4. the guard middleware must pass the proper user's info (id, email, etc. ) to the next handler function which can be the controller handler funtion",OLIVE-689,974
+Task,User List ,Medium,alex.k,oleksii.ko,"List of users with filtering (locations, balance) and search (name, email, phone) capabilities
+
+User info:
+visitor_id
+name, 
+email, 
+phone, 
+balance, 
+in-app purchase history, 
+os, 
+device, 
+ipaddress
+locations
+level 
+appsflyer fields: 
+- `pid`
+ - `c`
+ - `af_channel`
+ - `af_adset`
+ - `af_ad`
+ - `af_keywords`
+ - `is_retargeting`
+ - `af_click_lookback`
+ - `af_viewthrough_lookback`
+ - `af_sub1` - decide what kind of field it will be
+ - `af_sub2`- decide what kind of field it will be
+ - `af_sub3`- decide what kind of field it will be
+ - `af_sub4`- decide what kind of field it will be
+ - `af_sub5`- decide what kind of field it will be",OLIVE-689,974
+Task,User Management,Medium,alex.k,oleksii.ko,"Updating user data (deletion, editing all information (except IDs), updating balance)",OLIVE-689,974
+Task,Offer Dashboard,Medium,alex.k,oleksii.ko,"User - Casino - Reg - Deposit
+
+Filters: 
+- userid
+- casino (name or ID / both)
+- reg 
+- deposit",OLIVE-689,974
