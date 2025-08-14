@@ -1,0 +1,815 @@
+{
+  "info": {
+    "name": "Casino Backend API",
+    "description": "Comprehensive API collection for the casino backend system. Includes authentication, user management, game sessions, admin operations, vouchers, and in-app purchases.",
+    "_postman_id": "casino-backend-api-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionCookie",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "playerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check the health status of the API service"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"status\": \"ok\",\n    \"timestamp\": \"2025-08-14T15:33:39.889Z\",\n    \"uptime\": 95.911711211\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Player Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"player@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate a player and receive JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Player Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newplayer@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"nick\": \"Player123\",\n  \"visitorId\": \"unique-visitor-id-123\",\n  \"deviceId\": \"device-uuid-123\",\n  \"deviceInfo\": {\n    \"os\": \"iOS\",\n    \"appVersion\": \"1.0.0\",\n    \"model\": \"iPhone 14\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new player account"
+          },
+          "response": []
+        },
+        {
+          "name": "Guest Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visitorId\": \"guest-visitor-id-456\",\n  \"deviceId\": \"device-uuid-456\",\n  \"deviceInfo\": {\n    \"os\": \"Android\",\n    \"appVersion\": \"1.0.0\",\n    \"model\": \"Samsung S23\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/guest",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "guest"]
+            },
+            "description": "Create or login as a guest player"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Refresh the authentication token"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout the current user and invalidate session"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "profile"]
+            },
+            "description": "Get the current authenticated user's profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nick\": \"UpdatedNick\",\n  \"email\": \"updated@example.com\",\n  \"avatarUrl\": \"https://example.com/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "profile"]
+            },
+            "description": "Update the current user's profile information"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "balance"]
+            },
+            "description": "Get the current user's coin balance"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Coins (Daily Bonus)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"changeType\": \"daily_bonus\",\n  \"description\": \"Daily login bonus\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/coins/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "coins", "add"]
+            },
+            "description": "Add coins to user's balance (daily bonus, rewards, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Balance History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/balance/history?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "balance", "history"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get the user's balance change history"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Game Sessions",
+      "item": [
+        {
+          "name": "Start Game Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gameId\": \"slot_machine_1\",\n  \"betAmount\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/games/session/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["games", "session", "start"]
+            },
+            "description": "Start a new game session and deduct bet amount"
+          },
+          "response": []
+        },
+        {
+          "name": "End Game Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"winAmount\": 500,\n  \"gameResult\": {\n    \"symbols\": [\"cherry\", \"cherry\", \"cherry\"],\n    \"multiplier\": 5\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/games/session/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["games", "session", "end"]
+            },
+            "description": "End a game session and record results"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Play History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/games/history?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["games", "history"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get the user's game play history"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Game Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/games/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["games", "stats"]
+            },
+            "description": "Get user's game statistics (total plays, wins, losses, etc.)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vouchers & Rewards",
+      "item": [
+        {
+          "name": "Get Available Vouchers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vouchers/available",
+              "host": ["{{baseUrl}}"],
+              "path": ["vouchers", "available"]
+            },
+            "description": "Get list of available vouchers for the user"
+          },
+          "response": []
+        },
+        {
+          "name": "Redeem Voucher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"voucherCode\": \"WELCOME2025\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vouchers/redeem",
+              "host": ["{{baseUrl}}"],
+              "path": ["vouchers", "redeem"]
+            },
+            "description": "Redeem a voucher code"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Vouchers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vouchers/my-vouchers",
+              "host": ["{{baseUrl}}"],
+              "path": ["vouchers", "my-vouchers"]
+            },
+            "description": "Get list of user's redeemed vouchers"
+          },
+          "response": []
+        },
+        {
+          "name": "Use Voucher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userVoucherId\": \"{{userVoucherId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vouchers/use",
+              "host": ["{{baseUrl}}"],
+              "path": ["vouchers", "use"]
+            },
+            "description": "Use a redeemed voucher"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "In-App Purchases",
+      "item": [
+        {
+          "name": "Get Purchase Packages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchases/packages",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", "packages"]
+            },
+            "description": "Get available coin purchase packages"
+          },
+          "response": []
+        },
+        {
+          "name": "Initialize Purchase",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"packageId\": \"coins_1000\",\n  \"paymentMethod\": \"apple_pay\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/purchases/initialize",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", "initialize"]
+            },
+            "description": "Initialize an in-app purchase"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Purchase",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"{{transactionId}}\",\n  \"receipt\": \"{{purchaseReceipt}}\",\n  \"platform\": \"ios\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/purchases/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", "verify"]
+            },
+            "description": "Verify and complete an in-app purchase"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Purchase History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchases/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", "history"]
+            },
+            "description": "Get user's purchase history"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth", "login"]
+            },
+            "description": "Admin authentication"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Players",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/players?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "players"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get list of all players (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Player Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/players/{{playerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "players", "{{playerId}}"]
+            },
+            "description": "Get detailed information about a specific player"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Player Balance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"{{playerId}}\",\n  \"amount\": 10000,\n  \"changeType\": \"admin_adjustment\",\n  \"reason\": \"Compensation for technical issue\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/players/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "players", "balance"]
+            },
+            "description": "Manually adjust a player's balance (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Ban/Unban Player",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playerId\": \"{{playerId}}\",\n  \"action\": \"ban\",\n  \"reason\": \"Terms of service violation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/players/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "players", "status"]
+            },
+            "description": "Ban or unban a player account"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Voucher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SPECIAL2025\",\n  \"type\": \"coins\",\n  \"value\": 5000,\n  \"maxRedemptions\": 100,\n  \"expiresAt\": \"2025-12-31T23:59:59Z\",\n  \"minLevel\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/vouchers",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vouchers"]
+            },
+            "description": "Create a new voucher (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stats"]
+            },
+            "description": "Get system-wide statistics and metrics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Revenue Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports/revenue?startDate=2025-01-01&endDate=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reports", "revenue"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-12-31"
+                }
+              ]
+            },
+            "description": "Get revenue reports for a specific period"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Device Management",
+      "item": [
+        {
+          "name": "Register Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"unique-device-id\",\n  \"platform\": \"ios\",\n  \"model\": \"iPhone 14 Pro\",\n  \"osVersion\": \"17.0\",\n  \"appVersion\": \"1.0.0\",\n  \"pushToken\": \"push-token-123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/devices/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["devices", "register"]
+            },
+            "description": "Register or update a device"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Push Token",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pushToken\": \"new-push-token-456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/devices/push-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["devices", "push-token"]
+            },
+            "description": "Update the push notification token for the current device"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// You can add any global setup here"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "// Extract and save tokens if present",
+          "if (pm.response.json().data && pm.response.json().data.token) {",
+          "    pm.collectionVariables.set('authToken', pm.response.json().data.token);",
+          "}",
+          "",
+          "// Save player ID if present",
+          "if (pm.response.json().data && pm.response.json().data.playerId) {",
+          "    pm.collectionVariables.set('playerId', pm.response.json().data.playerId);",
+          "}",
+          "",
+          "// Check for standard success response format",
+          "pm.test('Response has success field', function() {",
+          "    pm.expect(pm.response.json()).to.have.property('success');",
+          "});"
+        ]
+      }
+    }
+  ]
+}
