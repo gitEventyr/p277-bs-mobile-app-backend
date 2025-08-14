@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git Commit Guidelines
+
+**IMPORTANT: When creating git commits:**
+- NEVER include "Claude", "AI", "assistant", or any AI-related mentions in commit messages
+- NEVER add "Co-Authored-By: Claude" or similar attribution
+- NEVER use "🤖 Generated with [Claude Code]" or similar taglines
+- Write commit messages as if they were written directly by the developer
+- Use professional, concise commit messages following conventional commit format
+- Focus on WHAT changed and WHY, not WHO or WHAT TOOL made the changes
+
+Example of correct commit message:
+```
+fix: Update Dockerfile for Node.js 20 compatibility
+
+- Upgrade from Node.js 18 to Node.js 20 to support latest dependencies
+- Remove DNS configuration lines causing build failures
+```
+
 ## Commands
 
 **Development:**
