@@ -1,11 +1,7 @@
 # Development Dockerfile
-FROM node:18-alpine AS development
+FROM node:20-alpine AS development
 
 WORKDIR /usr/src/app
-
-# Configure DNS and network settings
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
 # Copy package files
 COPY package*.json yarn.lock ./
@@ -28,13 +24,9 @@ EXPOSE 3000
 CMD ["yarn", "start:dev"]
 
 # Production Dockerfile
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /usr/src/app
-
-# Configure DNS and network settings
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
 # Copy package files
 COPY package*.json yarn.lock ./
