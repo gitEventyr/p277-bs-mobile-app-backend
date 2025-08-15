@@ -34,54 +34,9 @@ services:
       timeout: 10s
       retries: 3
 
-  # Casino Backend API
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    container_name: casino-api
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      
-      # Database connection
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: password
-      DB_NAME: casino_dev
-      
-      # Redis connection
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      
-      # Security
-      SESSION_SECRET: dev-session-secret-change-in-production
-      JWT_SECRET: dev-jwt-secret-change-in-production
-      
-      # External Services
-      EMAIL_SERVICE_API_KEY: dev-email-key
-      GEOLOCATION_API_KEY: dev-geo-key
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    command: yarn start:dev
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # Casino Backend API (Running on Host)
+  # Note: Run 'yarn start:dev' on host machine instead of in container
+  # This avoids Docker build issues and provides better development experience
 
 volumes:
   postgres_data:

@@ -1,21 +1,25 @@
 # Development Dockerfile
 FROM node:20-alpine AS development
 
+# Add DNS tools and configure DNS
+RUN apk add --no-cache bind-tools curl
+
 WORKDIR /usr/src/app
 
 # Copy package files
 COPY package*.json yarn.lock ./
 
-# Install dependencies with network retry
-RUN yarn config set network-timeout 300000 && \
+# Configure npm/yarn with DNS and retry settings
+RUN yarn config set network-timeout 600000 && \
     yarn config set registry https://registry.npmjs.org/ && \
-    yarn install --frozen-lockfile --network-concurrency 1
+    echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
+# Install dependencies with retries
+RUN for i in 1 2 3; do yarn install --frozen-lockfile --network-concurrency 1 && break || sleep 10; done
 
 # Copy source code
 COPY . .
-
-# Build the application
-RUN yarn build
 
 # Expose port
 EXPOSE 3000
@@ -32,7 +36,8 @@ WORKDIR /usr/src/app
 COPY package*.json yarn.lock ./
 
 # Install only production dependencies with network retry
-RUN yarn config set network-timeout 300000 && \
+RUN apk add --no-cache bind-tools && \
+    yarn config set network-timeout 300000 && \
     yarn config set registry https://registry.npmjs.org/ && \
     yarn install --frozen-lockfile --production --network-concurrency 1
 

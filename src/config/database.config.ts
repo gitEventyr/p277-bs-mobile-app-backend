@@ -13,9 +13,14 @@ export const createDatabaseConfig = (configService: ConfigService): TypeOrmModul
   logging: configService.get<string>('NODE_ENV') === 'development',
   ssl: false,
   extra: {
-    max: 5, // Reduced connection pool size
-    connectionTimeoutMillis: 10000, // 10 second timeout
+    max: 3, // Reduced connection pool size for development
+    min: 1, // Minimum connections
+    connectionTimeoutMillis: 30000, // 30 second timeout
     idleTimeoutMillis: 30000,
-    acquireTimeoutMillis: 10000,
+    acquireTimeoutMillis: 30000,
+    query_timeout: 30000,
   },
+  connectTimeoutMS: 30000,
+  retryAttempts: 3,
+  retryDelay: 3000,
 });
