@@ -1,15 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import session from 'express-session';
-import Redis from 'ioredis';
-import RedisStore from 'connect-redis';
 
+// TODO: Implement Redis session store when needed
 export const createSessionConfig = (
   configService: ConfigService,
-  redisClient: Redis,
 ): session.SessionOptions => {
-
   return {
-    store: new RedisStore({ client: redisClient }),
     secret: configService.get<string>('SESSION_SECRET', 'default_secret'),
     resave: false,
     saveUninitialized: false,

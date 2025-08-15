@@ -1,5 +1,5 @@
 export interface JwtPayload {
-  sub: number; // user ID
+  sub: number | string; // user ID (number for players, string for admins)
   email: string;
   type: 'user' | 'admin';
   iat?: number;
@@ -8,7 +8,7 @@ export interface JwtPayload {
 
 export interface AuthenticatedUser {
   id: number;
-  email: string;
+  email?: string;
   name?: string;
   visitor_id: string;
   coins_balance: number;
@@ -25,6 +25,6 @@ export interface AuthenticatedAdmin {
 
 export interface SessionUser {
   userId: number;
-  email: string;
+  email?: string;
   type: 'user' | 'admin';
 }

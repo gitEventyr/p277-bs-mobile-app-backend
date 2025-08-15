@@ -10,17 +10,16 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ValidationPipe } from './common/pipes/validation.pipe';
 import { createRedisConfig } from './config/redis.config';
-import { createSessionConfig } from './config/session.config';
 import { setupSwagger } from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Redis client setup
+  // Redis client setup (for future use)
   const redisClient = new Redis(createRedisConfig(configService));
 
-  // Session configuration - temporarily disabled Redis sessions
+  // Session configuration (using memory store for now, Redis store TODO)
   app.use(session({
     secret: configService.get<string>('SESSION_SECRET', 'default_secret'),
     resave: false,

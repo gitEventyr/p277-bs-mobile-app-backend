@@ -11,6 +11,7 @@ import { InAppPurchase } from './entities/in-app-purchase.entity';
 import { Voucher } from './entities/voucher.entity';
 import { UserVoucher } from './entities/user-voucher.entity';
 import { HealthModule } from './health/health.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { HealthModule } from './health/health.module';
       }),
     }),
     HealthModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

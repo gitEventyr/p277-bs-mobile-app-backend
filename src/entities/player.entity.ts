@@ -37,6 +37,11 @@ export class Player {
   @IsString()
   phone?: string;
 
+  @Column({ type: 'text', nullable: true, select: false })
+  @IsOptional()
+  @IsString()
+  password?: string;
+
   @Column({ type: 'double precision', default: 0 })
   @IsNumber()
   @Min(0)
