@@ -20,24 +20,28 @@ async function bootstrap() {
   const redisClient = new Redis(createRedisConfig(configService));
 
   // Session configuration (using memory store for now, Redis store TODO)
-  app.use(session({
-    secret: configService.get<string>('SESSION_SECRET', 'default_secret'),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: configService.get<string>('NODE_ENV') === 'production',
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
-  }));
+  app.use(
+    session({
+      secret: configService.get<string>('SESSION_SECRET', 'default_secret'),
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: configService.get<string>('NODE_ENV') === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      },
+    }),
+  );
 
   // Cookie parser
   app.use(cookieParser());
 
   // Security headers
-  app.use(helmet({
-    contentSecurityPolicy: false, // Allow Swagger UI to work
-  }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Allow Swagger UI to work
+    }),
+  );
 
   // Global pipes, filters, and interceptors
   app.useGlobalPipes(new ValidationPipe());
@@ -57,7 +61,7 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
-  
+
   console.log(`🚀 Casino Backend API is running on: http://localhost:${port}`);
   console.log(`📚 Swagger documentation: http://localhost:${port}/api`);
 }

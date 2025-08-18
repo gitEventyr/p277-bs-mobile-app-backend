@@ -28,11 +28,11 @@ export class UserVoucher {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Player, player => player.userVouchers)
+  @ManyToOne(() => Player, (player) => player.userVouchers)
   @JoinColumn({ name: 'user_id' })
   user: Player;
 
-  @ManyToOne(() => Voucher, voucher => voucher.userVouchers)
+  @ManyToOne(() => Voucher, (voucher) => voucher.userVouchers)
   @JoinColumn({ name: 'voucher_id' })
   voucher: Voucher;
 }

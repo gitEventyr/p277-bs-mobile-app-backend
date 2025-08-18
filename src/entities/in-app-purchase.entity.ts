@@ -49,7 +49,7 @@ export class InAppPurchase {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Player, player => player.purchases)
+  @ManyToOne(() => Player, (player) => player.purchases)
   @JoinColumn({ name: 'user_id' })
   user: Player;
 }

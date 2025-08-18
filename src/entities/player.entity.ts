@@ -6,7 +6,14 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { IsEmail, IsOptional, IsNumber, IsString, IsBoolean, Min } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsNumber,
+  IsString,
+  IsBoolean,
+  Min,
+} from 'class-validator';
 import { Device } from './device.entity';
 import { CoinsBalanceChange } from './coins-balance-change.entity';
 import { PlayHistory } from './play-history.entity';
@@ -144,18 +151,18 @@ export class Player {
   scratch_cards: number;
 
   // Relationships
-  @OneToMany(() => Device, device => device.user)
+  @OneToMany(() => Device, (device) => device.user)
   devices: Device[];
 
-  @OneToMany(() => CoinsBalanceChange, change => change.user)
+  @OneToMany(() => CoinsBalanceChange, (change) => change.user)
   balanceChanges: CoinsBalanceChange[];
 
-  @OneToMany(() => PlayHistory, play => play.user)
+  @OneToMany(() => PlayHistory, (play) => play.user)
   playHistory: PlayHistory[];
 
-  @OneToMany(() => InAppPurchase, purchase => purchase.user)
+  @OneToMany(() => InAppPurchase, (purchase) => purchase.user)
   purchases: InAppPurchase[];
 
-  @OneToMany(() => UserVoucher, userVoucher => userVoucher.user)
+  @OneToMany(() => UserVoucher, (userVoucher) => userVoucher.user)
   userVouchers: UserVoucher[];
 }

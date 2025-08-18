@@ -1,5 +1,13 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { AuthenticatedUser, AuthenticatedAdmin } from '../../common/types/auth.types';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
+import {
+  AuthenticatedUser,
+  AuthenticatedAdmin,
+} from '../../common/types/auth.types';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
@@ -13,7 +21,7 @@ export class AdminGuard implements CanActivate {
 
     // Check if user has admin role (AdminUser has string id, Player has number id)
     const isAdmin = typeof user.id === 'string';
-    
+
     if (!isAdmin) {
       throw new ForbiddenException('Admin access required');
     }

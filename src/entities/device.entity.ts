@@ -77,7 +77,7 @@ export class Device {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Player, player => player.devices)
+  @ManyToOne(() => Player, (player) => player.devices)
   @JoinColumn({ name: 'user_id' })
   user: Player;
 }

@@ -34,6 +34,6 @@ export class Voucher {
   updated_at: Date;
 
   // Relationships
-  @OneToMany(() => UserVoucher, userVoucher => userVoucher.voucher)
+  @OneToMany(() => UserVoucher, (userVoucher) => userVoucher.voucher)
   userVouchers: UserVoucher[];
 }

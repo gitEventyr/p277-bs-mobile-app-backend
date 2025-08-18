@@ -4,7 +4,9 @@ import { INestApplication } from '@nestjs/common';
 export function setupSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle('Casino Backend API')
-    .setDescription('Comprehensive API documentation for the casino backend system')
+    .setDescription(
+      'Comprehensive API documentation for the casino backend system',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {

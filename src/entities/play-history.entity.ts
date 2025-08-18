@@ -44,7 +44,7 @@ export class PlayHistory {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Player, player => player.playHistory)
+  @ManyToOne(() => Player, (player) => player.playHistory)
   @JoinColumn({ name: 'user_id' })
   user: Player;
 }

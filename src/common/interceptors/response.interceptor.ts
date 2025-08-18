@@ -21,7 +21,12 @@ export class ResponseInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data) => {
         // Handle paginated responses
-        if (data && typeof data === 'object' && 'items' in data && 'total' in data) {
+        if (
+          data &&
+          typeof data === 'object' &&
+          'items' in data &&
+          'total' in data
+        ) {
           return {
             success: true,
             data: data.items,

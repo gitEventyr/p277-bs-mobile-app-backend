@@ -23,13 +23,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      message = typeof exceptionResponse === 'string' 
-        ? exceptionResponse 
-        : exceptionResponse;
+      message =
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : exceptionResponse;
     } else if (exception instanceof QueryFailedError) {
       // Handle database errors
       status = HttpStatus.BAD_REQUEST;
-      
+
       // Handle specific database constraint violations
       if (exception.message.includes('duplicate key')) {
         if (exception.message.includes('email')) {
@@ -47,7 +48,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = 'Database operation failed';
       }
     } else if (exception instanceof Error) {
-      this.logger.error(`Unhandled error: ${exception.message}`, exception.stack);
+      this.logger.error(
+        `Unhandled error: ${exception.message}`,
+        exception.stack,
+      );
       message = 'Internal server error';
     }
 

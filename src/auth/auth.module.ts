@@ -10,6 +10,7 @@ import { AdminGuard } from './guards/admin.guard';
 import { AuthController } from './auth.controller';
 import { Player } from '../entities/player.entity';
 import { AdminUser } from '../entities/admin-user.entity';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminUser } from '../entities/admin-user.entity';
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([Player, AdminUser]),
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],

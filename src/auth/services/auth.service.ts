@@ -5,11 +5,11 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Player } from '../../entities/player.entity';
 import { AdminUser } from '../../entities/admin-user.entity';
-import { 
-  JwtPayload, 
-  AuthenticatedUser, 
-  AuthenticatedAdmin, 
-  SessionUser 
+import {
+  JwtPayload,
+  AuthenticatedUser,
+  AuthenticatedAdmin,
+  SessionUser,
 } from '../../common/types/auth.types';
 
 @Injectable()
@@ -39,16 +39,23 @@ export class AuthService {
     return bcrypt.hash(password, saltRounds);
   }
 
-  async comparePasswords(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  async comparePasswords(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
-  async validateUser(payload: JwtPayload): Promise<AuthenticatedUser | AuthenticatedAdmin | null> {
+  async validateUser(
+    payload: JwtPayload,
+  ): Promise<AuthenticatedUser | AuthenticatedAdmin | null> {
     if (payload.type === 'user') {
-      const userId = typeof payload.sub === 'string' ? parseInt(payload.sub) : payload.sub;
+      const userId =
+        typeof payload.sub === 'string' ? parseInt(payload.sub) : payload.sub;
       return this.validatePlayer(userId);
     } else if (payload.type === 'admin') {
-      const adminId = typeof payload.sub === 'number' ? payload.sub.toString() : payload.sub;
+      const adminId =
+        typeof payload.sub === 'number' ? payload.sub.toString() : payload.sub;
       return this.validateAdmin(adminId);
     }
     return null;
@@ -59,13 +66,13 @@ export class AuthService {
       where: { id: playerId },
       select: [
         'id',
-        'email', 
+        'email',
         'name',
         'visitor_id',
         'coins_balance',
         'level',
-        'scratch_cards'
-      ]
+        'scratch_cards',
+      ],
     });
 
     if (!player) {
@@ -86,7 +93,7 @@ export class AuthService {
   async validateAdmin(adminId: string): Promise<AuthenticatedAdmin | null> {
     const admin = await this.adminRepository.findOne({
       where: { id: adminId, is_active: true },
-      select: ['id', 'email', 'display_name', 'is_active']
+      select: ['id', 'email', 'display_name', 'is_active'],
     });
 
     if (!admin) {
@@ -94,8 +101,8 @@ export class AuthService {
     }
 
     // Update last login timestamp
-    await this.adminRepository.update(adminId, { 
-      last_login_at: new Date() 
+    await this.adminRepository.update(adminId, {
+      last_login_at: new Date(),
     });
 
     return {
@@ -106,7 +113,10 @@ export class AuthService {
     };
   }
 
-  createSessionUser(user: AuthenticatedUser | AuthenticatedAdmin, type: 'user' | 'admin'): SessionUser {
+  createSessionUser(
+    user: AuthenticatedUser | AuthenticatedAdmin,
+    type: 'user' | 'admin',
+  ): SessionUser {
     return {
       userId: typeof user.id === 'string' ? parseInt(user.id) : user.id,
       email: user.email,

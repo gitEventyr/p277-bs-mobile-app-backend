@@ -1,5 +1,22 @@
-import { Controller, Post, Get, Body, UseGuards, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiProperty } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  ConflictException,
+  BadRequestException,
+  UnauthorizedException,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+  ApiProperty,
+} from '@nestjs/swagger';
+import type { Request } from 'express';
 import { IsEmail, IsString, IsIn } from 'class-validator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,7 +28,12 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { Player } from '../entities/player.entity';
-import type { AuthenticatedUser, AuthenticatedAdmin, JwtPayload } from '../common/types/auth.types';
+import { EmailService } from '../email/services/email.service';
+import type {
+  AuthenticatedUser,
+  AuthenticatedAdmin,
+  JwtPayload,
+} from '../common/types/auth.types';
 
 class TestTokenDto {
   @ApiProperty({ example: 'test@example.com' })
@@ -31,22 +53,44 @@ export class AuthController {
     private readonly authService: AuthService,
     @InjectRepository(Player)
     private readonly playerRepository: Repository<Player>,
+    private readonly emailService: EmailService,
   ) {}
 
   private generateVisitorId(): string {
-    return 'visitor_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    return (
+      'visitor_' +
+      Math.random().toString(36).substr(2, 9) +
+      Date.now().toString(36)
+    );
+  }
+
+  private getClientIp(req: Request): string {
+    return (
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+      (req.headers['x-real-ip'] as string) ||
+      req.connection?.remoteAddress ||
+      req.socket?.remoteAddress ||
+      '127.0.0.1'
+    );
   }
 
   @Post('register')
   @Public()
   @ApiOperation({ summary: 'Register a new user account' })
-  @ApiResponse({ status: 201, description: 'User registered successfully', type: RegisterResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+    type: RegisterResponseDto,
+  })
   @ApiResponse({ status: 409, description: 'Email already exists' })
-  async register(@Body() registerDto: RegisterDto): Promise<RegisterResponseDto> {
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Req() req: Request,
+  ): Promise<RegisterResponseDto> {
     // Check if email already exists (if provided)
     if (registerDto.email) {
       const existingUser = await this.playerRepository.findOne({
-        where: { email: registerDto.email }
+        where: { email: registerDto.email },
       });
       if (existingUser) {
         throw new ConflictException('Email already registered');
@@ -62,10 +106,12 @@ export class AuthController {
       if (attempts > 10) {
         throw new BadRequestException('Unable to generate unique visitor ID');
       }
-    } while (await this.playerRepository.findOne({ where: { visitor_id: visitorId } }));
+    } while (
+      await this.playerRepository.findOne({ where: { visitor_id: visitorId } })
+    );
 
     // Hash password if provided
-    const hashedPassword = registerDto.password 
+    const hashedPassword = registerDto.password
       ? await this.authService.hashPassword(registerDto.password)
       : undefined;
 
@@ -92,6 +138,21 @@ export class AuthController {
 
     const accessToken = await this.authService.generateJwtToken(payload);
 
+    // Send welcome email if email is provided
+    if (savedPlayer.email) {
+      try {
+        await this.emailService.sendWelcomeEmail(savedPlayer.email, {
+          name: savedPlayer.name,
+          email: savedPlayer.email,
+          coinsBalance: savedPlayer.coins_balance,
+          ipAddress: this.getClientIp(req),
+        });
+      } catch (emailError) {
+        // Log email error but don't fail registration
+        console.warn('Failed to send welcome email:', emailError.message);
+      }
+    }
+
     return {
       access_token: accessToken,
       token_type: 'Bearer',
@@ -104,6 +165,7 @@ export class AuthController {
         coins_balance: savedPlayer.coins_balance,
         level: savedPlayer.level,
         scratch_cards: savedPlayer.scratch_cards,
+        ipaddress: this.getClientIp(req),
       },
     };
   }
@@ -111,15 +173,22 @@ export class AuthController {
   @Post('login')
   @Public()
   @ApiOperation({ summary: 'Login with email/password or visitor_id' })
-  @ApiResponse({ status: 200, description: 'Login successful', type: LoginResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    type: LoginResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Req() req: Request,
+  ): Promise<LoginResponseDto> {
     let player: Player | null = null;
 
     // Login with visitor_id (guest login)
     if (loginDto.visitor_id) {
       player = await this.playerRepository.findOne({
-        where: { visitor_id: loginDto.visitor_id }
+        where: { visitor_id: loginDto.visitor_id },
       });
       if (!player) {
         throw new UnauthorizedException('Invalid visitor ID');
@@ -130,7 +199,17 @@ export class AuthController {
       // Find player by email
       player = await this.playerRepository.findOne({
         where: { email: loginDto.identifier },
-        select: ['id', 'visitor_id', 'email', 'name', 'phone', 'password', 'coins_balance', 'level', 'scratch_cards']
+        select: [
+          'id',
+          'visitor_id',
+          'email',
+          'name',
+          'phone',
+          'password',
+          'coins_balance',
+          'level',
+          'scratch_cards',
+        ],
       });
 
       if (!player || !player.password) {
@@ -140,14 +219,16 @@ export class AuthController {
       // Verify password
       const isPasswordValid = await this.authService.comparePasswords(
         loginDto.password,
-        player.password
+        player.password,
       );
 
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid email or password');
       }
     } else {
-      throw new BadRequestException('Please provide either visitor_id or email/password');
+      throw new BadRequestException(
+        'Please provide either visitor_id or email/password',
+      );
     }
 
     // Generate JWT token
@@ -171,6 +252,7 @@ export class AuthController {
         coins_balance: player.coins_balance,
         level: player.level,
         scratch_cards: player.scratch_cards,
+        ipaddress: this.getClientIp(req),
       },
     };
   }
@@ -188,11 +270,11 @@ export class AuthController {
     };
 
     const token = await this.authService.generateJwtToken(payload);
-    
+
     return {
       access_token: token,
       token_type: 'Bearer',
-      expires_in: '24h'
+      expires_in: '24h',
     };
   }
 
@@ -201,7 +283,9 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current authenticated user' })
   @ApiResponse({ status: 200, description: 'Current user information' })
-  async getCurrentUser(@CurrentUser() user: AuthenticatedUser | AuthenticatedAdmin) {
+  async getCurrentUser(
+    @CurrentUser() user: AuthenticatedUser | AuthenticatedAdmin,
+  ) {
     return {
       id: user.id,
       email: (user as any).email,

@@ -45,7 +45,7 @@ export class CoinsBalanceChange {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Player, player => player.balanceChanges)
+  @ManyToOne(() => Player, (player) => player.balanceChanges)
   @JoinColumn({ name: 'user_id' })
   user: Player;
 }

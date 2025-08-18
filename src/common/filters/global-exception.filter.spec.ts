@@ -67,7 +67,11 @@ describe('GlobalExceptionFilter', () => {
     };
 
     // Mock QueryFailedError with duplicate key message
-    const dbError = new QueryFailedError('', '', new Error('duplicate key email'));
+    const dbError = new QueryFailedError(
+      '',
+      '',
+      new Error('duplicate key email'),
+    );
     Object.assign(dbError, { message: 'duplicate key email' });
 
     filter.catch(dbError, mockHost as any);
