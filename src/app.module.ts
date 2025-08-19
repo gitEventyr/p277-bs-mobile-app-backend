@@ -13,6 +13,8 @@ import { UserVoucher } from './entities/user-voucher.entity';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
+import { AdminModule } from './admin/admin.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { EmailModule } from './email/email.module';
     HealthModule,
     AuthModule,
     EmailModule,
+    AdminModule,
+    UsersModule,
   ],
 })
 export class AppModule {}

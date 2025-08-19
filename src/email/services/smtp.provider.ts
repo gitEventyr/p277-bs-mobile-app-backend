@@ -10,7 +10,10 @@ export class SMTPProvider implements EmailProvider {
   private defaultFromEmail: string;
 
   constructor(private configService: ConfigService) {
-    this.defaultFromEmail = this.configService.get<string>('EMAIL_FROM', 'noreply@casino.com');
+    this.defaultFromEmail = this.configService.get<string>(
+      'EMAIL_FROM',
+      'noreply@casino.com',
+    );
     this.createTransporter();
   }
 
@@ -23,7 +26,9 @@ export class SMTPProvider implements EmailProvider {
 
     if (!host) {
       // For development/testing - use ethereal email
-      this.logger.warn('No SMTP configuration found, using Ethereal for testing');
+      this.logger.warn(
+        'No SMTP configuration found, using Ethereal for testing',
+      );
       this.createTestTransporter();
       return;
     }
@@ -32,10 +37,13 @@ export class SMTPProvider implements EmailProvider {
       host,
       port,
       secure,
-      auth: user && pass ? {
-        user,
-        pass,
-      } : undefined,
+      auth:
+        user && pass
+          ? {
+              user,
+              pass,
+            }
+          : undefined,
     });
   }
 
@@ -70,9 +78,9 @@ export class SMTPProvider implements EmailProvider {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      
+
       this.logger.log(`Email sent successfully to: ${mailOptions.to}`);
-      
+
       // For testing with Ethereal, log the preview URL
       if (nodemailer.getTestMessageUrl(info)) {
         this.logger.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);

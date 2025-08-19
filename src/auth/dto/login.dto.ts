@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsOptional, MinLength } from 'class-validator';
+import { IsString, IsOptional, MinLength } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({
@@ -29,6 +29,15 @@ export class LoginDto {
   @IsOptional()
   @IsString()
   visitor_id?: string;
+
+  @ApiProperty({
+    example: 'device-uuid-12345',
+    description: 'Device unique identifier',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  deviceUDID?: string;
 }
 
 export class LoginResponseDto {

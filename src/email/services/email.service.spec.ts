@@ -53,7 +53,10 @@ describe('EmailService', () => {
   });
 
   it('should initialize with SMTP provider', () => {
-    expect(mockConfigService.get).toHaveBeenCalledWith('EMAIL_PROVIDER', 'smtp');
+    expect(mockConfigService.get).toHaveBeenCalledWith(
+      'EMAIL_PROVIDER',
+      'smtp',
+    );
   });
 
   it('should send welcome email', async () => {
@@ -84,7 +87,7 @@ describe('EmailService', () => {
 
   it('should perform health check', async () => {
     const health = await service.healthCheck();
-    
+
     expect(health).toEqual({
       status: 'healthy',
       provider: 'smtp',

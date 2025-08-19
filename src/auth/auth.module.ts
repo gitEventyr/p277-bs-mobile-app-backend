@@ -10,6 +10,7 @@ import { AdminGuard } from './guards/admin.guard';
 import { AuthController } from './auth.controller';
 import { Player } from '../entities/player.entity';
 import { AdminUser } from '../entities/admin-user.entity';
+import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailModule } from '../email/email.module';
 
 @Module({
@@ -26,7 +27,7 @@ import { EmailModule } from '../email/email.module';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Player, AdminUser]),
+    TypeOrmModule.forFeature([Player, AdminUser, PasswordResetToken]),
     EmailModule,
   ],
   controllers: [AuthController],

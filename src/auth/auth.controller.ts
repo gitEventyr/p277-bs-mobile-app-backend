@@ -8,6 +8,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   Req,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,7 +28,14 @@ import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
+import {
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  PasswordRecoveryResponseDto,
+  ResetPasswordResponseDto,
+} from './dto/password-recovery.dto';
 import { Player } from '../entities/player.entity';
+import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailService } from '../email/services/email.service';
 import type {
   AuthenticatedUser,
@@ -49,10 +57,14 @@ class TestTokenDto {
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     @InjectRepository(Player)
     private readonly playerRepository: Repository<Player>,
+    @InjectRepository(PasswordResetToken)
+    private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
     private readonly emailService: EmailService,
   ) {}
 
@@ -125,6 +137,29 @@ export class AuthController {
       coins_balance: 1000, // Starting balance
       level: 1,
       scratch_cards: 0,
+      // New fields
+      device_udid: registerDto.deviceUDID,
+      subscription_agreement: registerDto.subscription_agreement,
+      tnc_agreement: registerDto.tnc_agreement,
+      os: registerDto.os,
+      device: registerDto.device,
+      // AppsFlyer fields
+      pid: registerDto.appsflyer?.pid,
+      c: registerDto.appsflyer?.c,
+      af_channel: registerDto.appsflyer?.af_channel,
+      af_adset: registerDto.appsflyer?.af_adset,
+      af_ad: registerDto.appsflyer?.af_ad,
+      af_keywords: registerDto.appsflyer?.af_keywords
+        ? [registerDto.appsflyer.af_keywords]
+        : undefined,
+      is_retargeting: registerDto.appsflyer?.is_retargeting,
+      af_click_lookback: registerDto.appsflyer?.af_click_lookback,
+      af_viewthrough_lookback: registerDto.appsflyer?.af_viewthrough_lookback,
+      af_sub1: registerDto.appsflyer?.af_sub1,
+      af_sub2: registerDto.appsflyer?.af_sub2,
+      af_sub3: registerDto.appsflyer?.af_sub3,
+      af_sub4: registerDto.appsflyer?.af_sub4,
+      af_sub5: registerDto.appsflyer?.af_sub5,
     });
 
     const savedPlayer = await this.playerRepository.save(player);
@@ -328,5 +363,124 @@ export class AuthController {
       message: 'This is public data, no authentication required',
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Post('forgot-password')
+  @Public()
+  @ApiOperation({ summary: 'Request password reset email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset email sent',
+    type: PasswordRecoveryResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Email not found' })
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<PasswordRecoveryResponseDto> {
+    // Find user by email
+    const user = await this.playerRepository.findOne({
+      where: { email: forgotPasswordDto.email },
+    });
+
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return {
+        message: 'If the email exists, a password reset link has been sent.',
+      };
+    }
+
+    // Generate reset token
+    const resetToken = this.authService.generateResetToken();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // Token expires in 1 hour
+
+    // Save reset token to database
+    const passwordResetToken = this.passwordResetTokenRepository.create({
+      token: resetToken,
+      user_id: user.id,
+      expires_at: expiresAt,
+      used: false,
+    });
+
+    await this.passwordResetTokenRepository.save(passwordResetToken);
+
+    // Send password reset email
+    const resetUrl = `${this.getBaseUrl()}/reset-password?token=${resetToken}`;
+    try {
+      await this.emailService.sendPasswordReset(user.email!, {
+        name: user.name,
+        resetUrl,
+      });
+    } catch (emailError) {
+      this.logger.error('Failed to send password reset email:', emailError);
+      // Don't fail the request even if email fails
+    }
+
+    return {
+      message: 'If the email exists, a password reset link has been sent.',
+    };
+  }
+
+  @Post('reset-password')
+  @Public()
+  @ApiOperation({ summary: 'Reset password with token and email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successfully',
+    type: ResetPasswordResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  @ApiResponse({ status: 400, description: 'Email does not match token' })
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<ResetPasswordResponseDto> {
+    // Find valid reset token with user details
+    const resetToken = await this.passwordResetTokenRepository.findOne({
+      where: {
+        token: resetPasswordDto.token,
+        used: false,
+      },
+      relations: ['user'],
+    });
+
+    if (!resetToken) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Check if token is expired
+    if (new Date() > resetToken.expires_at) {
+      throw new BadRequestException('Reset token has expired');
+    }
+
+    // Verify that the email matches the user associated with the token
+    if (resetToken.user.email !== resetPasswordDto.email) {
+      throw new BadRequestException('Email does not match the reset token');
+    }
+
+    // Hash new password
+    const hashedPassword = await this.authService.hashPassword(
+      resetPasswordDto.newPassword,
+    );
+
+    // Update user password
+    await this.playerRepository.update(
+      { id: resetToken.user_id },
+      { password: hashedPassword },
+    );
+
+    // Mark token as used
+    await this.passwordResetTokenRepository.update(
+      { id: resetToken.id },
+      { used: true },
+    );
+
+    return {
+      message: 'Password reset successfully',
+    };
+  }
+
+  private getBaseUrl(): string {
+    // You might want to get this from config
+    return 'http://localhost:3000';
   }
 }

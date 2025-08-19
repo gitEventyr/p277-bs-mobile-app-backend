@@ -12,7 +12,9 @@ export class AWSSESProvider implements EmailProvider {
   constructor(private configService: ConfigService) {
     const region = this.configService.get<string>('AWS_REGION', 'us-east-1');
     const accessKeyId = this.configService.get<string>('AWS_ACCESS_KEY_ID');
-    const secretAccessKey = this.configService.get<string>('AWS_SECRET_ACCESS_KEY');
+    const secretAccessKey = this.configService.get<string>(
+      'AWS_SECRET_ACCESS_KEY',
+    );
 
     const config: any = {
       region,
@@ -26,13 +28,16 @@ export class AWSSESProvider implements EmailProvider {
     }
 
     this.sesClient = new SESClient(config);
-    this.defaultFromEmail = this.configService.get<string>('EMAIL_FROM', 'noreply@casino.com');
+    this.defaultFromEmail = this.configService.get<string>(
+      'EMAIL_FROM',
+      'noreply@casino.com',
+    );
   }
 
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
       const recipients = Array.isArray(options.to) ? options.to : [options.to];
-      
+
       const params = {
         Source: options.from || this.defaultFromEmail,
         Destination: {
@@ -44,21 +49,25 @@ export class AWSSESProvider implements EmailProvider {
             Charset: 'UTF-8',
           },
           Body: {
-            Html: options.html ? {
-              Data: options.html,
-              Charset: 'UTF-8',
-            } : undefined,
-            Text: options.text ? {
-              Data: options.text,
-              Charset: 'UTF-8',
-            } : undefined,
+            Html: options.html
+              ? {
+                  Data: options.html,
+                  Charset: 'UTF-8',
+                }
+              : undefined,
+            Text: options.text
+              ? {
+                  Data: options.text,
+                  Charset: 'UTF-8',
+                }
+              : undefined,
           },
         },
       };
 
       const command = new SendEmailCommand(params);
       await this.sesClient.send(command);
-      
+
       this.logger.log(`Email sent successfully to: ${recipients.join(', ')}`);
     } catch (error) {
       this.logger.error('Failed to send email via AWS SES:', error);

@@ -12,7 +12,7 @@ export class HealthController {
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   async check() {
     const emailHealth = await this.emailService.healthCheck();
-    
+
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),

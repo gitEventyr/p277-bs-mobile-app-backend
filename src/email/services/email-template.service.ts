@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as handlebars from 'handlebars';
-import { EmailTemplate, EmailTemplateType, EmailTemplateData } from '../interfaces/email.interface';
+import {
+  EmailTemplate,
+  EmailTemplateType,
+  EmailTemplateData,
+} from '../interfaces/email.interface';
 
 @Injectable()
 export class EmailTemplateService {
@@ -160,7 +164,10 @@ This password reset link will expire in 1 hour.
     return this.templates.get(type);
   }
 
-  renderTemplate(type: EmailTemplateType, data: EmailTemplateData): EmailTemplate | null {
+  renderTemplate(
+    type: EmailTemplateType,
+    data: EmailTemplateData,
+  ): EmailTemplate | null {
     const template = this.templates.get(type);
     if (!template) {
       this.logger.error(`Template not found: ${type}`);
@@ -170,7 +177,9 @@ This password reset link will expire in 1 hour.
     try {
       const subjectTemplate = handlebars.compile(template.subject);
       const htmlTemplate = handlebars.compile(template.html);
-      const textTemplate = template.text ? handlebars.compile(template.text) : null;
+      const textTemplate = template.text
+        ? handlebars.compile(template.text)
+        : null;
 
       return {
         subject: subjectTemplate(data),

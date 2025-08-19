@@ -5,8 +5,83 @@ import {
   IsOptional,
   MinLength,
   MaxLength,
-  IsPhoneNumber,
+  IsBoolean,
+  ValidateNested,
+  IsNumber,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class AppsFlyerDto {
+  @ApiProperty({ example: 'googleadwords_int', required: false })
+  @IsOptional()
+  @IsString()
+  pid?: string;
+
+  @ApiProperty({ example: 'campaign_name', required: false })
+  @IsOptional()
+  @IsString()
+  c?: string;
+
+  @ApiProperty({ example: 'google', required: false })
+  @IsOptional()
+  @IsString()
+  af_channel?: string;
+
+  @ApiProperty({ example: 'adset_name', required: false })
+  @IsOptional()
+  @IsString()
+  af_adset?: string;
+
+  @ApiProperty({ example: 'ad_name', required: false })
+  @IsOptional()
+  @IsString()
+  af_ad?: string;
+
+  @ApiProperty({ example: 'casino games', required: false })
+  @IsOptional()
+  @IsString()
+  af_keywords?: string;
+
+  @ApiProperty({ example: true, required: false })
+  @IsOptional()
+  @IsBoolean()
+  is_retargeting?: boolean;
+
+  @ApiProperty({ example: 7, required: false })
+  @IsOptional()
+  @IsNumber()
+  af_click_lookback?: number;
+
+  @ApiProperty({ example: 1, required: false })
+  @IsOptional()
+  @IsNumber()
+  af_viewthrough_lookback?: number;
+
+  @ApiProperty({ example: 'value1', required: false })
+  @IsOptional()
+  @IsString()
+  af_sub1?: string;
+
+  @ApiProperty({ example: 'value2', required: false })
+  @IsOptional()
+  @IsString()
+  af_sub2?: string;
+
+  @ApiProperty({ example: 'value3', required: false })
+  @IsOptional()
+  @IsString()
+  af_sub3?: string;
+
+  @ApiProperty({ example: 'value4', required: false })
+  @IsOptional()
+  @IsString()
+  af_sub4?: string;
+
+  @ApiProperty({ example: 'value5', required: false })
+  @IsOptional()
+  @IsString()
+  af_sub5?: string;
+}
 
 export class RegisterDto {
   @ApiProperty({
@@ -48,6 +123,76 @@ export class RegisterDto {
   @MinLength(8)
   @MaxLength(100)
   password?: string;
+
+  @ApiProperty({
+    example: 'device-uuid-12345',
+    description: 'Device unique identifier',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  deviceUDID?: string;
+
+  @ApiProperty({
+    example: true,
+    description: 'Subscription agreement acceptance',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  subscription_agreement?: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'Terms and conditions agreement acceptance',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  tnc_agreement?: boolean;
+
+  @ApiProperty({
+    example: 'iOS',
+    description: 'Operating system',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  os?: string;
+
+  @ApiProperty({
+    example: 'iPhone 14 Pro',
+    description: 'Device model',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  device?: string;
+
+  @ApiProperty({
+    example: {
+      pid: 'googleadwords_int',
+      c: 'campaign_name',
+      af_channel: 'google',
+      af_adset: 'adset_name',
+      af_ad: 'ad_name',
+      af_keywords: 'casino games',
+      is_retargeting: true,
+      af_click_lookback: 7,
+      af_viewthrough_lookback: 1,
+      af_sub1: 'value1',
+      af_sub2: 'value2',
+      af_sub3: 'value3',
+      af_sub4: 'value4',
+      af_sub5: 'value5',
+    },
+    description: 'AppsFlyer attribution data',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AppsFlyerDto)
+  appsflyer?: AppsFlyerDto;
 }
 
 export class RegisterResponseDto {

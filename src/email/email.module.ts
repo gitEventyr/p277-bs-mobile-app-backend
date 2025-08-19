@@ -7,12 +7,7 @@ import { SMTPProvider } from './services/smtp.provider';
 
 @Module({
   imports: [ConfigModule],
-  providers: [
-    EmailService,
-    EmailTemplateService,
-    AWSSESProvider,
-    SMTPProvider,
-  ],
+  providers: [EmailService, EmailTemplateService, AWSSESProvider, SMTPProvider],
   exports: [EmailService],
 })
 export class EmailModule {}

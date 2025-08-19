@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { Player } from '../../entities/player.entity';
 import { AdminUser } from '../../entities/admin-user.entity';
 import {
@@ -44,6 +45,10 @@ export class AuthService {
     hashedPassword: string,
   ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  generateResetToken(): string {
+    return randomBytes(32).toString('hex');
   }
 
   async validateUser(

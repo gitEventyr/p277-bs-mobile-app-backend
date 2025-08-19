@@ -150,6 +150,32 @@ export class Player {
   @Min(0)
   scratch_cards: number;
 
+  // Device and agreement fields
+  @Column({ type: 'text', nullable: true })
+  @IsOptional()
+  @IsString()
+  device_udid?: string;
+
+  @Column({ type: 'boolean', nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  subscription_agreement?: boolean;
+
+  @Column({ type: 'boolean', nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  tnc_agreement?: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  @IsOptional()
+  @IsString()
+  os?: string;
+
+  @Column({ type: 'text', nullable: true })
+  @IsOptional()
+  @IsString()
+  device?: string;
+
   // Relationships
   @OneToMany(() => Device, (device) => device.user)
   devices: Device[];
