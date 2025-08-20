@@ -1,43 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsEmail } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({
     example: 'john.doe@example.com',
-    description: 'User email address or visitor_id for guest login',
-    required: false,
+    description: 'User email address',
+    required: true,
   })
-  @IsOptional()
-  @IsString()
-  identifier?: string; // Can be email or visitor_id
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
 
   @ApiProperty({
     example: 'Password123!',
-    description: 'User password (required for email login)',
-    required: false,
+    description: 'User password',
+    required: true,
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   @MinLength(8)
-  password?: string;
-
-  @ApiProperty({
-    example: 'visitor_abc123',
-    description: 'Visitor ID for guest login (alternative to email/password)',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  visitor_id?: string;
+  password: string;
 
   @ApiProperty({
     example: 'device-uuid-12345',
     description: 'Device unique identifier',
-    required: false,
+    required: true,
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  deviceUDID?: string;
+  deviceUDID: string;
 }
 
 export class LoginResponseDto {
@@ -47,7 +38,7 @@ export class LoginResponseDto {
   @ApiProperty({ example: 'Bearer' })
   token_type: string;
 
-  @ApiProperty({ example: '24h' })
+  @ApiProperty({ example: '30d' })
   expires_in: string;
 
   @ApiProperty({

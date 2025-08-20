@@ -11,10 +11,21 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { ValidationPipe } from './common/pipes/validation.pipe';
 import { createRedisConfig } from './config/redis.config';
 import { setupSwagger } from './config/swagger.config';
+import { configureHandlebars } from './config/handlebars.config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
+
+  // Configure template engine for admin dashboard
+  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.setViewEngine('hbs');
+  configureHandlebars(); // Configure Handlebars helpers
+
+  // Serve static assets
+  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   // Redis client setup (for future use)
   const redisClient = new Redis(createRedisConfig(configService));

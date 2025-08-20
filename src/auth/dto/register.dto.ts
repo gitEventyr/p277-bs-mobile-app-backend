@@ -202,7 +202,7 @@ export class RegisterResponseDto {
   @ApiProperty({ example: 'Bearer' })
   token_type: string;
 
-  @ApiProperty({ example: '24h' })
+  @ApiProperty({ example: '30d' })
   expires_in: string;
 
   @ApiProperty({

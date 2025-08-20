@@ -80,7 +80,7 @@ export class AdminService {
     return {
       access_token,
       token_type: 'Bearer',
-      expires_in: '24h',
+      expires_in: '30d',
       admin: authenticatedAdmin,
     };
   }

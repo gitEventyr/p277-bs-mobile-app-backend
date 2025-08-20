@@ -33,7 +33,7 @@ export class AdminGuard implements CanActivate {
     let jwtPayload: JwtPayload;
 
     try {
-      jwtPayload = this.jwtService.decode(token) as JwtPayload;
+      jwtPayload = this.jwtService.decode(token);
     } catch {
       throw new ForbiddenException('Invalid token');
     }

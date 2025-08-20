@@ -75,10 +75,7 @@ export class UsersService {
     }
 
     // Check if email is being changed and if it's already taken
-    if (
-      updateProfileDto.email &&
-      updateProfileDto.email !== player.email
-    ) {
+    if (updateProfileDto.email && updateProfileDto.email !== player.email) {
       const existingPlayer = await this.playerRepository.findOne({
         where: { email: updateProfileDto.email },
       });
@@ -119,5 +116,90 @@ export class UsersService {
     return await this.playerRepository.findOne({
       where: { id: userId },
     });
+  }
+
+  // Admin dashboard methods
+  async getTotalUsersCount(): Promise<number> {
+    return await this.playerRepository.count();
+  }
+
+  async getActiveUsersCount(): Promise<number> {
+    // Assuming active users are those who logged in within last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    return await this.playerRepository.count({
+      where: {
+        updated_at: new Date() as any, // This would need proper date filtering
+      },
+    });
+  }
+
+  async getTotalBalance(): Promise<number> {
+    const result = await this.playerRepository
+      .createQueryBuilder('player')
+      .select('SUM(player.coins_balance)', 'total')
+      .getRawOne();
+
+    return parseInt(result?.total || '0');
+  }
+
+  async getNewRegistrationsCount(): Promise<number> {
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+    return await this.playerRepository.count({
+      where: {
+        created_at: new Date() as any, // This would need proper date filtering
+      },
+    });
+  }
+
+  async findUsersForAdmin(options: {
+    page: number;
+    limit: number;
+    search: string;
+    status: string;
+    sortBy: string;
+  }): Promise<{ data: Player[]; total: number }> {
+    const { page, limit, search, status, sortBy } = options;
+    const skip = (page - 1) * limit;
+
+    let query = this.playerRepository.createQueryBuilder('player');
+
+    // Search functionality
+    if (search) {
+      query = query.where(
+        'player.name ILIKE :search OR player.email ILIKE :search OR player.phone ILIKE :search OR player.visitor_id ILIKE :search',
+        { search: `%${search}%` },
+      );
+    }
+
+    // Status filter (assuming is_active field exists or using a different logic)
+    if (status === 'active') {
+      // Add active user logic here
+    } else if (status === 'inactive') {
+      // Add inactive user logic here
+    }
+
+    // Sorting
+    const sortField =
+      sortBy === 'name'
+        ? 'player.name'
+        : sortBy === 'email'
+          ? 'player.email'
+          : sortBy === 'coins_balance'
+            ? 'player.coins_balance'
+            : 'player.created_at';
+
+    query = query.orderBy(sortField, 'DESC');
+
+    // Get total count for pagination
+    const total = await query.getCount();
+
+    // Apply pagination
+    const data = await query.skip(skip).take(limit).getMany();
+
+    return { data, total };
   }
 }

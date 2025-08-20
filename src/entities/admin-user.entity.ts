@@ -16,6 +16,11 @@ export class AdminUser {
   @IsEmail()
   email: string;
 
+  @Column({ type: 'text', nullable: true })
+  @IsString()
+  @IsOptional()
+  password_hash?: string;
+
   @Column({ type: 'text' })
   @IsString()
   display_name: string;

@@ -191,7 +191,7 @@ export class AuthController {
     return {
       access_token: accessToken,
       token_type: 'Bearer',
-      expires_in: '24h',
+      expires_in: '30d',
       user: {
         id: savedPlayer.id,
         visitor_id: savedPlayer.visitor_id,
@@ -207,7 +207,7 @@ export class AuthController {
 
   @Post('login')
   @Public()
-  @ApiOperation({ summary: 'Login with email/password or visitor_id' })
+  @ApiOperation({ summary: 'Login with email and password' })
   @ApiResponse({
     status: 200,
     description: 'Login successful',
@@ -218,52 +218,34 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Req() req: Request,
   ): Promise<LoginResponseDto> {
-    let player: Player | null = null;
+    // Find player by email
+    const player = await this.playerRepository.findOne({
+      where: { email: loginDto.email },
+      select: [
+        'id',
+        'visitor_id',
+        'email',
+        'name',
+        'phone',
+        'password',
+        'coins_balance',
+        'level',
+        'scratch_cards',
+      ],
+    });
 
-    // Login with visitor_id (guest login)
-    if (loginDto.visitor_id) {
-      player = await this.playerRepository.findOne({
-        where: { visitor_id: loginDto.visitor_id },
-      });
-      if (!player) {
-        throw new UnauthorizedException('Invalid visitor ID');
-      }
+    if (!player || !player.password) {
+      throw new UnauthorizedException('Invalid email or password');
     }
-    // Login with email/password
-    else if (loginDto.identifier && loginDto.password) {
-      // Find player by email
-      player = await this.playerRepository.findOne({
-        where: { email: loginDto.identifier },
-        select: [
-          'id',
-          'visitor_id',
-          'email',
-          'name',
-          'phone',
-          'password',
-          'coins_balance',
-          'level',
-          'scratch_cards',
-        ],
-      });
 
-      if (!player || !player.password) {
-        throw new UnauthorizedException('Invalid email or password');
-      }
+    // Verify password
+    const isPasswordValid = await this.authService.comparePasswords(
+      loginDto.password,
+      player.password,
+    );
 
-      // Verify password
-      const isPasswordValid = await this.authService.comparePasswords(
-        loginDto.password,
-        player.password,
-      );
-
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid email or password');
-      }
-    } else {
-      throw new BadRequestException(
-        'Please provide either visitor_id or email/password',
-      );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     // Generate JWT token
@@ -278,7 +260,7 @@ export class AuthController {
     return {
       access_token: accessToken,
       token_type: 'Bearer',
-      expires_in: '24h',
+      expires_in: '30d',
       user: {
         id: player.id,
         visitor_id: player.visitor_id,
@@ -309,7 +291,7 @@ export class AuthController {
     return {
       access_token: token,
       token_type: 'Bearer',
-      expires_in: '24h',
+      expires_in: '30d',
     };
   }
 
