@@ -6,14 +6,13 @@ import { PaymentValidationService } from '../external/payments/payment-validatio
 import { InAppPurchase } from '../entities/in-app-purchase.entity';
 import { Player } from '../entities/player.entity';
 import { CoinsBalanceChange } from '../entities/coins-balance-change.entity';
-import { BalanceService } from '../users/services/balance.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([InAppPurchase, Player, CoinsBalanceChange]),
   ],
   controllers: [PurchasesController],
-  providers: [PurchasesService, PaymentValidationService, BalanceService],
+  providers: [PurchasesService, PaymentValidationService],
   exports: [PurchasesService],
 })
 export class PurchasesModule {}

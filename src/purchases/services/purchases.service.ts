@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { InAppPurchase } from '../../entities/in-app-purchase.entity';
 import { Player } from '../../entities/player.entity';
-import { BalanceService } from '../../users/services/balance.service';
+import { CoinsBalanceChange } from '../../entities/coins-balance-change.entity';
 import { PaymentValidationService } from '../../external/payments/payment-validation.service';
 import {
   RecordPurchaseDto,
@@ -25,7 +25,8 @@ export class PurchasesService {
     private readonly purchaseRepository: Repository<InAppPurchase>,
     @InjectRepository(Player)
     private readonly playerRepository: Repository<Player>,
-    private readonly balanceService: BalanceService,
+    @InjectRepository(CoinsBalanceChange)
+    private readonly balanceChangeRepository: Repository<CoinsBalanceChange>,
     private readonly paymentValidationService: PaymentValidationService,
     private readonly dataSource: DataSource,
   ) {}
@@ -85,16 +86,40 @@ export class PurchasesService {
 
       const savedPurchase = await queryRunner.manager.save(purchase);
 
-      // Add coins to user balance
-      const balanceUpdate = await this.balanceService.increaseBalance(userId, {
+      // Lock and update player balance within same transaction
+      const player = await queryRunner.manager.findOne(Player, {
+        where: { id: userId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!player) {
+        throw new NotFoundException('User not found during balance update');
+      }
+
+      const balanceBefore = player.coins_balance;
+      const balanceAfter = balanceBefore + purchaseDto.coins_amount;
+
+      // Update player balance
+      await queryRunner.manager.update(Player, userId, {
+        coins_balance: balanceAfter,
+      });
+
+      // Create balance change record
+      const balanceChange = queryRunner.manager.create(CoinsBalanceChange, {
+        user_id: userId,
+        balance_before: balanceBefore,
+        balance_after: balanceAfter,
         amount: purchaseDto.coins_amount,
         mode: `purchase_${purchaseDto.product_id}`,
+        status: 'completed',
       });
+
+      const savedBalanceChange = await queryRunner.manager.save(balanceChange);
 
       await queryRunner.commitTransaction();
 
       this.logger.log(
-        `Purchase recorded successfully: ${savedPurchase.id}, balance updated: ${balanceUpdate.balance_after}`,
+        `Purchase recorded successfully: ${savedPurchase.id}, balance updated: ${balanceAfter}`,
       );
 
       return {
@@ -108,7 +133,13 @@ export class PurchasesService {
           purchased_at: savedPurchase.purchased_at,
           created_at: savedPurchase.created_at,
         },
-        balance_update: balanceUpdate,
+        balance_update: {
+          balance_before: balanceBefore,
+          balance_after: balanceAfter,
+          amount: purchaseDto.coins_amount,
+          mode: `purchase_${purchaseDto.product_id}`,
+          transaction_id: savedBalanceChange.id,
+        },
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();

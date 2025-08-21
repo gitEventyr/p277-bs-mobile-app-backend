@@ -27,39 +27,28 @@ export class AdminService {
   }> {
     const { email, password } = loginDto;
 
-    // For demo purposes, we'll use hardcoded admin credentials
-    // In production, this should be stored in the database with hashed passwords
-    const validAdminCredentials = {
-      email: 'admin@casino.com',
-      password: 'adminPassword123',
-      display_name: 'Casino Administrator',
-    };
-
-    if (
-      email !== validAdminCredentials.email ||
-      password !== validAdminCredentials.password
-    ) {
-      throw new UnauthorizedException('Invalid admin credentials');
-    }
-
-    // Find or create admin user in database
-    let admin = await this.adminRepository.findOne({
-      where: { email },
+    // Find admin user in database
+    const admin = await this.adminRepository.findOne({
+      where: { email, is_active: true },
     });
 
     if (!admin) {
-      admin = this.adminRepository.create({
-        email,
-        display_name: validAdminCredentials.display_name,
-        is_active: true,
-        last_login_at: new Date(),
-      });
-      await this.adminRepository.save(admin);
-    } else {
-      // Update last login
-      admin.last_login_at = new Date();
-      await this.adminRepository.save(admin);
+      throw new UnauthorizedException('Invalid admin credentials');
     }
+
+    // Verify password hash
+    if (!admin.password_hash) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, admin.password_hash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    // Update last login
+    admin.last_login_at = new Date();
+    await this.adminRepository.save(admin);
 
     // Generate JWT token
     const payload: JwtPayload = {
