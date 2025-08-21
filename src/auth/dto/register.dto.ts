@@ -8,6 +8,9 @@ import {
   IsBoolean,
   ValidateNested,
   IsNumber,
+  Matches,
+  IsStrongPassword,
+  Length,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -90,47 +93,77 @@ export class RegisterDto {
     required: false,
   })
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    {},
+    {
+      message: 'Please provide a valid email address (e.g., user@example.com)',
+    },
+  )
   email?: string;
 
   @ApiProperty({
     example: 'John Doe',
-    description: 'User full name',
+    description: 'User full name (2-100 characters)',
     required: false,
   })
   @IsOptional()
-  @IsString()
-  @MinLength(2)
-  @MaxLength(100)
+  @IsString({ message: 'Name must be a string' })
+  @MinLength(2, { message: 'Name must be at least 2 characters long' })
+  @MaxLength(100, { message: 'Name cannot exceed 100 characters' })
+  @Matches(/^[a-zA-Z\s'-]+$/, {
+    message: 'Name can only contain letters, spaces, hyphens, and apostrophes',
+  })
   name?: string;
 
   @ApiProperty({
     example: '+1234567890',
-    description: 'User phone number',
+    description: 'User phone number in international format',
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Phone number must be a string' })
+  @Matches(/^\+[1-9]\d{1,14}$/, {
+    message:
+      'Please provide a valid international phone number starting with + (e.g., +1234567890)',
+  })
   phone?: string;
 
   @ApiProperty({
-    example: 'Password123!',
-    description: 'User password (minimum 8 characters)',
+    example: 'SecurePass123!',
+    description:
+      'User password (8-100 characters, must include uppercase, lowercase, number, and special character)',
     required: false,
   })
   @IsOptional()
-  @IsString()
-  @MinLength(8)
-  @MaxLength(100)
+  @IsString({ message: 'Password must be a string' })
+  @Length(8, 100, {
+    message: 'Password must be between 8 and 100 characters long',
+  })
+  @IsStrongPassword(
+    {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    },
+    {
+      message:
+        'Password must contain at least: 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (!@#$%^&*)',
+    },
+  )
   password?: string;
 
   @ApiProperty({
     example: 'device-uuid-12345',
-    description: 'Device unique identifier',
+    description: 'Device unique identifier (3-255 characters)',
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Device UDID must be a string' })
+  @Length(3, 255, {
+    message: 'Device UDID must be between 3 and 255 characters long',
+  })
   deviceUDID?: string;
 
   @ApiProperty({

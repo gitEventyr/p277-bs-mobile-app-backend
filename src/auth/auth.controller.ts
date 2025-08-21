@@ -95,6 +95,7 @@ export class AuthController {
     type: RegisterResponseDto,
   })
   @ApiResponse({ status: 409, description: 'Email already exists' })
+  @ApiResponse({ status: 400, description: 'Validation errors' })
   async register(
     @Body() registerDto: RegisterDto,
     @Req() req: Request,
@@ -105,7 +106,9 @@ export class AuthController {
         where: { email: registerDto.email },
       });
       if (existingUser) {
-        throw new ConflictException('Email already registered');
+        throw new ConflictException(
+          'This email address is already registered. Please use a different email or try logging in instead.',
+        );
       }
     }
 

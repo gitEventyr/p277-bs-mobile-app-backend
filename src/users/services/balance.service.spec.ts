@@ -63,7 +63,9 @@ describe('BalanceService', () => {
 
     service = module.get<BalanceService>(BalanceService);
     playerRepository = module.get(getRepositoryToken(Player));
-    balanceChangeRepository = module.get(getRepositoryToken(CoinsBalanceChange));
+    balanceChangeRepository = module.get(
+      getRepositoryToken(CoinsBalanceChange),
+    );
   });
 
   it('should be defined', () => {
@@ -103,9 +105,9 @@ describe('BalanceService', () => {
     it('should throw BadRequestException for non-positive amount', async () => {
       const balanceChangeDto = { amount: 0, mode: 'game_win' };
 
-      await expect(service.increaseBalance(1, balanceChangeDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.increaseBalance(1, balanceChangeDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -113,9 +115,9 @@ describe('BalanceService', () => {
     it('should throw BadRequestException for non-positive amount', async () => {
       const balanceChangeDto = { amount: -10, mode: 'bet' };
 
-      await expect(service.decreaseBalance(1, balanceChangeDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.decreaseBalance(1, balanceChangeDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
