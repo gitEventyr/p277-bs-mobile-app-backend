@@ -12,6 +12,7 @@ import { Player } from '../entities/player.entity';
 import { AdminUser } from '../entities/admin-user.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailModule } from '../email/email.module';
+import { DevicesModule } from '../devices/devices.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EmailModule } from '../email/email.module';
     }),
     TypeOrmModule.forFeature([Player, AdminUser, PasswordResetToken]),
     EmailModule,
+    DevicesModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],

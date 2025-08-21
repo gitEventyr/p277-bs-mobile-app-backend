@@ -37,6 +37,7 @@ import {
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailService } from '../email/services/email.service';
+import { DevicesService } from '../devices/services/devices.service';
 import type {
   AuthenticatedUser,
   AuthenticatedAdmin,
@@ -66,6 +67,7 @@ export class AuthController {
     @InjectRepository(PasswordResetToken)
     private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
     private readonly emailService: EmailService,
+    private readonly devicesService: DevicesService,
   ) {}
 
   private generateVisitorId(): string {
@@ -167,6 +169,20 @@ export class AuthController {
 
     const savedPlayer = await this.playerRepository.save(player);
 
+    // Track device if deviceUDID is provided
+    if (registerDto.deviceUDID) {
+      try {
+        await this.devicesService.createOrUpdateDevice(
+          savedPlayer.id,
+          registerDto.deviceUDID,
+          req.headers['user-agent'] || '',
+          this.getClientIp(req),
+        );
+      } catch (deviceError) {
+        this.logger.warn('Failed to track device during registration:', deviceError.message);
+      }
+    }
+
     // Generate JWT token
     const payload: JwtPayload = {
       sub: savedPlayer.id,
@@ -249,6 +265,20 @@ export class AuthController {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Track device on login
+    if (loginDto.deviceUDID) {
+      try {
+        await this.devicesService.createOrUpdateDevice(
+          player.id,
+          loginDto.deviceUDID,
+          req.headers['user-agent'] || '',
+          this.getClientIp(req),
+        );
+      } catch (deviceError) {
+        this.logger.warn('Failed to track device during login:', deviceError.message);
+      }
     }
 
     // Generate JWT token
