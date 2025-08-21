@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Device } from '../../entities/device.entity';
 import { GeolocationService } from '../../external/geolocation/geolocation.service';
-import { 
-  DeviceResponseDto, 
-  DeviceListResponseDto, 
+import {
+  DeviceResponseDto,
+  DeviceListResponseDto,
   ParsedUserAgentDto,
-  GeolocationResponseDto 
+  GeolocationResponseDto,
 } from '../dto/device-response.dto';
 
 @Injectable()
@@ -27,12 +27,15 @@ export class DevicesService {
     });
 
     return {
-      devices: devices.map(device => this.mapToDeviceResponse(device)),
+      devices: devices.map((device) => this.mapToDeviceResponse(device)),
       total: devices.length,
     };
   }
 
-  async getDeviceById(userId: number, deviceId: number): Promise<DeviceResponseDto> {
+  async getDeviceById(
+    userId: number,
+    deviceId: number,
+  ): Promise<DeviceResponseDto> {
     const device = await this.deviceRepository.findOne({
       where: { id: deviceId, user_id: userId },
     });
@@ -45,14 +48,14 @@ export class DevicesService {
   }
 
   async createOrUpdateDevice(
-    userId: number, 
-    udid: string, 
-    userAgent: string, 
-    ip: string
+    userId: number,
+    udid: string,
+    userAgent: string,
+    ip: string,
   ): Promise<Device> {
     // Parse User Agent
     const parsedUA = this.parseUserAgent(userAgent);
-    
+
     // Get geolocation data
     const location = await this.geolocationService.getLocationFromIp(ip);
 
@@ -72,7 +75,7 @@ export class DevicesService {
       device.isp = location.isp || device.isp;
       device.timezone = location.timezone || device.timezone;
       device.logged_at = new Date();
-      
+
       this.logger.log(`Updating device ${udid} for user ${userId}`);
     } else {
       // Create new device
@@ -89,7 +92,7 @@ export class DevicesService {
         timezone: location.timezone,
         logged_at: new Date(),
       });
-      
+
       this.logger.log(`Creating new device ${udid} for user ${userId}`);
     }
 
@@ -107,8 +110,18 @@ export class DevicesService {
       // Parse OS information
       const osPatterns = [
         { pattern: /Windows NT ([\d.]+)/, name: 'Windows', versionIndex: 1 },
-        { pattern: /Mac OS X ([\d_]+)/, name: 'macOS', versionIndex: 1, versionReplace: /_/g },
-        { pattern: /iPhone OS ([\d_]+)/, name: 'iOS', versionIndex: 1, versionReplace: /_/g },
+        {
+          pattern: /Mac OS X ([\d_]+)/,
+          name: 'macOS',
+          versionIndex: 1,
+          versionReplace: /_/g,
+        },
+        {
+          pattern: /iPhone OS ([\d_]+)/,
+          name: 'iOS',
+          versionIndex: 1,
+          versionReplace: /_/g,
+        },
         { pattern: /Android ([\d.]+)/, name: 'Android', versionIndex: 1 },
         { pattern: /Linux/, name: 'Linux' },
         { pattern: /CrOS/, name: 'Chrome OS' },
@@ -133,7 +146,11 @@ export class DevicesService {
       const browserPatterns = [
         { pattern: /Chrome\/([\d.]+)/, name: 'Chrome' },
         { pattern: /Firefox\/([\d.]+)/, name: 'Firefox' },
-        { pattern: /Safari\/([\d.]+).*Version\/([\d.]+)/, name: 'Safari', versionIndex: 2 },
+        {
+          pattern: /Safari\/([\d.]+).*Version\/([\d.]+)/,
+          name: 'Safari',
+          versionIndex: 2,
+        },
         { pattern: /Edge\/([\d.]+)/, name: 'Edge' },
         { pattern: /Opera\/([\d.]+)/, name: 'Opera' },
         { pattern: /Trident\/.*rv:([\d.]+)/, name: 'Internet Explorer' },
@@ -173,7 +190,6 @@ export class DevicesService {
         result.deviceType = 'Desktop';
         result.device = 'Computer';
       }
-
     } catch (error) {
       this.logger.error('Error parsing user agent:', error.message);
     }
@@ -183,12 +199,12 @@ export class DevicesService {
 
   private formatBrowserString(parsedUA: ParsedUserAgentDto): string {
     if (!parsedUA.browser) return '';
-    
+
     let browserString = parsedUA.browser;
     if (parsedUA.browserVersion) {
       browserString += `/${parsedUA.browserVersion}`;
     }
-    
+
     return browserString;
   }
 
@@ -221,27 +237,28 @@ export class DevicesService {
       operatingSystems: {},
       browsers: {},
       countries: {},
-      lastSeen: devices.length > 0 ? 
-        Math.max(...devices.map(d => d.logged_at.getTime())) : null,
+      lastSeen:
+        devices.length > 0
+          ? Math.max(...devices.map((d) => d.logged_at.getTime()))
+          : null,
     };
 
-    devices.forEach(device => {
+    devices.forEach((device) => {
       // Count OS types
       if (device.os_type) {
-        stats.operatingSystems[device.os_type] = 
+        stats.operatingSystems[device.os_type] =
           (stats.operatingSystems[device.os_type] || 0) + 1;
       }
 
       // Count browsers
       if (device.browser) {
         const browserName = device.browser.split('/')[0];
-        stats.browsers[browserName] = 
-          (stats.browsers[browserName] || 0) + 1;
+        stats.browsers[browserName] = (stats.browsers[browserName] || 0) + 1;
       }
 
       // Count countries
       if (device.country) {
-        stats.countries[device.country] = 
+        stats.countries[device.country] =
           (stats.countries[device.country] || 0) + 1;
       }
     });

@@ -179,7 +179,10 @@ export class AuthController {
           this.getClientIp(req),
         );
       } catch (deviceError) {
-        this.logger.warn('Failed to track device during registration:', deviceError.message);
+        this.logger.warn(
+          'Failed to track device during registration:',
+          deviceError.message,
+        );
       }
     }
 
@@ -277,7 +280,10 @@ export class AuthController {
           this.getClientIp(req),
         );
       } catch (deviceError) {
-        this.logger.warn('Failed to track device during login:', deviceError.message);
+        this.logger.warn(
+          'Failed to track device during login:',
+          deviceError.message,
+        );
       }
     }
 

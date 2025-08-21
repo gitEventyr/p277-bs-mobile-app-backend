@@ -27,12 +27,15 @@ export class GeolocationService {
       // - ipinfo.io
       // - freegeoip.app
       // For development, we'll mock the response
-      
+
       const mockResponse = await this.mockGeolocationApi(ip);
       return mockResponse;
     } catch (error) {
-      this.logger.error(`Failed to get geolocation for IP ${ip}:`, error.message);
-      
+      this.logger.error(
+        `Failed to get geolocation for IP ${ip}:`,
+        error.message,
+      );
+
       // Return fallback data
       return {
         ip,
@@ -48,9 +51,11 @@ export class GeolocationService {
     }
   }
 
-  private async mockGeolocationApi(ip: string): Promise<GeolocationResponseDto> {
+  private async mockGeolocationApi(
+    ip: string,
+  ): Promise<GeolocationResponseDto> {
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Mock different responses based on IP pattern
     const ipSegments = ip.split('.');
@@ -66,7 +71,7 @@ export class GeolocationService {
         isp: 'Verizon Communications',
         timezone: 'America/New_York',
         lat: 40.7128,
-        lon: -74.0060,
+        lon: -74.006,
       };
     } else if (firstSegment >= 51 && firstSegment <= 100) {
       return {
@@ -110,22 +115,26 @@ export class GeolocationService {
   private isLocalIp(ip: string): boolean {
     // Check for local/private IP ranges
     const localPatterns = [
-      /^127\./,           // 127.0.0.0/8 (localhost)
-      /^10\./,            // 10.0.0.0/8 (private)
-      /^172\.(1[6-9]|2\d|3[01])\./,  // 172.16.0.0/12 (private)
-      /^192\.168\./,      // 192.168.0.0/16 (private)
-      /^::1$/,            // IPv6 localhost
-      /^fe80:/,           // IPv6 link-local
-      /^::ffff:127\./,    // IPv4-mapped IPv6 localhost
+      /^127\./, // 127.0.0.0/8 (localhost)
+      /^10\./, // 10.0.0.0/8 (private)
+      /^172\.(1[6-9]|2\d|3[01])\./, // 172.16.0.0/12 (private)
+      /^192\.168\./, // 192.168.0.0/16 (private)
+      /^::1$/, // IPv6 localhost
+      /^fe80:/, // IPv6 link-local
+      /^::ffff:127\./, // IPv4-mapped IPv6 localhost
     ];
 
-    return localPatterns.some(pattern => pattern.test(ip)) || 
-           ip === '::1' || 
-           ip === '::ffff:127.0.0.1' ||
-           ip.includes('::ffff:127.0.0.1');
+    return (
+      localPatterns.some((pattern) => pattern.test(ip)) ||
+      ip === '::1' ||
+      ip === '::ffff:127.0.0.1' ||
+      ip.includes('::ffff:127.0.0.1')
+    );
   }
 
-  async enrichLocationData(location: GeolocationResponseDto): Promise<GeolocationResponseDto> {
+  async enrichLocationData(
+    location: GeolocationResponseDto,
+  ): Promise<GeolocationResponseDto> {
     // Additional enrichment could be done here
     // For example, getting ISP information, carrier data, etc.
     return {

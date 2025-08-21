@@ -15,6 +15,7 @@ export class BalanceChangeDto {
     description: 'Mode of balance change',
     enum: [
       'game_win',
+      'game_loss',
       'purchase',
       'bet',
       'admin_adjustment',
@@ -28,6 +29,15 @@ export class BalanceChangeDto {
   @IsOptional()
   @IsString()
   mode?: string;
+
+  @ApiProperty({
+    example: 'Win from Slot Machine - Session 123',
+    description: 'Description of the balance change',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
 
 export class AdminBalanceAdjustmentDto {

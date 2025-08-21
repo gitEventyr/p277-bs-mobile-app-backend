@@ -16,7 +16,10 @@ import {
 import { DevicesService } from '../services/devices.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { DeviceResponseDto, DeviceListResponseDto } from '../dto/device-response.dto';
+import {
+  DeviceResponseDto,
+  DeviceListResponseDto,
+} from '../dto/device-response.dto';
 import type { AuthenticatedUser } from '../../common/types/auth.types';
 
 @ApiTags('devices')
@@ -80,15 +83,15 @@ export class DevicesController {
         totalDevices: { type: 'number', example: 3 },
         operatingSystems: {
           type: 'object',
-          example: { 'iOS': 2, 'Android': 1 },
+          example: { iOS: 2, Android: 1 },
         },
         browsers: {
           type: 'object',
-          example: { 'Safari': 2, 'Chrome': 1 },
+          example: { Safari: 2, Chrome: 1 },
         },
         countries: {
           type: 'object',
-          example: { 'United States': 2, 'Canada': 1 },
+          example: { 'United States': 2, Canada: 1 },
         },
         lastSeen: { type: 'number', example: 1692616800000 },
       },

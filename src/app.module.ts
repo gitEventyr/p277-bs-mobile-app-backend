@@ -16,6 +16,7 @@ import { EmailModule } from './email/email.module';
 import { AdminModule } from './admin/admin.module';
 import { UsersModule } from './users/users.module';
 import { DevicesModule } from './devices/devices.module';
+import { GamesModule } from './games/games.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { DevicesModule } from './devices/devices.module';
     AdminModule,
     UsersModule,
     DevicesModule,
+    GamesModule,
   ],
 })
 export class AppModule {}
