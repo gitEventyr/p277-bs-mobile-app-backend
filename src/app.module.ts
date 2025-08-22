@@ -10,6 +10,8 @@ import { PlayHistory } from './entities/play-history.entity';
 import { InAppPurchase } from './entities/in-app-purchase.entity';
 import { Voucher } from './entities/voucher.entity';
 import { UserVoucher } from './entities/user-voucher.entity';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
@@ -47,5 +49,7 @@ import { PurchasesModule } from './purchases/purchases.module';
     GamesModule,
     PurchasesModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

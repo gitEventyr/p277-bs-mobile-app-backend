@@ -9,6 +9,7 @@ import {
 import { EmailTemplateService } from './email-template.service';
 import { AWSSESProvider } from './aws-ses.provider';
 import { SMTPProvider } from './smtp.provider';
+import { SendGridProvider } from './sendgrid.provider';
 
 @Injectable()
 export class EmailService {
@@ -20,6 +21,7 @@ export class EmailService {
     private templateService: EmailTemplateService,
     private awsSESProvider: AWSSESProvider,
     private smtpProvider: SMTPProvider,
+    private sendGridProvider: SendGridProvider,
   ) {
     this.initializeProvider();
   }
@@ -32,6 +34,10 @@ export class EmailService {
       case 'ses':
         this.emailProvider = this.awsSESProvider;
         this.logger.log('Using AWS SES email provider');
+        break;
+      case 'sendgrid':
+        this.emailProvider = this.sendGridProvider;
+        this.logger.log('Using SendGrid email provider');
         break;
       case 'smtp':
       default:

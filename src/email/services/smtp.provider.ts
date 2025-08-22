@@ -14,22 +14,24 @@ export class SMTPProvider implements EmailProvider {
       'EMAIL_FROM',
       'noreply@casino.com',
     );
-    this.createTransporter();
+    this.createTransporter().catch(error => {
+      this.logger.error('Failed to create SMTP transporter during initialization:', error);
+    });
   }
 
-  private createTransporter(): void {
+  private async createTransporter(): Promise<void> {
     const host = this.configService.get<string>('SMTP_HOST');
     const port = this.configService.get<number>('SMTP_PORT', 587);
     const secure = this.configService.get<boolean>('SMTP_SECURE', false);
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
 
-    if (!host) {
+    if (!host || !user || !pass) {
       // For development/testing - use ethereal email
       this.logger.warn(
-        'No SMTP configuration found, using Ethereal for testing',
+        'No complete SMTP configuration found, using Ethereal for testing',
       );
-      this.createTestTransporter();
+      await this.createTestTransporter();
       return;
     }
 
@@ -37,13 +39,10 @@ export class SMTPProvider implements EmailProvider {
       host,
       port,
       secure,
-      auth:
-        user && pass
-          ? {
-              user,
-              pass,
-            }
-          : undefined,
+      auth: {
+        user,
+        pass,
+      },
     });
   }
 
@@ -67,6 +66,10 @@ export class SMTPProvider implements EmailProvider {
   }
 
   async sendEmail(options: EmailOptions): Promise<void> {
+    if (!this.transporter) {
+      throw new Error('SMTP transporter not initialized. Email service may still be starting up.');
+    }
+    
     try {
       const mailOptions = {
         from: options.from || this.defaultFromEmail,
@@ -92,6 +95,11 @@ export class SMTPProvider implements EmailProvider {
   }
 
   async verifyConnection(): Promise<boolean> {
+    if (!this.transporter) {
+      this.logger.warn('SMTP transporter not initialized yet');
+      return false;
+    }
+    
     try {
       await this.transporter.verify();
       this.logger.log('SMTP connection verified successfully');
