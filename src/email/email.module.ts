@@ -8,7 +8,13 @@ import { SendGridProvider } from './services/sendgrid.provider';
 
 @Module({
   imports: [ConfigModule],
-  providers: [EmailService, EmailTemplateService, AWSSESProvider, SMTPProvider, SendGridProvider],
+  providers: [
+    EmailService,
+    EmailTemplateService,
+    AWSSESProvider,
+    SMTPProvider,
+    SendGridProvider,
+  ],
   exports: [EmailService],
 })
 export class EmailModule {}

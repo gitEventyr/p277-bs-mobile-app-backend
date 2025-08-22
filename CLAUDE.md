@@ -45,7 +45,7 @@ This is a NestJS-based casino backend application with the following key archite
 ### Core Stack
 - **Framework:** NestJS with TypeScript
 - **Database:** PostgreSQL with TypeORM (auto-sync enabled)
-- **Session Management:** Redis with express-session
+- **Session Management:** express-session with memory store
 - **Authentication:** Cookie-based sessions
 - **API Documentation:** Swagger UI available at `/api`
 
@@ -63,7 +63,7 @@ The application uses several global components configured in `main.ts`:
 - PostgreSQL is the primary database
 
 ### Session & Security
-- Redis-backed session storage using connect-redis v5
+- Memory-based session storage using express-session
 - Helmet for security headers
 - Cookie parser middleware
 - Session-based authentication with configurable security settings
@@ -72,7 +72,6 @@ The application uses several global components configured in `main.ts`:
 The application expects these environment variables:
 - `PORT` (default: 3000)
 - `SESSION_SECRET`
-- `REDIS_HOST`, `REDIS_PORT`
 - `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`
 
 ### Response Format

@@ -15,13 +15,6 @@ services:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
     command: ["postgres", "-c", "log_statement=all"]
 
-  # Redis Cache & Session Store
-  redis:
-    image: redis:7-alpine
-    container_name: casino-redis-simple
-    ports:
-      - "6380:6379"  # Use different port to avoid conflicts
 
 volumes:
   postgres_data:
-  redis_data:

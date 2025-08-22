@@ -3,13 +3,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import session from 'express-session';
-import Redis from 'ioredis';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ValidationPipe } from './common/pipes/validation.pipe';
-import { createRedisConfig } from './config/redis.config';
 import { setupSwagger } from './config/swagger.config';
 import { configureHandlebars } from './config/handlebars.config';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -27,10 +25,7 @@ async function bootstrap() {
   // Serve static assets
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
-  // Redis client setup (for future use)
-  const redisClient = new Redis(createRedisConfig(configService));
-
-  // Session configuration (using memory store for now, Redis store TODO)
+  // Session configuration using memory store
   app.use(
     session({
       secret: configService.get<string>('SESSION_SECRET', 'default_secret'),

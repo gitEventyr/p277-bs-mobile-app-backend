@@ -20,19 +20,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis Cache & Session Store
-  redis:
-    image: redis:7-alpine
-    container_name: casino-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # Casino Backend API (Running on Host)
   # Note: Run 'yarn start:dev' on host machine instead of in container
@@ -40,4 +27,3 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:

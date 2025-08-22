@@ -14,8 +14,11 @@ export class SMTPProvider implements EmailProvider {
       'EMAIL_FROM',
       'noreply@casino.com',
     );
-    this.createTransporter().catch(error => {
-      this.logger.error('Failed to create SMTP transporter during initialization:', error);
+    this.createTransporter().catch((error) => {
+      this.logger.error(
+        'Failed to create SMTP transporter during initialization:',
+        error,
+      );
     });
   }
 
@@ -67,9 +70,11 @@ export class SMTPProvider implements EmailProvider {
 
   async sendEmail(options: EmailOptions): Promise<void> {
     if (!this.transporter) {
-      throw new Error('SMTP transporter not initialized. Email service may still be starting up.');
+      throw new Error(
+        'SMTP transporter not initialized. Email service may still be starting up.',
+      );
     }
-    
+
     try {
       const mailOptions = {
         from: options.from || this.defaultFromEmail,
@@ -99,7 +104,7 @@ export class SMTPProvider implements EmailProvider {
       this.logger.warn('SMTP transporter not initialized yet');
       return false;
     }
-    
+
     try {
       await this.transporter.verify();
       this.logger.log('SMTP connection verified successfully');

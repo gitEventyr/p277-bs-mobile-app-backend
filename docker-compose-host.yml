@@ -14,11 +14,6 @@ services:
       - postgres_data_host:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
 
-  # Redis Cache & Session Store  
-  redis:
-    image: redis:7-alpine
-    container_name: casino-redis-host
-    network_mode: host
 
 volumes:
   postgres_data_host:

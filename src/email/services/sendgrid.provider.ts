@@ -10,7 +10,7 @@ export class SendGridProvider implements EmailProvider {
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
-    
+
     if (apiKey) {
       sgMail.setApiKey(apiKey);
       this.logger.log('SendGrid API key configured successfully');
@@ -37,13 +37,13 @@ export class SendGridProvider implements EmailProvider {
       if (options.text) {
         msg.text = options.text;
       }
-      
+
       if (options.html) {
         msg.html = options.html;
       }
 
       if (options.attachments && options.attachments.length > 0) {
-        msg.attachments = options.attachments.map(attachment => ({
+        msg.attachments = options.attachments.map((attachment) => ({
           content: attachment.content.toString('base64'),
           filename: attachment.filename,
           type: attachment.contentType || 'application/octet-stream',
@@ -56,13 +56,15 @@ export class SendGridProvider implements EmailProvider {
       this.logger.log(`Email sent successfully to: ${recipients.join(', ')}`);
     } catch (error) {
       this.logger.error('Failed to send email via SendGrid:', error);
-      
+
       // Extract more meaningful error information from SendGrid
       let errorMessage = error.message;
       if (error.response?.body?.errors) {
-        errorMessage = error.response.body.errors.map((err: any) => err.message).join(', ');
+        errorMessage = error.response.body.errors
+          .map((err: any) => err.message)
+          .join(', ');
       }
-      
+
       throw new Error(`Failed to send email: ${errorMessage}`);
     }
   }
@@ -79,7 +81,7 @@ export class SendGridProvider implements EmailProvider {
       // A real verification would require making an API call, but that might send an email
       // For now, we'll just check if the key exists and has the right format
       const isValidFormat = apiKey.startsWith('SG.');
-      
+
       if (isValidFormat) {
         this.logger.log('SendGrid connection verified successfully');
         return true;
