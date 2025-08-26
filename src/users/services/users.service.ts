@@ -18,7 +18,7 @@ export class UsersService {
 
   async getProfile(userId: number): Promise<UserProfileDto> {
     const player = await this.playerRepository.findOne({
-      where: { id: userId },
+      where: { id: userId, is_deleted: false },
     });
 
     if (!player) {
@@ -67,7 +67,7 @@ export class UsersService {
     updateProfileDto: UpdateProfileDto,
   ): Promise<UserProfileDto> {
     const player = await this.playerRepository.findOne({
-      where: { id: userId },
+      where: { id: userId, is_deleted: false },
     });
 
     if (!player) {
@@ -77,7 +77,7 @@ export class UsersService {
     // Check if email is being changed and if it's already taken
     if (updateProfileDto.email && updateProfileDto.email !== player.email) {
       const existingPlayer = await this.playerRepository.findOne({
-        where: { email: updateProfileDto.email },
+        where: { email: updateProfileDto.email, is_deleted: false },
       });
 
       if (existingPlayer) {
@@ -114,13 +114,13 @@ export class UsersService {
 
   async findById(userId: number): Promise<Player | null> {
     return await this.playerRepository.findOne({
-      where: { id: userId },
+      where: { id: userId, is_deleted: false },
     });
   }
 
   // Admin dashboard methods
   async getTotalUsersCount(): Promise<number> {
-    return await this.playerRepository.count();
+    return await this.playerRepository.count({ where: { is_deleted: false } });
   }
 
   async getActiveUsersCount(): Promise<number> {

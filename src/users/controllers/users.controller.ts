@@ -21,7 +21,7 @@ import { UsersService } from '../services/users.service';
 import { BalanceService } from '../services/balance.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
-import { BalanceChangeDto } from '../dto/balance-change.dto';
+import { BalanceChangeDto, ModifyBalanceDto } from '../dto/balance-change.dto';
 import {
   BalanceResponseDto,
   BalanceChangeResponseDto,
@@ -32,7 +32,6 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../../common/types/auth.types';
 
-@ApiTags('users')
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -42,6 +41,7 @@ export class UsersController {
     private readonly balanceService: BalanceService,
   ) {}
 
+  @ApiTags('📱 Mobile: User Profile')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -63,6 +63,7 @@ export class UsersController {
     return await this.usersService.getProfile(user.id);
   }
 
+  @ApiTags('📱 Mobile: User Profile')
   @ApiOperation({ summary: 'Update user profile' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -89,6 +90,7 @@ export class UsersController {
     return await this.usersService.updateProfile(user.id, updateProfileDto);
   }
 
+  @ApiTags('📱 Mobile: Balance & Transactions')
   @ApiOperation({ summary: 'Get current balance and scratch cards' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -110,36 +112,14 @@ export class UsersController {
     return await this.balanceService.getBalance(user.id);
   }
 
-  @ApiOperation({ summary: 'Increase balance (wins, purchases)' })
+  @ApiTags('📱 Mobile: Balance & Transactions')
+  @ApiOperation({ 
+    summary: 'Modify balance', 
+    description: 'Modify user balance - positive amounts increase, negative amounts decrease'
+  })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Balance increased successfully',
-    type: BalanceChangeResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid amount',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Authentication required',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User not found',
-  })
-  @Post('increase-balance')
-  async increaseBalance(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body() balanceChangeDto: BalanceChangeDto,
-  ): Promise<BalanceChangeResponseDto> {
-    return await this.balanceService.increaseBalance(user.id, balanceChangeDto);
-  }
-
-  @ApiOperation({ summary: 'Decrease balance (bets)' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Balance decreased successfully',
+    description: 'Balance modified successfully',
     type: BalanceChangeResponseDto,
   })
   @ApiResponse({
@@ -154,14 +134,15 @@ export class UsersController {
     status: HttpStatus.NOT_FOUND,
     description: 'User not found',
   })
-  @Post('decrease-balance')
-  async decreaseBalance(
+  @Post('modify-balance')
+  async modifyBalance(
     @CurrentUser() user: AuthenticatedUser,
-    @Body() balanceChangeDto: BalanceChangeDto,
+    @Body() modifyBalanceDto: ModifyBalanceDto,
   ): Promise<BalanceChangeResponseDto> {
-    return await this.balanceService.decreaseBalance(user.id, balanceChangeDto);
+    return await this.balanceService.modifyBalance(user.id, modifyBalanceDto);
   }
 
+  @ApiTags('📱 Mobile: Balance & Transactions')
   @ApiOperation({ summary: 'Get transaction history' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -187,6 +168,7 @@ export class UsersController {
     );
   }
 
+  @ApiTags('📱 Mobile: Balance & Transactions')
   @ApiOperation({ summary: 'Get specific transaction details' })
   @ApiResponse({
     status: HttpStatus.OK,

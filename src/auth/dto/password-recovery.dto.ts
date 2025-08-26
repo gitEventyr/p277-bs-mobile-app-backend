@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
+import { IsEmail, IsString, MinLength, MaxLength, Length, Matches } from 'class-validator';
 
 export class ForgotPasswordDto {
   @ApiProperty({
     example: 'john.doe@example.com',
-    description: 'Email address to send password reset link',
+    description: 'Email address to send password reset code',
   })
   @IsEmail()
   email: string;
@@ -19,19 +19,25 @@ export class ResetPasswordDto {
   email: string;
 
   @ApiProperty({
-    example: 'reset-token-uuid-12345',
-    description: 'Password reset token received in email',
+    example: '123456',
+    description: '6-digit password reset code received in email',
   })
   @IsString()
-  token: string;
+  @Length(6, 6, { message: 'Reset code must be exactly 6 digits' })
+  @Matches(/^\d{6}$/, { message: 'Reset code must contain only digits' })
+  code: string;
 
   @ApiProperty({
-    example: 'NewPassword123!',
-    description: 'New password (minimum 8 characters)',
+    example: 'MyPassword123',
+    description: 'New password (minimum 8 characters, must include at least 1 letter and 1 number)',
   })
   @IsString()
-  @MinLength(8)
-  @MaxLength(100)
+  @Length(8, 100, {
+    message: 'Password must be between 8 and 100 characters long',
+  })
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d).{8,}$/, {
+    message: 'Password must contain at least 1 letter, 1 number, and be minimum 8 characters long',
+  })
   newPassword: string;
 }
 

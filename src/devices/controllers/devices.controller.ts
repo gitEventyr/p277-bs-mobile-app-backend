@@ -22,7 +22,7 @@ import {
 } from '../dto/device-response.dto';
 import type { AuthenticatedUser } from '../../common/types/auth.types';
 
-@ApiTags('devices')
+@ApiTags('📱 Mobile: Devices')
 @Controller('devices')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

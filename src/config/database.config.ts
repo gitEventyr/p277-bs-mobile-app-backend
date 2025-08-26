@@ -5,6 +5,8 @@ export const createDatabaseConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => {
   const isProduction = configService.get<string>('NODE_ENV') === 'production';
+  const isStaging = configService.get<string>('NODE_ENV') === 'staging';
+  const isDevelopment = configService.get<string>('NODE_ENV') === 'development';
   const useSSL = configService.get<boolean>('DB_SSL', false);
 
   return {
@@ -15,8 +17,12 @@ export const createDatabaseConfig = (
     password: configService.get<string>('DB_PASSWORD', 'password'),
     database: configService.get<string>('DB_NAME', 'casino_dev'),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: false, // Disabled since we initialize with SQL schema
-    logging: configService.get<string>('NODE_ENV') === 'development',
+    migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+    migrationsTableName: 'typeorm_migrations',
+    // Use synchronize only in development, migrations in prod/staging
+    synchronize: isDevelopment && !configService.get<boolean>('USE_MIGRATIONS', false),
+    migrationsRun: isProduction || isStaging || configService.get<boolean>('RUN_MIGRATIONS', false),
+    logging: isDevelopment,
     ssl: useSSL ? { rejectUnauthorized: false } : false,
     extra: {
       max: isProduction ? 20 : 3, // Larger pool for production

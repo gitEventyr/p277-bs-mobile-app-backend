@@ -9,7 +9,6 @@ import {
   ValidateNested,
   IsNumber,
   Matches,
-  IsStrongPassword,
   Length,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -129,9 +128,9 @@ export class RegisterDto {
   phone?: string;
 
   @ApiProperty({
-    example: 'SecurePass123!',
+    example: 'MyPassword123',
     description:
-      'User password (8-100 characters, must include uppercase, lowercase, number, and special character)',
+      'User password (minimum 8 characters, must include at least 1 letter and 1 number)',
     required: false,
   })
   @IsOptional()
@@ -139,19 +138,9 @@ export class RegisterDto {
   @Length(8, 100, {
     message: 'Password must be between 8 and 100 characters long',
   })
-  @IsStrongPassword(
-    {
-      minLength: 8,
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
-      minSymbols: 1,
-    },
-    {
-      message:
-        'Password must contain at least: 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (!@#$%^&*)',
-    },
-  )
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d).{8,}$/, {
+    message: 'Password must contain at least 1 letter, 1 number, and be minimum 8 characters long',
+  })
   password?: string;
 
   @ApiProperty({

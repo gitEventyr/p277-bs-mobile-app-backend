@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -51,6 +51,11 @@ export class AuthService {
     return randomBytes(32).toString('hex');
   }
 
+  generateResetCode(): string {
+    // Generate 6-digit random code
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
   async validateUser(
     payload: JwtPayload,
   ): Promise<AuthenticatedUser | AuthenticatedAdmin | null> {
@@ -68,7 +73,7 @@ export class AuthService {
 
   async validatePlayer(playerId: number): Promise<AuthenticatedUser | null> {
     const player = await this.playerRepository.findOne({
-      where: { id: playerId },
+      where: { id: playerId, is_deleted: false },
       select: [
         'id',
         'email',
@@ -77,10 +82,11 @@ export class AuthService {
         'coins_balance',
         'level',
         'scratch_cards',
+        'is_deleted',
       ],
     });
 
-    if (!player) {
+    if (!player || player.is_deleted) {
       return null;
     }
 
@@ -127,5 +133,44 @@ export class AuthService {
       email: user.email,
       type,
     };
+  }
+
+  async softDeleteAccount(userId: number, password: string, reason?: string): Promise<void> {
+    // Find the user with password
+    const user = await this.playerRepository.findOne({
+      where: { id: userId, is_deleted: false },
+      select: ['id', 'email', 'password', 'name'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found or already deleted');
+    }
+
+    if (!user.password) {
+      throw new BadRequestException('Account has no password set');
+    }
+
+    // Verify password
+    const isPasswordValid = await this.comparePasswords(password, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid password');
+    }
+
+    // Soft delete the account
+    await this.playerRepository.update(userId, {
+      is_deleted: true,
+      deleted_at: new Date(),
+      deletion_reason: reason || 'User requested account deletion',
+    });
+  }
+
+  // Note: In a real implementation with session management,
+  // this would also invalidate the JWT token in a blacklist or Redis
+  async logout(): Promise<void> {
+    // For JWT tokens, logout is typically handled client-side by removing the token
+    // In a future implementation with Redis session storage, we would:
+    // 1. Remove the session from Redis
+    // 2. Add the JWT token to a blacklist
+    // For now, this is a no-op as the client will remove the token
   }
 }

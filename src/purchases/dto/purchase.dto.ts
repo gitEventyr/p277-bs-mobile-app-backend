@@ -93,21 +93,6 @@ export class PurchaseHistoryQueryDto {
   platform?: string;
 }
 
-export class ValidateReceiptDto {
-  @ApiProperty({
-    description: 'iOS receipt data (base64 encoded)',
-    example: 'ewoJInNpZ25hdHVyZSIgPSAi...',
-  })
-  @IsString()
-  receipt_data: string;
-
-  @ApiProperty({
-    description: 'Transaction ID to validate',
-    example: '1000000123456789',
-  })
-  @IsString()
-  transaction_id: string;
-}
 
 export class PurchaseResponseDto {
   @ApiProperty({ description: 'Purchase ID', example: 1 })

@@ -23,11 +23,10 @@ import { PurchasesService } from '../services/purchases.service';
 import {
   RecordPurchaseDto,
   PurchaseHistoryQueryDto,
-  ValidateReceiptDto,
   PurchaseResponseDto,
 } from '../dto/purchase.dto';
 
-@ApiTags('purchases')
+@ApiTags('📱 Mobile: Purchases')
 @ApiBearerAuth()
 @Controller('purchases')
 @UseGuards(JwtAuthGuard)
@@ -210,41 +209,4 @@ export class PurchasesController {
     return this.purchasesService.getPurchaseById(user.id, purchaseId);
   }
 
-  @Post('validate')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Validate receipt',
-    description: 'Validates iOS receipt or Android purchase token',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Receipt validation completed',
-    schema: {
-      properties: {
-        success: { type: 'boolean', example: true },
-        data: {
-          type: 'object',
-          properties: {
-            valid: { type: 'boolean', example: true },
-            transaction_id: { type: 'string', example: '1000000123456789' },
-            platform: { type: 'string', example: 'ios' },
-            validated_at: { type: 'string', format: 'date-time' },
-          },
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid receipt data or unsupported platform',
-  })
-  async validateReceipt(@Body() validateDto: ValidateReceiptDto) {
-    // For iOS receipts, platform is always 'ios'
-    // For Android, you might need to adjust this based on your implementation
-    return this.purchasesService.validateReceipt(
-      validateDto.receipt_data,
-      validateDto.transaction_id,
-      'ios', // This could be determined from the receipt or passed as parameter
-    );
-  }
 }

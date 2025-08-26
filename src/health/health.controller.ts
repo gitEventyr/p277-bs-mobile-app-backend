@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { EmailService } from '../email/services/email.service';
 
-@ApiTags('health')
+@ApiTags('🔧 System: Health')
 @Controller('health')
 export class HealthController {
   constructor(private readonly emailService: EmailService) {}

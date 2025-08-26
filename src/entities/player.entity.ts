@@ -176,6 +176,20 @@ export class Player {
   @IsString()
   device?: string;
 
+  // Soft delete fields
+  @Column({ type: 'boolean', default: false })
+  @IsBoolean()
+  is_deleted: boolean;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @IsOptional()
+  deleted_at?: Date;
+
+  @Column({ type: 'text', nullable: true })
+  @IsOptional()
+  @IsString()
+  deletion_reason?: string;
+
   // Relationships
   @OneToMany(() => Device, (device) => device.user)
   devices: Device[];

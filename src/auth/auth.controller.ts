@@ -26,6 +26,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { HideFromSwagger } from '../common/decorators/hide-from-swagger.decorator';
 import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import {
@@ -34,6 +35,11 @@ import {
   PasswordRecoveryResponseDto,
   ResetPasswordResponseDto,
 } from './dto/password-recovery.dto';
+import {
+  DeleteAccountDto,
+  DeleteAccountResponseDto,
+  LogoutResponseDto,
+} from './dto/delete-account.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailService } from '../email/services/email.service';
@@ -55,7 +61,7 @@ class TestTokenDto {
   type: 'user' | 'admin';
 }
 
-@ApiTags('Authentication')
+@ApiTags('📱 Mobile: Authentication')
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -105,7 +111,7 @@ export class AuthController {
     // Check if email already exists (if provided)
     if (registerDto.email) {
       const existingUser = await this.playerRepository.findOne({
-        where: { email: registerDto.email },
+        where: { email: registerDto.email, is_deleted: false },
       });
       if (existingUser) {
         throw new ConflictException(
@@ -124,7 +130,7 @@ export class AuthController {
         throw new BadRequestException('Unable to generate unique visitor ID');
       }
     } while (
-      await this.playerRepository.findOne({ where: { visitor_id: visitorId } })
+      await this.playerRepository.findOne({ where: { visitor_id: visitorId, is_deleted: false } })
     );
 
     // Hash password if provided
@@ -242,7 +248,7 @@ export class AuthController {
   ): Promise<LoginResponseDto> {
     // Find player by email
     const player = await this.playerRepository.findOne({
-      where: { email: loginDto.email },
+      where: { email: loginDto.email, is_deleted: false },
       select: [
         'id',
         'visitor_id',
@@ -315,6 +321,7 @@ export class AuthController {
 
   @Post('test-token')
   @Public()
+  @HideFromSwagger()
   @ApiOperation({ summary: 'Generate a test JWT token for development' })
   @ApiResponse({ status: 201, description: 'JWT token generated' })
   async generateTestToken(@Body() testTokenDto: TestTokenDto) {
@@ -362,6 +369,7 @@ export class AuthController {
   @Get('admin-only')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()
+  @HideFromSwagger()
   @ApiOperation({ summary: 'Admin-only endpoint' })
   @ApiResponse({ status: 200, description: 'Admin-only data' })
   async getAdminData(@CurrentUser() admin: AuthenticatedAdmin) {
@@ -377,6 +385,7 @@ export class AuthController {
 
   @Get('public')
   @Public()
+  @HideFromSwagger()
   @ApiOperation({ summary: 'Public endpoint (no authentication required)' })
   @ApiResponse({ status: 200, description: 'Public data' })
   async getPublicData() {
@@ -400,7 +409,7 @@ export class AuthController {
   ): Promise<PasswordRecoveryResponseDto> {
     // Find user by email
     const user = await this.playerRepository.findOne({
-      where: { email: forgotPasswordDto.email },
+      where: { email: forgotPasswordDto.email, is_deleted: false },
     });
 
     if (!user) {
@@ -410,14 +419,14 @@ export class AuthController {
       };
     }
 
-    // Generate reset token
-    const resetToken = this.authService.generateResetToken();
+    // Generate 6-digit reset code
+    const resetCode = this.authService.generateResetCode();
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1); // Token expires in 1 hour
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // Code expires in 10 minutes
 
-    // Save reset token to database
+    // Save reset code to database
     const passwordResetToken = this.passwordResetTokenRepository.create({
-      token: resetToken,
+      token: resetCode,
       user_id: user.id,
       expires_at: expiresAt,
       used: false,
@@ -425,8 +434,10 @@ export class AuthController {
 
     await this.passwordResetTokenRepository.save(passwordResetToken);
 
-    // Send password reset email
-    const resetUrl = `${this.getBaseUrl()}/reset-password?token=${resetToken}`;
+    // Send password reset email with code
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/reset-password?code=${resetCode}`;
+    
     try {
       await this.emailService.sendPasswordReset(user.email!, {
         name: user.name,
@@ -438,44 +449,44 @@ export class AuthController {
     }
 
     return {
-      message: 'If the email exists, a password reset link has been sent.',
+      message: 'If the email exists, a password reset code has been sent.',
     };
   }
 
   @Post('reset-password')
   @Public()
-  @ApiOperation({ summary: 'Reset password with token and email' })
+  @ApiOperation({ summary: 'Reset password with 6-digit code and email' })
   @ApiResponse({
     status: 200,
     description: 'Password reset successfully',
     type: ResetPasswordResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
-  @ApiResponse({ status: 400, description: 'Email does not match token' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired reset code' })
+  @ApiResponse({ status: 400, description: 'Email does not match reset code' })
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponseDto> {
-    // Find valid reset token with user details
+    // Find valid reset code with user details
     const resetToken = await this.passwordResetTokenRepository.findOne({
       where: {
-        token: resetPasswordDto.token,
+        token: resetPasswordDto.code,
         used: false,
       },
       relations: ['user'],
     });
 
     if (!resetToken) {
-      throw new BadRequestException('Invalid or expired reset token');
+      throw new BadRequestException('Invalid or expired reset code');
     }
 
-    // Check if token is expired
+    // Check if code is expired
     if (new Date() > resetToken.expires_at) {
-      throw new BadRequestException('Reset token has expired');
+      throw new BadRequestException('Reset code has expired');
     }
 
-    // Verify that the email matches the user associated with the token
+    // Verify that the email matches the user associated with the code
     if (resetToken.user.email !== resetPasswordDto.email) {
-      throw new BadRequestException('Email does not match the reset token');
+      throw new BadRequestException('Email does not match the reset code');
     }
 
     // Hash new password
@@ -489,7 +500,7 @@ export class AuthController {
       { password: hashedPassword },
     );
 
-    // Mark token as used
+    // Mark code as used
     await this.passwordResetTokenRepository.update(
       { id: resetToken.id },
       { used: true },
@@ -497,6 +508,68 @@ export class AuthController {
 
     return {
       message: 'Password reset successfully',
+    };
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Logout user',
+    description: 'Logout the current user (mobile API)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully logged out',
+    type: LogoutResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async logout(): Promise<LogoutResponseDto> {
+    await this.authService.logout();
+    return {
+      message: 'Successfully logged out',
+    };
+  }
+
+  @Post('delete-account')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Delete user account',
+    description: 'Soft delete the current user account (mobile API)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Account successfully deleted',
+    type: DeleteAccountResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid password or account validation failed',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async deleteAccount(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() deleteAccountDto: DeleteAccountDto,
+  ): Promise<DeleteAccountResponseDto> {
+    await this.authService.softDeleteAccount(
+      user.id,
+      deleteAccountDto.password,
+      deleteAccountDto.reason,
+    );
+
+    return {
+      message: 'Account successfully deleted. Your data has been removed from our system.',
     };
   }
 

@@ -40,6 +40,42 @@ export class BalanceChangeDto {
   description?: string;
 }
 
+export class ModifyBalanceDto {
+  @ApiProperty({
+    example: 100.5,
+    description: 'Amount to modify (positive for increase, negative for decrease)',
+  })
+  @IsNumber()
+  amount: number;
+
+  @ApiProperty({
+    example: 'game_win',
+    description: 'Mode of balance change',
+    enum: [
+      'game_win',
+      'game_loss',
+      'purchase',
+      'bet',
+      'admin_adjustment',
+      'bonus',
+      'refund',
+    ],
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  mode?: string;
+
+  @ApiProperty({
+    example: 'Win from Slot Machine - Session 123',
+    description: 'Description of the balance change',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
 export class AdminBalanceAdjustmentDto {
   @ApiProperty({
     example: 100.5,

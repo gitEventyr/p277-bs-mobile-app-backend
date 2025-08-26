@@ -17,9 +17,10 @@ import { AdminLoginDto } from '../dto/admin-login.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../../auth/guards/admin.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { HideFromSwagger } from '../../common/decorators/hide-from-swagger.decorator';
 import type { AuthenticatedAdmin } from '../../common/types/auth.types';
 
-@ApiTags('admin')
+@ApiTags('🖥️ Dashboard: Admin Auth')
 @Controller('admin/auth')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -63,6 +64,7 @@ export class AdminController {
     };
   }
 
+  @HideFromSwagger()
   @ApiOperation({ summary: 'Test admin-only endpoint' })
   @ApiResponse({
     status: HttpStatus.OK,

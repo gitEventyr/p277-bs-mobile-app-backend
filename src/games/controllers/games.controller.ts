@@ -33,7 +33,7 @@ import {
 } from '../dto/game-history.dto';
 import type { AuthenticatedUser } from '../../common/types/auth.types';
 
-@ApiTags('games')
+@ApiTags('📱 Mobile: Gaming')
 @Controller('games')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

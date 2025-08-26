@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Player } from '../../entities/player.entity';
 import { CoinsBalanceChange } from '../../entities/coins-balance-change.entity';
-import { BalanceChangeDto } from '../dto/balance-change.dto';
+import { BalanceChangeDto, ModifyBalanceDto } from '../dto/balance-change.dto';
 
 @Injectable()
 export class BalanceService {
@@ -21,7 +21,7 @@ export class BalanceService {
 
   async getBalance(userId: number) {
     const player = await this.playerRepository.findOne({
-      where: { id: userId },
+      where: { id: userId, is_deleted: false },
       select: ['id', 'coins_balance', 'scratch_cards'],
     });
 
@@ -56,6 +56,21 @@ export class BalanceService {
       userId,
       -balanceChangeDto.amount,
       balanceChangeDto.mode || 'decrease',
+    );
+  }
+
+  async modifyBalance(userId: number, modifyBalanceDto: ModifyBalanceDto) {
+    if (modifyBalanceDto.amount === 0) {
+      throw new BadRequestException('Amount cannot be zero');
+    }
+
+    const mode = modifyBalanceDto.mode || 
+      (modifyBalanceDto.amount > 0 ? 'increase' : 'decrease');
+
+    return this.updateBalance(
+      userId,
+      modifyBalanceDto.amount,
+      mode,
     );
   }
 
