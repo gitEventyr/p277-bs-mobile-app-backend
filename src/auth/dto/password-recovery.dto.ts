@@ -29,14 +29,14 @@ export class ResetPasswordDto {
 
   @ApiProperty({
     example: 'MyPassword123',
-    description: 'New password (minimum 8 characters, must include at least 1 letter and 1 number)',
+    description: 'New password (minimum 8 characters)',
   })
   @IsString()
   @Length(8, 100, {
     message: 'Password must be between 8 and 100 characters long',
   })
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d).{8,}$/, {
-    message: 'Password must contain at least 1 letter, 1 number, and be minimum 8 characters long',
+  @Matches(/^.{8,}$/, {
+    message: 'Password must be at least 8 characters long',
   })
   newPassword: string;
 }

@@ -14,7 +14,7 @@ export function setupSwagger(app: INestApplication) {
       '### 🔧 System\n' +
       'Health checks and system status endpoints.'
     )
-    .setVersion('1.0')
+    .setVersion('1.1')
     .addBearerAuth(
       {
         type: 'http',
@@ -71,5 +71,9 @@ export function setupSwagger(app: INestApplication) {
       filter: true,
       showRequestHeaders: true,
     },
+    customJsStr: `
+      // Cache busting for Swagger assets
+      window.swaggerUiAssetsCacheBuster = Date.now();
+    `,
   });
 }
