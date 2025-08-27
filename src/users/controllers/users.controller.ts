@@ -113,9 +113,10 @@ export class UsersController {
   }
 
   @ApiTags('📱 Mobile: Balance & Transactions')
-  @ApiOperation({ 
-    summary: 'Modify balance', 
-    description: 'Modify user balance - positive amounts increase, negative amounts decrease'
+  @ApiOperation({
+    summary: 'Modify balance',
+    description:
+      'Modify user balance - positive amounts increase, negative amounts decrease',
   })
   @ApiResponse({
     status: HttpStatus.OK,

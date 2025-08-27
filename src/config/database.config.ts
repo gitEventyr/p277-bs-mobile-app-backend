@@ -20,8 +20,12 @@ export const createDatabaseConfig = (
     migrations: [__dirname + '/../migrations/*{.ts,.js}'],
     migrationsTableName: 'typeorm_migrations',
     // Use synchronize only in development, migrations in prod/staging
-    synchronize: isDevelopment && !configService.get<boolean>('USE_MIGRATIONS', false),
-    migrationsRun: isProduction || isStaging || configService.get<boolean>('RUN_MIGRATIONS', false),
+    synchronize:
+      isDevelopment && !configService.get<boolean>('USE_MIGRATIONS', false),
+    migrationsRun:
+      isProduction ||
+      isStaging ||
+      configService.get<boolean>('RUN_MIGRATIONS', false),
     logging: isDevelopment,
     ssl: useSSL ? { rejectUnauthorized: false } : false,
     extra: {

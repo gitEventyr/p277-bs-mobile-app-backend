@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+} from 'typeorm';
 
 export class InitialDatabaseSchema1725000000000 implements MigrationInterface {
   name = 'InitialDatabaseSchema1725000000000';

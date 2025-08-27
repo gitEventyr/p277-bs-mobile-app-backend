@@ -130,7 +130,9 @@ export class AuthController {
         throw new BadRequestException('Unable to generate unique visitor ID');
       }
     } while (
-      await this.playerRepository.findOne({ where: { visitor_id: visitorId, is_deleted: false } })
+      await this.playerRepository.findOne({
+        where: { visitor_id: visitorId, is_deleted: false },
+      })
     );
 
     // Hash password if provided
@@ -397,10 +399,14 @@ export class AuthController {
 
   @Post('forgot-password')
   @Public()
-  @ApiOperation({ summary: 'Request password reset email' })
+  @ApiOperation({
+    summary: 'Request password reset email',
+    description:
+      'Sends a password reset email with a mobile deep link to open the app on the reset page',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Password reset email sent',
+    description: 'Password reset email sent with mobile deep link',
     type: PasswordRecoveryResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Email not found' })
@@ -434,10 +440,11 @@ export class AuthController {
 
     await this.passwordResetTokenRepository.save(passwordResetToken);
 
-    // Send password reset email with code
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const resetUrl = `${frontendUrl}/reset-password?code=${resetCode}`;
-    
+    // Send password reset email with mobile deep link
+    const mobileAppScheme = process.env.MOBILE_APP_SCHEME || 'casino://';
+    const mobileResetPath = process.env.MOBILE_RESET_PATH || 'reset-password';
+    const resetUrl = `${mobileAppScheme}${mobileResetPath}?code=${resetCode}&email=${encodeURIComponent(user.email!)}`;
+
     try {
       await this.emailService.sendPasswordReset(user.email!, {
         name: user.name,
@@ -514,9 +521,9 @@ export class AuthController {
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Logout user',
-    description: 'Logout the current user (mobile API)'
+    description: 'Logout the current user (mobile API)',
   })
   @ApiResponse({
     status: 200,
@@ -537,9 +544,9 @@ export class AuthController {
   @Post('delete-account')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete user account',
-    description: 'Soft delete the current user account (mobile API)'
+    description: 'Soft delete the current user account (mobile API)',
   })
   @ApiResponse({
     status: 200,
@@ -569,7 +576,8 @@ export class AuthController {
     );
 
     return {
-      message: 'Account successfully deleted. Your data has been removed from our system.',
+      message:
+        'Account successfully deleted. Your data has been removed from our system.',
     };
   }
 

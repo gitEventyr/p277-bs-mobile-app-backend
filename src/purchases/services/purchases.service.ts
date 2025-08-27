@@ -37,7 +37,9 @@ export class PurchasesService {
     );
 
     // Check if user exists
-    const user = await this.playerRepository.findOne({ where: { id: userId, is_deleted: false } });
+    const user = await this.playerRepository.findOne({
+      where: { id: userId, is_deleted: false },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -155,7 +157,9 @@ export class PurchasesService {
 
   async getPurchaseHistory(userId: number, queryDto: PurchaseHistoryQueryDto) {
     // Check if user exists
-    const user = await this.playerRepository.findOne({ where: { id: userId, is_deleted: false } });
+    const user = await this.playerRepository.findOne({
+      where: { id: userId, is_deleted: false },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -221,7 +225,6 @@ export class PurchasesService {
       created_at: purchase.created_at,
     };
   }
-
 
   async getTotalSpent(userId: number): Promise<number> {
     const result = await this.purchaseRepository

@@ -21,15 +21,16 @@ export class DeleteAccountDto {
 }
 
 export class DeleteAccountResponseDto {
-  @ApiProperty({ 
-    example: 'Account successfully deleted. Your data has been removed from our system.' 
+  @ApiProperty({
+    example:
+      'Account successfully deleted. Your data has been removed from our system.',
   })
   message: string;
 }
 
 export class LogoutResponseDto {
-  @ApiProperty({ 
-    example: 'Successfully logged out' 
+  @ApiProperty({
+    example: 'Successfully logged out',
   })
   message: string;
 }

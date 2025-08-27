@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -135,7 +140,11 @@ export class AuthService {
     };
   }
 
-  async softDeleteAccount(userId: number, password: string, reason?: string): Promise<void> {
+  async softDeleteAccount(
+    userId: number,
+    password: string,
+    reason?: string,
+  ): Promise<void> {
     // Find the user with password
     const user = await this.playerRepository.findOne({
       where: { id: userId, is_deleted: false },
@@ -151,17 +160,27 @@ export class AuthService {
     }
 
     // Verify password
-    const isPasswordValid = await this.comparePasswords(password, user.password);
+    const isPasswordValid = await this.comparePasswords(
+      password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new BadRequestException('Invalid password');
     }
 
-    // Soft delete the account
-    await this.playerRepository.update(userId, {
-      is_deleted: true,
-      deleted_at: new Date(),
-      deletion_reason: reason || 'User requested account deletion',
-    });
+    // Soft delete the account and clear sensitive data
+    await this.playerRepository.query(`
+      UPDATE players 
+      SET is_deleted = true, 
+          deleted_at = NOW(), 
+          deletion_reason = $1,
+          email = NULL,
+          phone = NULL,
+          name = NULL,
+          password = NULL,
+          updated_at = NOW()
+      WHERE id = $2
+    `, [reason || 'User requested account deletion', userId]);
   }
 
   // Note: In a real implementation with session management,

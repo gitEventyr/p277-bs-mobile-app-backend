@@ -43,7 +43,8 @@ export class BalanceChangeDto {
 export class ModifyBalanceDto {
   @ApiProperty({
     example: 100.5,
-    description: 'Amount to modify (positive for increase, negative for decrease)',
+    description:
+      'Amount to modify (positive for increase, negative for decrease)',
   })
   @IsNumber()
   amount: number;

@@ -6,13 +6,13 @@ export function setupSwagger(app: INestApplication) {
     .setTitle('Casino Backend API')
     .setDescription(
       'Comprehensive API documentation for the casino backend system\n\n' +
-      '## API Organization\n\n' +
-      '### 📱 Mobile API\n' +
-      'Endpoints designed for mobile app integration including authentication, user management, gaming, and purchases.\n\n' +
-      '### 🖥️ Dashboard API\n' +
-      'Admin and dashboard endpoints for backend management and analytics.\n\n' +
-      '### 🔧 System\n' +
-      'Health checks and system status endpoints.'
+        '## API Organization\n\n' +
+        '### 📱 Mobile API\n' +
+        'Endpoints designed for mobile app integration including authentication, user management, gaming, and purchases.\n\n' +
+        '### 🖥️ Dashboard API\n' +
+        'Admin and dashboard endpoints for backend management and analytics.\n\n' +
+        '### 🔧 System\n' +
+        'Health checks and system status endpoints.',
     )
     .setVersion('1.1')
     .addBearerAuth(
@@ -31,15 +31,33 @@ export function setupSwagger(app: INestApplication) {
       description: 'Session-based authentication for dashboard endpoints',
     })
     // Mobile API tags
-    .addTag('📱 Mobile: Authentication', 'Mobile app authentication endpoints (login, register, logout, etc.)')
-    .addTag('📱 Mobile: User Profile', 'User profile and account management endpoints')
-    .addTag('📱 Mobile: Balance & Transactions', 'Balance management and transaction history endpoints')
+    .addTag(
+      '📱 Mobile: Authentication',
+      'Mobile app authentication endpoints (login, register, logout, etc.)',
+    )
+    .addTag(
+      '📱 Mobile: User Profile',
+      'User profile and account management endpoints',
+    )
+    .addTag(
+      '📱 Mobile: Balance & Transactions',
+      'Balance management and transaction history endpoints',
+    )
     .addTag('📱 Mobile: Gaming', 'Game sessions and statistics endpoints')
     .addTag('📱 Mobile: Purchases', 'In-app purchase and payment endpoints')
-    .addTag('📱 Mobile: Devices', 'Device registration and management endpoints')
+    .addTag(
+      '📱 Mobile: Devices',
+      'Device registration and management endpoints',
+    )
     // Dashboard API tags
-    .addTag('🖥️ Dashboard: Admin Auth', 'Admin authentication and session management')
-    .addTag('🖥️ Dashboard: User Management', 'User administration and management endpoints')
+    .addTag(
+      '🖥️ Dashboard: Admin Auth',
+      'Admin authentication and session management',
+    )
+    .addTag(
+      '🖥️ Dashboard: User Management',
+      'User administration and management endpoints',
+    )
     .addTag('🖥️ Dashboard: Analytics', 'Analytics and reporting endpoints')
     .addTag('🖥️ Dashboard: Vouchers', 'Voucher management and administration')
     // System tags

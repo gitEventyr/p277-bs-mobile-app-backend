@@ -64,14 +64,11 @@ export class BalanceService {
       throw new BadRequestException('Amount cannot be zero');
     }
 
-    const mode = modifyBalanceDto.mode || 
+    const mode =
+      modifyBalanceDto.mode ||
       (modifyBalanceDto.amount > 0 ? 'increase' : 'decrease');
 
-    return this.updateBalance(
-      userId,
-      modifyBalanceDto.amount,
-      mode,
-    );
+    return this.updateBalance(userId, modifyBalanceDto.amount, mode);
   }
 
   private async updateBalance(userId: number, amount: number, mode: string) {

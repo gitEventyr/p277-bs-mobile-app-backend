@@ -129,8 +129,7 @@ export class RegisterDto {
 
   @ApiProperty({
     example: 'MyPassword123',
-    description:
-      'User password (minimum 8 characters)',
+    description: 'User password (minimum 8 characters)',
     required: false,
   })
   @IsOptional()

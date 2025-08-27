@@ -208,5 +208,4 @@ export class PurchasesController {
   ) {
     return this.purchasesService.getPurchaseById(user.id, purchaseId);
   }
-
 }

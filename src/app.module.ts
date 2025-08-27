@@ -10,6 +10,7 @@ import { PlayHistory } from './entities/play-history.entity';
 import { InAppPurchase } from './entities/in-app-purchase.entity';
 import { Voucher } from './entities/voucher.entity';
 import { UserVoucher } from './entities/user-voucher.entity';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
@@ -37,6 +38,7 @@ import { PurchasesModule } from './purchases/purchases.module';
           InAppPurchase,
           Voucher,
           UserVoucher,
+          PasswordResetToken,
         ],
       }),
     }),

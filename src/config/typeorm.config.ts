@@ -19,5 +19,7 @@ export default new DataSource({
   migrationsTableName: 'typeorm_migrations',
   synchronize: false, // Always false for migrations
   logging: configService.get<string>('NODE_ENV') === 'development',
-  ssl: configService.get<boolean>('DB_SSL', false) ? { rejectUnauthorized: false } : false,
+  ssl: configService.get<boolean>('DB_SSL', false)
+    ? { rejectUnauthorized: false }
+    : false,
 });

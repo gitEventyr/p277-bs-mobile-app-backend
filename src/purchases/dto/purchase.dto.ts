@@ -93,7 +93,6 @@ export class PurchaseHistoryQueryDto {
   platform?: string;
 }
 
-
 export class PurchaseResponseDto {
   @ApiProperty({ description: 'Purchase ID', example: 1 })
   id: number;
