@@ -62,6 +62,57 @@ function clearSearch() {
   window.location.href = '/admin/users';
 }
 
+// Show Create User Modal
+function showCreateUserModal() {
+  const modal = new bootstrap.Modal(document.getElementById('createUserModal'));
+  modal.show();
+}
+
+// Create User Form Handler
+document.addEventListener('DOMContentLoaded', function() {
+  const createUserForm = document.getElementById('createUserForm');
+  if (createUserForm) {
+    createUserForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      const removeLoadingState = addLoadingState(submitBtn, originalText);
+      
+      try {
+        const formData = new FormData(this);
+        const userData = Object.fromEntries(formData.entries());
+        
+        const response = await fetch('/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Close modal and refresh page
+          bootstrap.Modal.getInstance(document.getElementById('createUserModal')).hide();
+          showToast('User created successfully!', 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          showToast(result.message || 'Error creating user', 'error');
+        }
+      } catch (error) {
+        console.error('Error creating user:', error);
+        showToast('Network error. Please try again.', 'error');
+      } finally {
+        removeLoadingState();
+      }
+    });
+  }
+});
+
 // Refresh Users Function
 function refreshUsers() {
   window.location.reload();
