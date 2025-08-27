@@ -64,29 +64,16 @@ function clearSearch() {
 
 // Show Create User Modal
 function showCreateUserModal() {
-  console.log('showCreateUserModal called');
-  const modalElement = document.getElementById('createUserModal');
-  console.log('Modal element found:', modalElement);
-  
-  if (modalElement) {
-    const modal = new bootstrap.Modal(modalElement);
-    modal.show();
-    console.log('Modal should be shown');
-  } else {
-    console.error('Create user modal not found!');
-  }
+  const modal = new bootstrap.Modal(document.getElementById('createUserModal'));
+  modal.show();
 }
 
 // Create User Form Handler
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM loaded, looking for create user form');
   const createUserForm = document.getElementById('createUserForm');
-  console.log('Create user form found:', createUserForm);
-  
   if (createUserForm) {
     createUserForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      console.log('Create user form submitted');
       
       const submitBtn = this.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
