@@ -26,15 +26,19 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
   // Session configuration using memory store
+  const isProduction = configService.get<string>('NODE_ENV') === 'production';
+  const useHttps = configService.get<string>('USE_HTTPS') === 'true';
+  
   app.use(
     session({
       secret: configService.get<string>('SESSION_SECRET', 'default_secret'),
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: configService.get<string>('NODE_ENV') === 'production',
+        secure: isProduction && useHttps, // Only use secure cookies in production with HTTPS
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: 'lax', // Help with redirect issues
       },
     }),
   );

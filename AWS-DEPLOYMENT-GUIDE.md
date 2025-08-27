@@ -101,6 +101,7 @@ NODE_ENV=production
 
 # Session Configuration
 SESSION_SECRET=your-super-secret-session-key-here
+USE_HTTPS=false
 
 # AWS RDS PostgreSQL Database Configuration
 DB_HOST=your-rds-endpoint.region.rds.amazonaws.com
@@ -126,6 +127,7 @@ CORS_ORIGIN=http://your-domain.com
 - Generate a strong session secret (you can use: `openssl rand -base64 32`)
 - `USE_MIGRATIONS=true` ensures proper database schema management in production
 - `RUN_MIGRATIONS=false` means migrations are run manually for safety
+- `USE_HTTPS=false` allows HTTP deployment (set to `true` when you add SSL certificate)
 - Save and exit nano with `Ctrl+X`, then `Y`, then `Enter`
 
 ## Step 5: Build the Application
