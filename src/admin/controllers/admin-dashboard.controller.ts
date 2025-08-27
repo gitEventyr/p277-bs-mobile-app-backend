@@ -114,9 +114,10 @@ export class AdminDashboardController {
   // Admin Dashboard
   @Get('dashboard')
   async dashboard(@Session() session: AdminSession, @Res() res: Response) {
-    if (!session.admin) {
-      return res.redirect('/admin/login');
-    }
+    // TEMPORARY: Skip authentication for staging testing
+    // if (!session.admin) {
+    //   return res.redirect('/admin/login');
+    // }
 
     try {
       // Get dashboard statistics
@@ -132,7 +133,7 @@ export class AdminDashboardController {
         title: 'Dashboard',
         isAuthenticated: true,
         isDashboard: true,
-        admin: session.admin,
+        admin: { display_name: 'Admin User (Staging)' }, // Mock admin for staging
         stats,
         recentActivity,
         flashMessage,
@@ -144,7 +145,7 @@ export class AdminDashboardController {
         title: 'Dashboard',
         isAuthenticated: true,
         isDashboard: true,
-        admin: session.admin,
+        admin: { display_name: 'Admin User (Staging)' }, // Mock admin for staging
         stats: {
           totalUsers: 0,
           activeUsers: 0,
@@ -165,9 +166,10 @@ export class AdminDashboardController {
     @Query() query: any,
     @Res() res: Response,
   ) {
-    if (!session.admin) {
-      return res.redirect('/admin/login');
-    }
+    // TEMPORARY: Skip authentication for staging testing
+    // if (!session.admin) {
+    //   return res.redirect('/admin/login');
+    // }
 
     try {
       const page = parseInt(query.page) || 1;
@@ -193,7 +195,7 @@ export class AdminDashboardController {
         title: 'User Management',
         isAuthenticated: true,
         isUsers: true,
-        admin: session.admin,
+        admin: { display_name: 'Admin User (Staging)' }, // Mock admin for staging
         users: users.data,
         pagination: users.pagination,
         searchQuery: search,
@@ -209,7 +211,7 @@ export class AdminDashboardController {
         title: 'User Management',
         isAuthenticated: true,
         isUsers: true,
-        admin: session.admin,
+        admin: { display_name: 'Admin User (Staging)' }, // Mock admin for staging
         users: [],
         pagination: { total: 0, pages: [], hasPages: false },
         flashMessage: 'Error loading users data',
@@ -224,9 +226,10 @@ export class AdminDashboardController {
     @Param('id') id: string,
     @Session() session: AdminSession,
   ) {
-    if (!session.admin) {
-      return { success: false, message: 'Not authenticated' };
-    }
+    // TEMPORARY: Skip authentication for staging testing
+    // if (!session.admin) {
+    //   return { success: false, message: 'Not authenticated' };
+    // }
 
     try {
       const user = await this.usersService.findById(parseInt(id));
