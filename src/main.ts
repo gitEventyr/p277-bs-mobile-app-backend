@@ -57,8 +57,10 @@ async function bootstrap() {
           fontSrc: ["'self'", 'cdn.jsdelivr.net'],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'"],
+          ...(useHttps ? { upgradeInsecureRequests: [] } : {}), // Only upgrade to HTTPS when using HTTPS
         },
       },
+      hsts: useHttps, // Only enable HSTS when using HTTPS
     }),
   );
 
