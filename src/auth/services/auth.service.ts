@@ -169,7 +169,8 @@ export class AuthService {
     }
 
     // Soft delete the account and clear sensitive data
-    await this.playerRepository.query(`
+    await this.playerRepository.query(
+      `
       UPDATE players 
       SET is_deleted = true, 
           deleted_at = NOW(), 
@@ -180,7 +181,9 @@ export class AuthService {
           password = NULL,
           updated_at = NOW()
       WHERE id = $2
-    `, [reason || 'User requested account deletion', userId]);
+    `,
+      [reason || 'User requested account deletion', userId],
+    );
   }
 
   // Note: In a real implementation with session management,

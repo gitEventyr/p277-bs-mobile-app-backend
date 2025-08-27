@@ -124,21 +124,22 @@ export class UsersService {
   }
 
   async getActiveUsersCount(): Promise<number> {
-    // Assuming active users are those who logged in within last 30 days
+    // Assuming active users are those who updated within last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    return await this.playerRepository.count({
-      where: {
-        updated_at: new Date() as any, // This would need proper date filtering
-      },
-    });
+    return await this.playerRepository
+      .createQueryBuilder('player')
+      .where('player.is_deleted = false')
+      .andWhere('player.updated_at >= :thirtyDaysAgo', { thirtyDaysAgo })
+      .getCount();
   }
 
   async getTotalBalance(): Promise<number> {
     const result = await this.playerRepository
       .createQueryBuilder('player')
       .select('SUM(player.coins_balance)', 'total')
+      .where('player.is_deleted = false')
       .getRawOne();
 
     return parseInt(result?.total || '0');
@@ -148,11 +149,13 @@ export class UsersService {
     const twentyFourHoursAgo = new Date();
     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
 
-    return await this.playerRepository.count({
-      where: {
-        created_at: new Date() as any, // This would need proper date filtering
-      },
-    });
+    return await this.playerRepository
+      .createQueryBuilder('player')
+      .where('player.is_deleted = false')
+      .andWhere('player.created_at >= :twentyFourHoursAgo', {
+        twentyFourHoursAgo,
+      })
+      .getCount();
   }
 
   async findUsersForAdmin(options: {
@@ -165,21 +168,31 @@ export class UsersService {
     const { page, limit, search, status, sortBy } = options;
     const skip = (page - 1) * limit;
 
-    let query = this.playerRepository.createQueryBuilder('player');
+    let query = this.playerRepository
+      .createQueryBuilder('player')
+      .where('player.is_deleted = false');
 
     // Search functionality
     if (search) {
-      query = query.where(
-        'player.name ILIKE :search OR player.email ILIKE :search OR player.phone ILIKE :search OR player.visitor_id ILIKE :search',
+      query = query.andWhere(
+        '(player.name ILIKE :search OR player.email ILIKE :search OR player.phone ILIKE :search OR player.visitor_id ILIKE :search)',
         { search: `%${search}%` },
       );
     }
 
-    // Status filter (assuming is_active field exists or using a different logic)
+    // Status filter based on recent activity
     if (status === 'active') {
-      // Add active user logic here
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      query = query.andWhere('player.updated_at >= :thirtyDaysAgo', {
+        thirtyDaysAgo,
+      });
     } else if (status === 'inactive') {
-      // Add inactive user logic here
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      query = query.andWhere('player.updated_at < :thirtyDaysAgo', {
+        thirtyDaysAgo,
+      });
     }
 
     // Sorting

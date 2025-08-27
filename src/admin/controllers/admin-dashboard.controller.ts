@@ -160,7 +160,11 @@ export class AdminDashboardController {
 
   // User Management Page
   @Get('users')
-  async users(@Session() session: AdminSession, @Query() query: any, @Res() res: Response) {
+  async users(
+    @Session() session: AdminSession,
+    @Query() query: any,
+    @Res() res: Response,
+  ) {
     if (!session.admin) {
       return res.redirect('/admin/login');
     }

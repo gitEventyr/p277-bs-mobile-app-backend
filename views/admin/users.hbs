@@ -116,7 +116,7 @@
               <span class="badge bg-success">{{this.coins_balance}} coins</span>
             </td>
             <td>
-              {{#if this.is_active}}
+              {{#if (isRecentlyActive this.updated_at)}}
               <span class="badge bg-success">Active</span>
               {{else}}
               <span class="badge bg-secondary">Inactive</span>

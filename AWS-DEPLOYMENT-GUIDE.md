@@ -383,6 +383,28 @@ yarn build
 cp -r public views dist/
 ```
 
+### Recent Admin Dashboard Fixes (Fixed in Latest Version)
+The following issues have been resolved in the current version:
+
+1. **Login Endpoint Separation**: 
+   - API endpoint moved to `/api/admin/auth/login` (returns JSON)
+   - Dashboard form handler remains at `/admin/auth/login` (performs redirects)
+   - This prevents login returning JSON instead of redirecting to dashboard
+
+2. **CSS/JavaScript Loading Issues Fixed**:
+   - Updated Helmet CSP configuration to allow Bootstrap CDN resources
+   - Admin dashboard styling and JavaScript now load correctly
+   - No more "all elements in one line" layout issues
+
+3. **User Management Functionality**:
+   - Fixed database query methods for user statistics
+   - Added proper active/inactive user status based on recent activity
+   - User table now displays correctly with proper formatting and actions
+
+4. **Enhanced Security Headers**:
+   - Improved Content Security Policy for production deployment
+   - Maintains security while allowing necessary admin dashboard resources
+
 ## Maintenance Commands
 
 ### Useful commands for managing your deployment:

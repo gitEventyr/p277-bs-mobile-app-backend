@@ -45,7 +45,16 @@ async function bootstrap() {
   // Security headers
   app.use(
     helmet({
-      contentSecurityPolicy: false, // Allow Swagger UI to work
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+          scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+          fontSrc: ["'self'", 'cdn.jsdelivr.net'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"],
+        },
+      },
     }),
   );
 

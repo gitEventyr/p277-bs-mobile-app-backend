@@ -21,7 +21,7 @@ import { HideFromSwagger } from '../../common/decorators/hide-from-swagger.decor
 import type { AuthenticatedAdmin } from '../../common/types/auth.types';
 
 @ApiTags('🖥️ Dashboard: Admin Auth')
-@Controller('admin/auth')
+@Controller('api/admin/auth')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

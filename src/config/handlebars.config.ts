@@ -71,4 +71,15 @@ export function configureHandlebars() {
     }
     return range;
   });
+
+  // Helper for checking if user is recently active (within 30 days)
+  hbs.registerHelper('isRecentlyActive', function (updated_at: Date | string) {
+    if (!updated_at) return false;
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const userLastUpdate = new Date(updated_at);
+    return userLastUpdate >= thirtyDaysAgo;
+  });
 }
