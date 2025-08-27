@@ -29,6 +29,14 @@ async function bootstrap() {
   const isProduction = configService.get<string>('NODE_ENV') === 'production';
   const useHttps = configService.get<string>('USE_HTTPS') === 'true';
   
+  console.log('🔧 Server Configuration:');
+  console.log(`   NODE_ENV: ${configService.get<string>('NODE_ENV')}`);
+  console.log(`   USE_HTTPS: ${configService.get<string>('USE_HTTPS')}`);
+  console.log(`   isProduction: ${isProduction}`);
+  console.log(`   useHttps: ${useHttps}`);
+  console.log(`   Secure cookies: ${isProduction && useHttps}`);
+  console.log(`   HSTS enabled: ${useHttps}`);
+  
   app.use(
     session({
       secret: configService.get<string>('SESSION_SECRET', 'default_secret'),
