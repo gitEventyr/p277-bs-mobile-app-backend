@@ -113,10 +113,9 @@ export class AdminDashboardController {
 
   // Admin Dashboard
   @Get('dashboard')
-  @Render('admin/dashboard')
-  async dashboard(@Session() session: AdminSession) {
+  async dashboard(@Session() session: AdminSession, @Res() res: Response) {
     if (!session.admin) {
-      return { redirect: '/admin/login' };
+      return res.redirect('/admin/login');
     }
 
     try {
@@ -129,7 +128,7 @@ export class AdminDashboardController {
       delete session.flashMessage;
       delete session.flashType;
 
-      return {
+      return res.render('admin/dashboard', {
         title: 'Dashboard',
         isAuthenticated: true,
         isDashboard: true,
@@ -138,10 +137,10 @@ export class AdminDashboardController {
         recentActivity,
         flashMessage,
         flashType,
-      };
+      });
     } catch (error) {
       console.error('Dashboard error:', error);
-      return {
+      return res.render('admin/dashboard', {
         title: 'Dashboard',
         isAuthenticated: true,
         isDashboard: true,
@@ -155,16 +154,15 @@ export class AdminDashboardController {
         recentActivity: [],
         flashMessage: 'Error loading dashboard data',
         flashType: 'error',
-      };
+      });
     }
   }
 
   // User Management Page
   @Get('users')
-  @Render('admin/users')
-  async users(@Session() session: AdminSession, @Query() query: any) {
+  async users(@Session() session: AdminSession, @Query() query: any, @Res() res: Response) {
     if (!session.admin) {
-      return { redirect: '/admin/login' };
+      return res.redirect('/admin/login');
     }
 
     try {
@@ -187,7 +185,7 @@ export class AdminDashboardController {
       delete session.flashMessage;
       delete session.flashType;
 
-      return {
+      return res.render('admin/users', {
         title: 'User Management',
         isAuthenticated: true,
         isUsers: true,
@@ -200,10 +198,10 @@ export class AdminDashboardController {
         queryString: this.buildQueryString(query),
         flashMessage,
         flashType,
-      };
+      });
     } catch (error) {
       console.error('Users page error:', error);
-      return {
+      return res.render('admin/users', {
         title: 'User Management',
         isAuthenticated: true,
         isUsers: true,
@@ -212,7 +210,7 @@ export class AdminDashboardController {
         pagination: { total: 0, pages: [], hasPages: false },
         flashMessage: 'Error loading users data',
         flashType: 'error',
-      };
+      });
     }
   }
 

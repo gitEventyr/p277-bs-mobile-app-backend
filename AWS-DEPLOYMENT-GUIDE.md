@@ -323,6 +323,66 @@ curl -X POST http://localhost:3000/auth/register \
   -d '{"email": "test@example.com", "name": "Test User", "password": "Test123456"}'
 ```
 
+## Step 11: Admin Dashboard Setup (CRITICAL - Admin Access Setup)
+
+### Create admin users for dashboard access
+```bash
+# IMPORTANT: This step creates admin users for accessing the dashboard
+# The admin dashboard provides user management and system monitoring capabilities
+
+# First, ensure the migration created the admin_users table
+yarn migration:show
+# Should show: ✓ InitialDatabaseSchema1725000000000
+
+# Create default admin accounts
+yarn ts-node src/scripts/seed-admin.ts
+
+# Expected output:
+# ✅ Created admin: admin@casino.com (password: admin123)
+# ✅ Created admin: test@admin.com (password: test123)
+# Access the admin dashboard at: http://localhost:3000/admin/login
+```
+
+**What this creates:**
+- Two admin accounts with login credentials
+- Access to the admin dashboard at `/admin/login`
+- User management capabilities at `/admin/users`
+- System statistics and monitoring at `/admin/dashboard`
+
+### Access the admin dashboard
+After deployment, you can access:
+- **Admin Login**: `http://your-ec2-public-ip/admin/login`
+- **Default Credentials**:
+  - Email: `admin@casino.com` | Password: `admin123`
+  - Email: `test@admin.com` | Password: `test123`
+
+### Test admin dashboard functionality
+```bash
+# Test admin login endpoint
+curl -X POST http://localhost:3000/admin/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@casino.com", "password": "admin123"}'
+
+# Should return successful login and redirect to dashboard
+```
+
+**Security Notes:**
+- Change default admin passwords immediately after first login
+- Admin dashboard uses session-based authentication
+- All admin routes are now properly secured with authentication checks
+- Static assets (CSS/JS) are properly served in production builds
+
+### Important: Static Assets in Production
+The application now correctly copies static assets during build:
+```bash
+# The build command now includes static asset copying:
+yarn build
+# This copies public/ and views/ folders to dist/ for production serving
+
+# If you need to manually copy static assets:
+cp -r public views dist/
+```
+
 ## Maintenance Commands
 
 ### Useful commands for managing your deployment:
@@ -354,6 +414,9 @@ yarn build
 
 # IMPORTANT: Run database migrations to create/update all tables
 yarn migration:run
+
+# IMPORTANT: Create/update admin users if needed
+yarn ts-node src/scripts/seed-admin.ts
 
 pm2 restart casino-backend
 ```
@@ -402,6 +465,28 @@ pm2 restart casino-backend
    - Verify with: `yarn migration:show`
    - Check logs: `pm2 logs casino-backend`
    - Restart app: `pm2 restart casino-backend`
+
+7. **Admin Dashboard Issues:**
+   ```bash
+   # Dashboard shows broken styles/layout
+   # Check if static assets were copied during build
+   ls dist/public/css/
+   ls dist/views/
+   
+   # If missing, rebuild with asset copying
+   yarn build
+   pm2 restart casino-backend
+   
+   # Admin login not working
+   # Ensure admin users were created
+   yarn ts-node src/scripts/seed-admin.ts
+   
+   # Check admin_users table exists
+   yarn migration:show
+   
+   # Access dashboard directly at
+   # http://your-ec2-public-ip/admin/login
+   ```
 
 ### Check Services Status:
 ```bash
