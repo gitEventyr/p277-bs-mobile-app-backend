@@ -47,23 +47,29 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Security headers
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
-          scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
-          fontSrc: ["'self'", 'cdn.jsdelivr.net'],
-          imgSrc: ["'self'", 'data:', 'https:'],
-          connectSrc: ["'self'"],
-          // Only add upgradeInsecureRequests when HTTPS is enabled
-          ...(useHttps ? { upgradeInsecureRequests: [] } : {}),
-        },
+  const helmetConfig: any = {
+    hsts: useHttps, // Only enable HSTS when using HTTPS
+  };
+
+  // Only add CSP when using HTTPS to avoid upgrade-insecure-requests issues
+  if (useHttps) {
+    helmetConfig.contentSecurityPolicy = {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+        fontSrc: ["'self'", 'cdn.jsdelivr.net'],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+        upgradeInsecureRequests: [],
       },
-      hsts: useHttps, // Only enable HSTS when using HTTPS
-    }),
-  );
+    };
+  } else {
+    // Disable CSP completely for HTTP deployments to avoid any upgrade issues
+    helmetConfig.contentSecurityPolicy = false;
+  }
+
+  app.use(helmet(helmetConfig));
 
   // Global pipes, filters, and interceptors
   app.useGlobalPipes(new ValidationPipe());
