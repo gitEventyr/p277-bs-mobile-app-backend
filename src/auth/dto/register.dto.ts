@@ -236,6 +236,7 @@ export class RegisterResponseDto {
       level: 1,
       scratch_cards: 0,
       ipaddress: '192.168.1.100',
+      avatar: null,
     },
   })
   user: {
@@ -247,5 +248,6 @@ export class RegisterResponseDto {
     level: number;
     scratch_cards: number;
     ipaddress: string;
+    avatar?: string;
   };
 }

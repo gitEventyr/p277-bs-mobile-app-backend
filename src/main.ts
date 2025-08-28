@@ -28,7 +28,7 @@ async function bootstrap() {
   // Session configuration using memory store
   const isProduction = configService.get<string>('NODE_ENV') === 'production';
   const useHttps = configService.get<string>('USE_HTTPS') === 'true';
-  
+
   app.use(
     session({
       secret: configService.get<string>('SESSION_SECRET', 'default_secret'),

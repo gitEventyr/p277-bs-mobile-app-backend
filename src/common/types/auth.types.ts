@@ -14,6 +14,7 @@ export interface AuthenticatedUser {
   coins_balance: number;
   level: number;
   scratch_cards: number;
+  avatar?: string;
 }
 
 export interface AuthenticatedAdmin {

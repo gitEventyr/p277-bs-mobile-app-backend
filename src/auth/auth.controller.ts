@@ -40,6 +40,10 @@ import {
   DeleteAccountResponseDto,
   LogoutResponseDto,
 } from './dto/delete-account.dto';
+import {
+  UploadAvatarDto,
+  UploadAvatarResponseDto,
+} from './dto/avatar-upload.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailService } from '../email/services/email.service';
@@ -231,6 +235,7 @@ export class AuthController {
         level: savedPlayer.level,
         scratch_cards: savedPlayer.scratch_cards,
         ipaddress: this.getClientIp(req),
+        avatar: savedPlayer.avatar,
       },
     };
   }
@@ -261,6 +266,7 @@ export class AuthController {
         'coins_balance',
         'level',
         'scratch_cards',
+        'avatar',
       ],
     });
 
@@ -317,6 +323,7 @@ export class AuthController {
         level: player.level,
         scratch_cards: player.scratch_cards,
         ipaddress: this.getClientIp(req),
+        avatar: player.avatar,
       },
     };
   }
@@ -360,6 +367,7 @@ export class AuthController {
         coins_balance: (user as AuthenticatedUser).coins_balance,
         level: (user as AuthenticatedUser).level,
         scratch_cards: (user as AuthenticatedUser).scratch_cards,
+        avatar: (user as AuthenticatedUser).avatar,
       }),
       ...(typeof user.id === 'string' && {
         display_name: (user as AuthenticatedAdmin).display_name,
@@ -519,25 +527,66 @@ export class AuthController {
   }
 
   @Post('logout')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @Public()
   @ApiOperation({
     summary: 'Logout user',
-    description: 'Logout the current user (mobile API)',
+    description:
+      'Logout the current user (mobile API) - always succeeds even with invalid token',
   })
   @ApiResponse({
     status: 200,
     description: 'Successfully logged out',
     type: LogoutResponseDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Authentication required',
-  })
   async logout(): Promise<LogoutResponseDto> {
     await this.authService.logout();
     return {
       message: 'Successfully logged out',
+    };
+  }
+
+  @Post('upload-avatar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Upload user avatar',
+    description:
+      'Upload a base64 encoded avatar image for the authenticated user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Avatar uploaded successfully',
+    type: UploadAvatarResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid image format or validation errors',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async uploadAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() uploadAvatarDto: UploadAvatarDto,
+  ): Promise<UploadAvatarResponseDto> {
+    // Validate base64 image size (limit to 5MB)
+    const base64Data = uploadAvatarDto.avatar.split(',')[1];
+    const sizeInBytes = (base64Data.length * 3) / 4;
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+
+    if (sizeInBytes > maxSizeInBytes) {
+      throw new BadRequestException('Avatar image must be smaller than 5MB');
+    }
+
+    // Update user's avatar in database
+    await this.playerRepository.update(user.id, {
+      avatar: uploadAvatarDto.avatar,
+    });
+
+    return {
+      message: 'Avatar uploaded successfully',
+      avatar: uploadAvatarDto.avatar,
     };
   }
 

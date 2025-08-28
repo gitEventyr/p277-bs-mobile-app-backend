@@ -176,6 +176,11 @@ export class Player {
   @IsString()
   device?: string;
 
+  @Column({ type: 'text', nullable: true })
+  @IsOptional()
+  @IsString()
+  avatar?: string;
+
   // Soft delete fields
   @Column({ type: 'boolean', default: false })
   @IsBoolean()

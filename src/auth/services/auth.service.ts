@@ -88,6 +88,7 @@ export class AuthService {
         'level',
         'scratch_cards',
         'is_deleted',
+        'avatar',
       ],
     });
 
@@ -103,6 +104,7 @@ export class AuthService {
       coins_balance: player.coins_balance,
       level: player.level,
       scratch_cards: player.scratch_cards,
+      avatar: player.avatar,
     };
   }
 
