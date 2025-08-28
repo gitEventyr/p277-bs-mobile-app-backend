@@ -82,6 +82,37 @@ export class EmailService {
     await this.sendEmail(emailOptions);
   }
 
+  async sendDynamicTemplateEmail(
+    templateId: string,
+    to: string | string[],
+    dynamicTemplateData: Record<string, any>,
+    options?: Partial<EmailOptions>,
+  ): Promise<void> {
+    try {
+      // Check if the provider supports dynamic templates directly
+      if (this.emailProvider.sendTemplateEmail) {
+        await this.emailProvider.sendTemplateEmail(
+          templateId,
+          to,
+          dynamicTemplateData,
+          options,
+        );
+      } else {
+        // Fallback for providers that don't support dynamic templates
+        throw new Error(
+          `Dynamic templates not supported by current email provider`,
+        );
+      }
+
+      this.logger.log(
+        `Dynamic template email sent successfully to: ${Array.isArray(to) ? to.join(', ') : to} using template: ${templateId}`,
+      );
+    } catch (error) {
+      this.logger.error('Failed to send dynamic template email:', error);
+      throw error;
+    }
+  }
+
   async sendWelcomeEmail(
     to: string,
     userData: {

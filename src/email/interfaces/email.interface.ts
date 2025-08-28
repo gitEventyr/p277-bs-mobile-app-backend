@@ -26,6 +26,12 @@ export interface EmailTemplateData {
 export interface EmailProvider {
   sendEmail(options: EmailOptions): Promise<void>;
   verifyConnection(): Promise<boolean>;
+  sendTemplateEmail?(
+    templateId: string,
+    to: string | string[],
+    dynamicTemplateData: Record<string, any>,
+    options?: Partial<EmailOptions>,
+  ): Promise<void>;
 }
 
 export enum EmailTemplateType {

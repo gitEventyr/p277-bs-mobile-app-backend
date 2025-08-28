@@ -4,6 +4,7 @@ import { EmailService } from './email.service';
 import { EmailTemplateService } from './email-template.service';
 import { AWSSESProvider } from './aws-ses.provider';
 import { SMTPProvider } from './smtp.provider';
+import { SendGridProvider } from './sendgrid.provider';
 import { EmailTemplateType } from '../interfaces/email.interface';
 
 describe('EmailService', () => {
@@ -32,6 +33,12 @@ describe('EmailService', () => {
     verifyConnection: jest.fn().mockResolvedValue(true),
   };
 
+  const mockSendGridProvider = {
+    sendEmail: jest.fn().mockResolvedValue(undefined),
+    sendTemplateEmail: jest.fn().mockResolvedValue(undefined),
+    verifyConnection: jest.fn().mockResolvedValue(true),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -40,6 +47,7 @@ describe('EmailService', () => {
         { provide: ConfigService, useValue: mockConfigService },
         { provide: AWSSESProvider, useValue: mockAWSSESProvider },
         { provide: SMTPProvider, useValue: mockSMTPProvider },
+        { provide: SendGridProvider, useValue: mockSendGridProvider },
       ],
     }).compile();
 
@@ -92,6 +100,45 @@ describe('EmailService', () => {
       status: 'healthy',
       provider: 'smtp',
       connected: true,
+    });
+  });
+
+  describe('SendGrid Dynamic Templates', () => {
+    beforeEach(() => {
+      mockConfigService.get = jest.fn((key: string, defaultValue?: any) => {
+        const configs = {
+          EMAIL_PROVIDER: 'sendgrid',
+          SENDGRID_API_KEY: 'SG.test-key',
+          EMAIL_FROM: 'test@casino.com',
+        };
+        return configs[key] || defaultValue;
+      });
+      // Re-initialize the service with SendGrid provider
+      service['initializeProvider']();
+    });
+
+    it('should send dynamic template email via SendGrid', async () => {
+      const templateId = 'd-123456789';
+      const to = 'test@example.com';
+      const dynamicData = { name: 'Test User', balance: 1000 };
+
+      await service.sendDynamicTemplateEmail(templateId, to, dynamicData);
+
+      expect(mockSendGridProvider.sendTemplateEmail).toHaveBeenCalledWith(
+        templateId,
+        to,
+        dynamicData,
+        undefined,
+      );
+    });
+
+    it('should throw error if provider does not support dynamic templates', async () => {
+      // Override the provider to one without sendTemplateEmail
+      service['emailProvider'] = mockSMTPProvider;
+
+      await expect(
+        service.sendDynamicTemplateEmail('template-id', 'test@test.com', {}),
+      ).rejects.toThrow('Dynamic templates not supported by current email provider');
     });
   });
 });

@@ -69,6 +69,54 @@ export class SendGridProvider implements EmailProvider {
     }
   }
 
+  async sendTemplateEmail(
+    templateId: string,
+    to: string | string[],
+    dynamicTemplateData: Record<string, any>,
+    options?: Partial<EmailOptions>,
+  ): Promise<void> {
+    try {
+      const recipients = Array.isArray(to) ? to : [to];
+
+      const msg: any = {
+        to: recipients,
+        from: options?.from || this.defaultFromEmail,
+        templateId,
+        dynamicTemplateData,
+      };
+
+      if (options?.subject) {
+        msg.subject = options.subject;
+      }
+
+      if (options?.attachments && options.attachments.length > 0) {
+        msg.attachments = options.attachments.map((attachment) => ({
+          content: attachment.content.toString('base64'),
+          filename: attachment.filename,
+          type: attachment.contentType || 'application/octet-stream',
+          disposition: 'attachment',
+        }));
+      }
+
+      await sgMail.send(msg);
+
+      this.logger.log(
+        `Template email sent successfully to: ${recipients.join(', ')} using template: ${templateId}`,
+      );
+    } catch (error) {
+      this.logger.error('Failed to send template email via SendGrid:', error);
+
+      let errorMessage = error.message;
+      if (error.response?.body?.errors) {
+        errorMessage = error.response.body.errors
+          .map((err: any) => err.message)
+          .join(', ');
+      }
+
+      throw new Error(`Failed to send template email: ${errorMessage}`);
+    }
+  }
+
   async verifyConnection(): Promise<boolean> {
     try {
       const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
