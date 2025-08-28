@@ -15,6 +15,7 @@ import {
 import type { Response, Request } from 'express';
 import * as session from 'express-session';
 import { AdminService } from '../services/admin.service';
+import { AnalyticsService } from '../services/analytics.service';
 import { AdminLoginDto } from '../dto/admin-login.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../../auth/guards/admin.guard';
@@ -38,6 +39,7 @@ export class AdminDashboardController {
   constructor(
     private readonly adminService: AdminService,
     private readonly usersService: UsersService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   // Admin Login Page
@@ -119,8 +121,11 @@ export class AdminDashboardController {
     }
 
     try {
-      // Get dashboard statistics
-      const stats = await this.getDashboardStats();
+      // Get comprehensive dashboard analytics
+      const stats = await this.analyticsService.getOverviewStats();
+      const userAnalytics = await this.analyticsService.getUserAnalytics();
+      const revenueAnalytics = await this.analyticsService.getRevenueAnalytics();
+      const gameAnalytics = await this.analyticsService.getGameAnalytics();
       const recentActivity = await this.getRecentActivity();
 
       const flashMessage = session.flashMessage;
@@ -134,6 +139,9 @@ export class AdminDashboardController {
         isDashboard: true,
         admin: session.admin,
         stats,
+        userAnalytics,
+        revenueAnalytics,
+        gameAnalytics,
         recentActivity,
         flashMessage,
         flashType,
@@ -149,7 +157,32 @@ export class AdminDashboardController {
           totalUsers: 0,
           activeUsers: 0,
           totalBalance: 0,
+          averageBalance: 0,
           newRegistrations: 0,
+          totalRevenue: 0,
+          totalGamesPlayed: 0,
+        },
+        userAnalytics: {
+          registrationTrends: [],
+          retentionMetrics: { dayOne: 0, daySeven: 0, dayThirty: 0 },
+          userLevelDistribution: [],
+          geographicDistribution: [],
+        },
+        revenueAnalytics: {
+          dailyRevenue: [],
+          revenueByPlatform: [],
+          averageTransactionValue: 0,
+          topSpenders: [],
+        },
+        gameAnalytics: {
+          gamePerformance: [],
+          dailyGameActivity: [],
+          playerBehavior: {
+            totalActivePlayers: 0,
+            avgPlaysPerPlayer: 0,
+            avgBetPerPlayer: 0,
+            totalGameRevenue: 0,
+          },
         },
         recentActivity: [],
         flashMessage: 'Error loading dashboard data',

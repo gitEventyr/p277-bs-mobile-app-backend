@@ -3,15 +3,27 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdminUser } from '../entities/admin-user.entity';
+import { Player } from '../entities/player.entity';
+import { PlayHistory } from '../entities/play-history.entity';
+import { InAppPurchase } from '../entities/in-app-purchase.entity';
+import { CoinsBalanceChange } from '../entities/coins-balance-change.entity';
 import { AdminService } from './services/admin.service';
+import { AnalyticsService } from './services/analytics.service';
 import { AdminController } from './controllers/admin.controller';
 import { AdminDashboardController } from './controllers/admin-dashboard.controller';
+import { AnalyticsController } from './controllers/analytics.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AdminUser]),
+    TypeOrmModule.forFeature([
+      AdminUser,
+      Player,
+      PlayHistory,
+      InAppPurchase,
+      CoinsBalanceChange,
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -25,8 +37,8 @@ import { UsersModule } from '../users/users.module';
     AuthModule, // Import AuthModule to get access to guards
     UsersModule, // Import UsersModule to get access to UsersService
   ],
-  controllers: [AdminController, AdminDashboardController],
-  providers: [AdminService],
-  exports: [AdminService],
+  controllers: [AdminController, AdminDashboardController, AnalyticsController],
+  providers: [AdminService, AnalyticsService],
+  exports: [AdminService, AnalyticsService],
 })
 export class AdminModule {}

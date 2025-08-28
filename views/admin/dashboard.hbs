@@ -8,6 +8,7 @@
   </div>
 </div>
 
+<!-- Overview Statistics -->
 <div class="row">
   <div class="col-xl-3 col-md-6 mb-4">
     <div class="card border-left-primary shadow h-100 py-2">
@@ -33,7 +34,7 @@
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-              Active Users
+              Active Users (30d)
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.activeUsers}}</div>
           </div>
@@ -82,13 +83,180 @@
   </div>
 </div>
 
+<!-- Additional Overview Statistics -->
+<div class="row">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Total Revenue
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">${{stats.totalRevenue}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-currency-dollar fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Average Balance
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.averageBalance}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-calculator fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+              Games Played
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.totalGamesPlayed}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-controller fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Avg Transaction Value
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">${{revenueAnalytics.averageTransactionValue}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-graph-up fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Details -->
+<div class="row">
+  <!-- User Retention Metrics -->
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-arrow-repeat"></i>
+          User Retention
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-4">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">1-Day</div>
+            <div class="h6 mb-0 font-weight-bold text-gray-800">{{userAnalytics.retentionMetrics.dayOne}}%</div>
+          </div>
+          <div class="col-4">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">7-Day</div>
+            <div class="h6 mb-0 font-weight-bold text-gray-800">{{userAnalytics.retentionMetrics.daySeven}}%</div>
+          </div>
+          <div class="col-4">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">30-Day</div>
+            <div class="h6 mb-0 font-weight-bold text-gray-800">{{userAnalytics.retentionMetrics.dayThirty}}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue by Platform -->
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-phone"></i>
+          Revenue by Platform
+        </h6>
+      </div>
+      <div class="card-body">
+        {{#each revenueAnalytics.revenueByPlatform}}
+        <div class="row align-items-center mb-2">
+          <div class="col-6">
+            <span class="text-capitalize">{{this.platform}}</span>
+          </div>
+          <div class="col-3 text-right">
+            <strong>${{this.revenue}}</strong>
+          </div>
+          <div class="col-3 text-right">
+            <small class="text-muted">{{this.transactions}} txns</small>
+          </div>
+        </div>
+        {{/each}}
+        {{#unless revenueAnalytics.revenueByPlatform.length}}
+        <p class="text-muted text-center">No revenue data available</p>
+        {{/unless}}
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Performance -->
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-controller"></i>
+          Game Performance
+        </h6>
+      </div>
+      <div class="card-body">
+        {{#each gameAnalytics.gamePerformance}}
+        <div class="row align-items-center mb-2">
+          <div class="col-6">
+            <span>{{this.gameName}}</span>
+          </div>
+          <div class="col-3 text-right">
+            <strong>{{this.totalPlays}}</strong>
+          </div>
+          <div class="col-3 text-right">
+            <small class="text-muted">{{this.winRate}}% win</small>
+          </div>
+        </div>
+        {{/each}}
+        {{#unless gameAnalytics.gamePerformance.length}}
+        <p class="text-muted text-center">No game data available</p>
+        {{/unless}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Level Distribution & Top Spenders -->
 <div class="row">
   <div class="col-lg-6">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
-          <i class="bi bi-clock-history"></i>
-          Recent User Activity
+          <i class="bi bi-bar-chart"></i>
+          User Level Distribution
         </h6>
       </div>
       <div class="card-body">
@@ -96,28 +264,30 @@
           <table class="table table-sm">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Activity</th>
-                <th>Time</th>
+                <th>Level</th>
+                <th>Users</th>
+                <th>Percentage</th>
               </tr>
             </thead>
             <tbody>
-              {{#each recentActivity}}
+              {{#each userAnalytics.userLevelDistribution}}
               <tr>
+                <td><span class="badge bg-info">Level {{this.level}}</span></td>
+                <td>{{this.userCount}}</td>
                 <td>
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-sm me-2">
-                      <i class="bi bi-person-circle"></i>
+                  <div class="progress" style="height: 20px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{this.percentage}}%" aria-valuenow="{{this.percentage}}" aria-valuemin="0" aria-valuemax="100">
+                      {{this.percentage}}%
                     </div>
-                    {{this.name}}
                   </div>
                 </td>
-                <td>
-                  <span class="badge bg-{{this.type}}">{{this.activity}}</span>
-                </td>
-                <td class="text-muted">{{this.time}}</td>
               </tr>
               {{/each}}
+              {{#unless userAnalytics.userLevelDistribution.length}}
+              <tr>
+                <td colspan="3" class="text-muted text-center">No user level data available</td>
+              </tr>
+              {{/unless}}
             </tbody>
           </table>
         </div>
@@ -129,7 +299,89 @@
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
-          <i class="bi bi-exclamation-triangle"></i>
+          <i class="bi bi-trophy"></i>
+          Top Spenders
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Total Spent</th>
+                <th>Transactions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each revenueAnalytics.topSpenders}}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-sm me-2">
+                      <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                      <div>{{this.name}}</div>
+                      <small class="text-muted">{{this.email}}</small>
+                    </div>
+                  </div>
+                </td>
+                <td><strong>${{this.totalSpent}}</strong></td>
+                <td><span class="badge bg-primary">{{this.transactionCount}}</span></td>
+              </tr>
+              {{/each}}
+              {{#unless revenueAnalytics.topSpenders.length}}
+              <tr>
+                <td colspan="3" class="text-muted text-center">No purchase data available</td>
+              </tr>
+              {{/unless}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Player Behavior & Quick Actions -->
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-graph-up"></i>
+          Player Behavior
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-6 mb-3">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Active Players</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.totalActivePlayers}}</div>
+          </div>
+          <div class="col-6 mb-3">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Avg Plays/Player</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.avgPlaysPerPlayer}}</div>
+          </div>
+          <div class="col-6">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Avg Bet/Player</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.avgBetPerPlayer}}</div>
+          </div>
+          <div class="col-6">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Game Revenue</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.totalGameRevenue}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-gear"></i>
           Quick Actions
         </h6>
       </div>
@@ -140,7 +392,16 @@
             Manage Users
             <i class="bi bi-chevron-right float-end"></i>
           </a>
-          <!-- Other features not implemented yet -->
+          <a href="/admin/analytics/overview" class="list-group-item list-group-item-action">
+            <i class="bi bi-graph-up me-2"></i>
+            View Analytics API
+            <i class="bi bi-chevron-right float-end"></i>
+          </a>
+          <a href="/admin/analytics/revenue" class="list-group-item list-group-item-action">
+            <i class="bi bi-currency-dollar me-2"></i>
+            Revenue Analytics API
+            <i class="bi bi-chevron-right float-end"></i>
+          </a>
         </div>
       </div>
     </div>
