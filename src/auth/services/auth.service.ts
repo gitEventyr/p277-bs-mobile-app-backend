@@ -97,7 +97,7 @@ export class AuthService {
     }
 
     return {
-      id: player.id,
+      id: typeof player.id === 'string' ? parseInt(player.id) : player.id,
       email: player.email,
       name: player.name,
       visitor_id: player.visitor_id,

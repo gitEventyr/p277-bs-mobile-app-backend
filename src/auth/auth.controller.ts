@@ -200,7 +200,10 @@ export class AuthController {
 
     // Generate JWT token
     const payload: JwtPayload = {
-      sub: savedPlayer.id,
+      sub:
+        typeof savedPlayer.id === 'string'
+          ? parseInt(savedPlayer.id)
+          : savedPlayer.id,
       email: savedPlayer.email || '',
       type: 'user',
     };
@@ -303,7 +306,7 @@ export class AuthController {
 
     // Generate JWT token
     const payload: JwtPayload = {
-      sub: player.id,
+      sub: typeof player.id === 'string' ? parseInt(player.id) : player.id,
       email: player.email || '',
       type: 'user',
     };
@@ -358,18 +361,21 @@ export class AuthController {
   async getCurrentUser(
     @CurrentUser() user: AuthenticatedUser | AuthenticatedAdmin,
   ) {
+    const isAdmin = typeof user.id === 'string';
+    const isUser = typeof user.id === 'number';
+
     return {
       id: user.id,
       email: (user as any).email,
-      type: typeof user.id === 'string' ? 'admin' : 'user',
-      ...(typeof user.id === 'number' && {
+      type: isAdmin ? 'admin' : 'user',
+      ...(isUser && {
         visitor_id: (user as AuthenticatedUser).visitor_id,
         coins_balance: (user as AuthenticatedUser).coins_balance,
         level: (user as AuthenticatedUser).level,
         scratch_cards: (user as AuthenticatedUser).scratch_cards,
         avatar: (user as AuthenticatedUser).avatar,
       }),
-      ...(typeof user.id === 'string' && {
+      ...(isAdmin && {
         display_name: (user as AuthenticatedAdmin).display_name,
         is_active: (user as AuthenticatedAdmin).is_active,
       }),
