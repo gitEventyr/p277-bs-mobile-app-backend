@@ -360,6 +360,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Current user information' })
   async getCurrentUser(
     @CurrentUser() user: AuthenticatedUser | AuthenticatedAdmin,
+    @Req() req: Request,
   ) {
     const isAdmin = typeof user.id === 'string';
     const isUser = typeof user.id === 'number';
@@ -374,6 +375,7 @@ export class AuthController {
         level: (user as AuthenticatedUser).level,
         scratch_cards: (user as AuthenticatedUser).scratch_cards,
         avatar: (user as AuthenticatedUser).avatar,
+        ipaddress: this.getClientIp(req),
       }),
       ...(isAdmin && {
         display_name: (user as AuthenticatedAdmin).display_name,
