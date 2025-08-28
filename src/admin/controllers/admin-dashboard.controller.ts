@@ -124,7 +124,8 @@ export class AdminDashboardController {
       // Get comprehensive dashboard analytics
       const stats = await this.analyticsService.getOverviewStats();
       const userAnalytics = await this.analyticsService.getUserAnalytics();
-      const revenueAnalytics = await this.analyticsService.getRevenueAnalytics();
+      const revenueAnalytics =
+        await this.analyticsService.getRevenueAnalytics();
       const gameAnalytics = await this.analyticsService.getGameAnalytics();
       const recentActivity = await this.getRecentActivity();
 
