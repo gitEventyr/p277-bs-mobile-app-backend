@@ -365,22 +365,61 @@ export class AuthController {
     const isAdmin = typeof user.id === 'string';
     const isUser = typeof user.id === 'number';
 
+    if (isUser) {
+      // Fetch complete user data from database
+      const fullUser = await this.playerRepository.findOne({
+        where: { id: user.id as number, is_deleted: false },
+      });
+
+      if (!fullUser) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      return {
+        id: fullUser.id,
+        visitor_id: fullUser.visitor_id,
+        name: fullUser.name,
+        email: fullUser.email,
+        phone: fullUser.phone,
+        coins_balance: fullUser.coins_balance,
+        level: fullUser.level,
+        scratch_cards: fullUser.scratch_cards,
+        avatar: fullUser.avatar,
+        device_udid: fullUser.device_udid,
+        subscription_agreement: fullUser.subscription_agreement,
+        tnc_agreement: fullUser.tnc_agreement,
+        os: fullUser.os,
+        device: fullUser.device,
+        age_checkbox: fullUser.age_checkbox,
+        auth_user_id: fullUser.auth_user_id,
+        created_at: fullUser.created_at,
+        updated_at: fullUser.updated_at,
+        pid: fullUser.pid,
+        c: fullUser.c,
+        af_channel: fullUser.af_channel,
+        af_adset: fullUser.af_adset,
+        af_ad: fullUser.af_ad,
+        af_keywords: fullUser.af_keywords,
+        is_retargeting: fullUser.is_retargeting,
+        af_click_lookback: fullUser.af_click_lookback,
+        af_viewthrough_lookback: fullUser.af_viewthrough_lookback,
+        af_sub1: fullUser.af_sub1,
+        af_sub2: fullUser.af_sub2,
+        af_sub3: fullUser.af_sub3,
+        af_sub4: fullUser.af_sub4,
+        af_sub5: fullUser.af_sub5,
+        type: 'user',
+        ipaddress: this.getClientIp(req),
+      };
+    }
+
+    // Admin user case
     return {
       id: user.id,
       email: (user as any).email,
-      type: isAdmin ? 'admin' : 'user',
-      ...(isUser && {
-        visitor_id: (user as AuthenticatedUser).visitor_id,
-        coins_balance: (user as AuthenticatedUser).coins_balance,
-        level: (user as AuthenticatedUser).level,
-        scratch_cards: (user as AuthenticatedUser).scratch_cards,
-        avatar: (user as AuthenticatedUser).avatar,
-        ipaddress: this.getClientIp(req),
-      }),
-      ...(isAdmin && {
-        display_name: (user as AuthenticatedAdmin).display_name,
-        is_active: (user as AuthenticatedAdmin).is_active,
-      }),
+      type: 'admin',
+      display_name: (user as AuthenticatedAdmin).display_name,
+      is_active: (user as AuthenticatedAdmin).is_active,
     };
   }
 
