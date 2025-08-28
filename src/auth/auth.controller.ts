@@ -355,7 +355,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get current authenticated user' })
   @ApiResponse({ status: 200, description: 'Current user information' })
   async getCurrentUser(
@@ -384,7 +384,7 @@ export class AuthController {
 
   @Get('admin-only')
   @UseGuards(JwtAuthGuard, AdminGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @HideFromSwagger()
   @ApiOperation({ summary: 'Admin-only endpoint' })
   @ApiResponse({ status: 200, description: 'Admin-only data' })
@@ -553,7 +553,7 @@ export class AuthController {
 
   @Post('upload-avatar')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Upload user avatar',
     description:
@@ -598,7 +598,7 @@ export class AuthController {
 
   @Post('delete-account')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Delete user account',
     description: 'Soft delete the current user account (mobile API)',

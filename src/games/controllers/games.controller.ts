@@ -36,7 +36,7 @@ import type { AuthenticatedUser } from '../../common/types/auth.types';
 @ApiTags('📱 Mobile: Gaming')
 @Controller('games')
 @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 

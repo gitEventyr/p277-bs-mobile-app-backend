@@ -52,7 +52,7 @@ export class AdminController {
     status: HttpStatus.FORBIDDEN,
     description: 'Admin access required',
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('me')
   async getProfile(@CurrentUser() admin: AuthenticatedAdmin) {
@@ -78,7 +78,7 @@ export class AdminController {
     status: HttpStatus.FORBIDDEN,
     description: 'Admin access required',
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('admin-only')
   async adminOnly(@CurrentUser() admin: AuthenticatedAdmin) {

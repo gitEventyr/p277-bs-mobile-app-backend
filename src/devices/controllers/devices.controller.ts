@@ -25,7 +25,7 @@ import type { AuthenticatedUser } from '../../common/types/auth.types';
 @ApiTags('📱 Mobile: Devices')
 @Controller('devices')
 @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 

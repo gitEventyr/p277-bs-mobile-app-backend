@@ -34,7 +34,7 @@ import type { AuthenticatedUser } from '../../common/types/auth.types';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,

@@ -23,7 +23,7 @@ import {
 } from '../dto/analytics.dto';
 
 @ApiTags('Admin Analytics')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @UseGuards(AdminGuard)
 @Controller('admin/analytics')
 export class AnalyticsController {

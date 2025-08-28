@@ -27,7 +27,7 @@ import {
 } from '../dto/purchase.dto';
 
 @ApiTags('📱 Mobile: Purchases')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('purchases')
 @UseGuards(JwtAuthGuard)
 export class PurchasesController {
