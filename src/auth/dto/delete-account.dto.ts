@@ -1,23 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, MinLength } from 'class-validator';
 
 export class DeleteAccountDto {
-  @ApiProperty({
-    example: 'MyPassword123!',
-    description: 'Current password for account verification',
-  })
-  @IsString()
-  @MinLength(1)
-  password: string;
-
-  @ApiProperty({
-    example: 'No longer using the app',
-    description: 'Optional reason for account deletion',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  reason?: string;
+  // No fields needed for mobile API - authentication is handled by JWT token
 }
 
 export class DeleteAccountResponseDto {

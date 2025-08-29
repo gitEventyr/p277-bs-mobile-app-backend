@@ -11,6 +11,8 @@ import { AuthController } from './auth.controller';
 import { Player } from '../entities/player.entity';
 import { AdminUser } from '../entities/admin-user.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
+import { EmailVerificationToken } from '../entities/email-verification-token.entity';
+import { PhoneVerificationToken } from '../entities/phone-verification-token.entity';
 import { EmailModule } from '../email/email.module';
 import { DevicesModule } from '../devices/devices.module';
 
@@ -28,7 +30,13 @@ import { DevicesModule } from '../devices/devices.module';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Player, AdminUser, PasswordResetToken]),
+    TypeOrmModule.forFeature([
+      Player,
+      AdminUser,
+      PasswordResetToken,
+      EmailVerificationToken,
+      PhoneVerificationToken,
+    ]),
     EmailModule,
     DevicesModule,
   ],

@@ -44,8 +44,15 @@ import {
   UploadAvatarDto,
   UploadAvatarResponseDto,
 } from './dto/avatar-upload.dto';
+import {
+  RequestEmailVerificationDto,
+  RequestEmailVerificationResponseDto,
+} from './dto/request-email-verification.dto';
+import { VerifyEmailDto, VerifyEmailResponseDto } from './dto/verify-email.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
+import { EmailVerificationToken } from '../entities/email-verification-token.entity';
+import { PhoneVerificationToken } from '../entities/phone-verification-token.entity';
 import { EmailService } from '../email/services/email.service';
 import { DevicesService } from '../devices/services/devices.service';
 import type {
@@ -76,6 +83,10 @@ export class AuthController {
     private readonly playerRepository: Repository<Player>,
     @InjectRepository(PasswordResetToken)
     private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
+    @InjectRepository(EmailVerificationToken)
+    private readonly emailVerificationTokenRepository: Repository<EmailVerificationToken>,
+    @InjectRepository(PhoneVerificationToken)
+    private readonly phoneVerificationTokenRepository: Repository<PhoneVerificationToken>,
     private readonly emailService: EmailService,
     private readonly devicesService: DevicesService,
   ) {}
@@ -408,6 +419,10 @@ export class AuthController {
         af_sub3: fullUser.af_sub3,
         af_sub4: fullUser.af_sub4,
         af_sub5: fullUser.af_sub5,
+        email_verified: fullUser.email_verified,
+        email_verified_at: fullUser.email_verified_at,
+        phone_verified: fullUser.phone_verified,
+        phone_verified_at: fullUser.phone_verified_at,
         type: 'user',
         ipaddress: this.getClientIp(req),
       };
@@ -504,6 +519,7 @@ export class AuthController {
       await this.emailService.sendPasswordReset(user.email!, {
         name: user.name,
         resetUrl,
+        resetLink: resetUrl,
       });
     } catch (emailError) {
       this.logger.error('Failed to send password reset email:', emailError);
@@ -665,15 +681,151 @@ export class AuthController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() deleteAccountDto: DeleteAccountDto,
   ): Promise<DeleteAccountResponseDto> {
-    await this.authService.softDeleteAccount(
-      user.id,
-      deleteAccountDto.password,
-      deleteAccountDto.reason,
-    );
+    await this.authService.softDeleteAccount(user.id);
 
     return {
       message:
         'Account successfully deleted. Your data has been removed from our system.',
+    };
+  }
+
+  @Post('request-email-verification')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Request email verification',
+    description:
+      "Sends a 6-digit verification code to the authenticated user's email",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification code sent successfully',
+    type: RequestEmailVerificationResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - email not set or already verified',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async requestEmailVerification(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<RequestEmailVerificationResponseDto> {
+    const player = await this.playerRepository.findOne({
+      where: { id: user.id },
+    });
+
+    if (!player || !player.email) {
+      throw new BadRequestException('No email address found for this account');
+    }
+
+    if (player.email_verified) {
+      throw new BadRequestException('Email is already verified');
+    }
+
+    // Generate 6-digit verification code
+    const verificationCode = this.authService.generateResetCode();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // Code expires in 10 minutes
+
+    // Invalidate any existing tokens
+    await this.emailVerificationTokenRepository.update(
+      { user_id: player.id, used: false },
+      { used: true },
+    );
+
+    // Create new verification token
+    const emailVerificationToken = this.emailVerificationTokenRepository.create(
+      {
+        token: verificationCode,
+        user_id: player.id,
+        expires_at: expiresAt,
+        used: false,
+      },
+    );
+
+    await this.emailVerificationTokenRepository.save(emailVerificationToken);
+
+    // Send verification email with code
+    try {
+      await this.emailService.sendEmailVerification(player.email, {
+        name: player.name,
+        resetCode: verificationCode,
+      });
+    } catch (emailError) {
+      this.logger.error('Failed to send email verification:', emailError);
+      // Don't fail the request even if email fails
+    }
+
+    return {
+      message: 'Verification code sent to your email address',
+      expiresIn: 600, // 10 minutes in seconds
+    };
+  }
+
+  @Post('verify-email')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Verify email with 6-digit code',
+    description:
+      "Verifies the authenticated user's email using the 6-digit code sent via email",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email verified successfully',
+    type: VerifyEmailResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification code',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async verifyEmail(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() verifyEmailDto: VerifyEmailDto,
+  ): Promise<VerifyEmailResponseDto> {
+    // Find valid verification token
+    const verificationToken =
+      await this.emailVerificationTokenRepository.findOne({
+        where: {
+          token: verifyEmailDto.code,
+          user_id: user.id,
+          used: false,
+        },
+        relations: ['user'],
+      });
+
+    if (!verificationToken) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Check if token is expired
+    if (verificationToken.expires_at < new Date()) {
+      throw new BadRequestException('Verification code has expired');
+    }
+
+    // Mark token as used
+    verificationToken.used = true;
+    await this.emailVerificationTokenRepository.save(verificationToken);
+
+    // Update user's email verification status
+    await this.playerRepository.update(
+      { id: user.id },
+      {
+        email_verified: true,
+        email_verified_at: new Date(),
+      },
+    );
+
+    return {
+      message: 'Email verified successfully',
+      emailVerified: true,
     };
   }
 

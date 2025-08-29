@@ -140,9 +140,28 @@ export class EmailService {
     to: string,
     userData: {
       name?: string;
-      verificationUrl: string;
+      verificationUrl?: string;
+      resetCode?: string;
     },
   ): Promise<void> {
+    const provider = this.configService.get<string>('EMAIL_PROVIDER', 'smtp');
+
+    if (provider.toLowerCase() === 'sendgrid') {
+      const templateId = this.configService.get<string>(
+        'SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID',
+      );
+
+      if (templateId) {
+        const dynamicData = {
+          resetCode: userData.resetCode,
+        };
+
+        await this.sendDynamicTemplateEmail(templateId, to, dynamicData);
+        return;
+      }
+    }
+
+    // Fallback to regular templated email
     const data = {
       name: userData.name || 'Player',
       verificationUrl: userData.verificationUrl,
@@ -159,12 +178,31 @@ export class EmailService {
     to: string,
     userData: {
       name?: string;
-      resetUrl: string;
+      resetUrl?: string;
+      resetLink?: string;
     },
   ): Promise<void> {
+    const provider = this.configService.get<string>('EMAIL_PROVIDER', 'smtp');
+
+    if (provider.toLowerCase() === 'sendgrid') {
+      const templateId = this.configService.get<string>(
+        'SENDGRID_PASSWORD_RESET_TEMPLATE_ID',
+      );
+
+      if (templateId) {
+        const dynamicData = {
+          resetLink: userData.resetLink || userData.resetUrl,
+        };
+
+        await this.sendDynamicTemplateEmail(templateId, to, dynamicData);
+        return;
+      }
+    }
+
+    // Fallback to regular templated email
     const data = {
       name: userData.name || 'Player',
-      resetUrl: userData.resetUrl,
+      resetUrl: userData.resetUrl || userData.resetLink,
     };
 
     await this.sendTemplatedEmail(EmailTemplateType.PASSWORD_RESET, to, data);

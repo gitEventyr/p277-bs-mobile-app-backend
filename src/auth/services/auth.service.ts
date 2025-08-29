@@ -142,35 +142,18 @@ export class AuthService {
     };
   }
 
-  async softDeleteAccount(
-    userId: number,
-    password: string,
-    reason?: string,
-  ): Promise<void> {
-    // Find the user with password
+  async softDeleteAccount(userId: number): Promise<void> {
+    // Find the user
     const user = await this.playerRepository.findOne({
       where: { id: userId, is_deleted: false },
-      select: ['id', 'email', 'password', 'name'],
+      select: ['id', 'email', 'name'],
     });
 
     if (!user) {
       throw new NotFoundException('User not found or already deleted');
     }
 
-    if (!user.password) {
-      throw new BadRequestException('Account has no password set');
-    }
-
-    // Verify password
-    const isPasswordValid = await this.comparePasswords(
-      password,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      throw new BadRequestException('Invalid password');
-    }
-
-    // Soft delete the account and clear sensitive data
+    // Soft delete the account and clear sensitive data (mobile API - no password verification needed)
     await this.playerRepository.query(
       `
       UPDATE players 
@@ -184,7 +167,7 @@ export class AuthService {
           updated_at = NOW()
       WHERE id = $2
     `,
-      [reason || 'User requested account deletion', userId],
+      ['Mobile app account deletion', userId],
     );
   }
 

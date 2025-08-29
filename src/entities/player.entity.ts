@@ -181,6 +181,24 @@ export class Player {
   @IsString()
   avatar?: string;
 
+  // Email verification fields
+  @Column({ type: 'boolean', default: false })
+  @IsBoolean()
+  email_verified: boolean;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @IsOptional()
+  email_verified_at?: Date;
+
+  // Phone verification fields
+  @Column({ type: 'boolean', default: false })
+  @IsBoolean()
+  phone_verified: boolean;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @IsOptional()
+  phone_verified_at?: Date;
+
   // Soft delete fields
   @Column({ type: 'boolean', default: false })
   @IsBoolean()

@@ -138,7 +138,9 @@ describe('EmailService', () => {
 
       await expect(
         service.sendDynamicTemplateEmail('template-id', 'test@test.com', {}),
-      ).rejects.toThrow('Dynamic templates not supported by current email provider');
+      ).rejects.toThrow(
+        'Dynamic templates not supported by current email provider',
+      );
     });
   });
 });
