@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'same-origin',
           body: JSON.stringify(userData)
         });
         
@@ -135,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'same-origin',
           body: JSON.stringify({
             amount: amount,
             reason: finalReason
@@ -265,11 +267,23 @@ async function viewUser(userId) {
   modal.show();
   
   try {
-    const response = await fetch(`/admin/api/users/${userId}`);
+    const response = await fetch(`/admin/api/users/${userId}`, {
+      credentials: 'same-origin'
+    });
     const result = await response.json();
+    
+    // Debug: Log the raw response to see what we're getting
+    console.log('Raw API response for viewUser:', response.status, result);
     
     if (result.success) {
       const user = result.data;
+      
+      // Debug: Log the user data to see what we're actually getting
+      console.log('User data received:', user);
+      console.log('Name field:', user.name, typeof user.name);
+      console.log('Email field:', user.email, typeof user.email);
+      console.log('Phone field:', user.phone, typeof user.phone);
+      
       modalBody.innerHTML = `
         <div class="row">
           <div class="col-md-6">
@@ -315,12 +329,20 @@ async function viewUser(userId) {
       
       editBtn.onclick = () => editUser(userId);
     } else {
+      console.error('API returned error:', result);
       modalBody.innerHTML = `
         <div class="alert alert-danger">
           <i class="bi bi-exclamation-triangle"></i>
-          Error loading user details: ${result.message}
+          Error loading user details: ${result.message || 'Unknown error'}
         </div>
       `;
+      
+      // If authentication failed, reload the page
+      if (result.message && result.message.includes('Not authenticated')) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     }
   } catch (error) {
     console.error('Error fetching user details:', error);
@@ -337,11 +359,17 @@ async function viewUser(userId) {
 async function editUser(userId) {
   try {
     // First get user details
-    const response = await fetch(`/admin/api/users/${userId}`);
+    const response = await fetch(`/admin/api/users/${userId}`, {
+      credentials: 'same-origin'
+    });
     const result = await response.json();
     
     if (result.success) {
       const user = result.data;
+      
+      // Debug: Log the user data for edit form
+      console.log('Edit form user data:', user);
+      console.log('Edit form name:', user.name, typeof user.name);
       
       // Populate edit form
       document.getElementById('editUserId').value = userId;
@@ -363,7 +391,15 @@ async function editUser(userId) {
       const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
       editModal.show();
     } else {
-      showToast('Error loading user details: ' + result.message, 'danger');
+      console.error('Edit user API error:', result);
+      showToast('Error loading user details: ' + (result.message || 'Unknown error'), 'danger');
+      
+      // If authentication failed, reload the page
+      if (result.message && result.message.includes('Not authenticated')) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     }
   } catch (error) {
     console.error('Error loading user for edit:', error);
@@ -375,11 +411,18 @@ async function editUser(userId) {
 async function adjustBalance(userId) {
   try {
     // First get user details
-    const response = await fetch(`/admin/api/users/${userId}`);
+    const response = await fetch(`/admin/api/users/${userId}`, {
+      credentials: 'same-origin'
+    });
     const result = await response.json();
     
     if (result.success) {
       const user = result.data;
+      
+      // Debug: Log the user data for balance adjustment
+      console.log('Balance adjustment user data:', user);
+      console.log('Balance adjustment name:', user.name, typeof user.name);
+      console.log('Balance adjustment balance:', user.coins_balance, typeof user.coins_balance);
       
       // Populate adjustment form
       document.getElementById('adjustUserId').value = userId;
@@ -397,7 +440,15 @@ async function adjustBalance(userId) {
       const adjustModal = new bootstrap.Modal(document.getElementById('adjustBalanceModal'));
       adjustModal.show();
     } else {
-      showToast('Error loading user details: ' + result.message, 'danger');
+      console.error('Adjust balance API error:', result);
+      showToast('Error loading user details: ' + (result.message || 'Unknown error'), 'danger');
+      
+      // If authentication failed, reload the page
+      if (result.message && result.message.includes('Not authenticated')) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     }
   } catch (error) {
     console.error('Error loading user for balance adjustment:', error);
