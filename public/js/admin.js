@@ -89,9 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
           body: JSON.stringify(userData)
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
+        if (response.ok) {
+          const result = await response.json();
           // Close modal and refresh page
           bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
           showToast('User updated successfully!', 'success');
@@ -99,7 +98,8 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.reload();
           }, 1000);
         } else {
-          showToast(result.message || 'Error updating user', 'danger');
+          const errorResult = await response.json();
+          showToast(errorResult.message || 'Error updating user', 'danger');
         }
       } catch (error) {
         console.error('Error updating user:', error);
@@ -143,17 +143,18 @@ document.addEventListener('DOMContentLoaded', function() {
           })
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
+        if (response.ok) {
+          const result = await response.json();
           // Close modal and refresh page
           bootstrap.Modal.getInstance(document.getElementById('adjustBalanceModal')).hide();
-          showToast(result.message, 'success');
+          const amount = parseInt(document.getElementById('adjustAmount').value);
+          showToast(`Balance ${amount > 0 ? 'increased' : 'decreased'} successfully`, 'success');
           setTimeout(() => {
             window.location.reload();
           }, 1000);
         } else {
-          showToast(result.message || 'Error adjusting balance', 'danger');
+          const errorResult = await response.json();
+          showToast(errorResult.message || 'Error adjusting balance', 'danger');
         }
       } catch (error) {
         console.error('Error adjusting balance:', error);
@@ -270,13 +271,15 @@ async function viewUser(userId) {
     const response = await fetch(`/admin/api/users/${userId}`, {
       credentials: 'same-origin'
     });
-    const result = await response.json();
     
-    // Debug: Log the raw response to see what we're getting
-    console.log('Raw API response for viewUser:', response.status, result);
-    
-    if (result.success) {
-      const user = result.data;
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Debug: Log the raw response to see what we're getting
+      console.log('Raw API response for viewUser:', response.status, result);
+      
+      // Handle the response based on structure
+      const user = result.success ? result.data : result;
       
       // Debug: Log the user data to see what we're actually getting
       console.log('User data received:', user);
@@ -329,16 +332,17 @@ async function viewUser(userId) {
       
       editBtn.onclick = () => editUser(userId);
     } else {
-      console.error('API returned error:', result);
+      const errorResult = await response.json();
+      console.error('API returned error:', response.status, errorResult);
       modalBody.innerHTML = `
         <div class="alert alert-danger">
           <i class="bi bi-exclamation-triangle"></i>
-          Error loading user details: ${result.message || 'Unknown error'}
+          Error loading user details: ${errorResult.message || 'Unknown error'}
         </div>
       `;
       
       // If authentication failed, reload the page
-      if (result.message && result.message.includes('Not authenticated')) {
+      if (response.status === 401) {
         setTimeout(() => {
           window.location.reload();
         }, 2000);
@@ -362,10 +366,12 @@ async function editUser(userId) {
     const response = await fetch(`/admin/api/users/${userId}`, {
       credentials: 'same-origin'
     });
-    const result = await response.json();
     
-    if (result.success) {
-      const user = result.data;
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Handle the response based on structure
+      const user = result.success ? result.data : result;
       
       // Debug: Log the user data for edit form
       console.log('Edit form user data:', user);
@@ -391,11 +397,12 @@ async function editUser(userId) {
       const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
       editModal.show();
     } else {
-      console.error('Edit user API error:', result);
-      showToast('Error loading user details: ' + (result.message || 'Unknown error'), 'danger');
+      const errorResult = await response.json();
+      console.error('Edit user API error:', response.status, errorResult);
+      showToast('Error loading user details: ' + (errorResult.message || 'Unknown error'), 'danger');
       
       // If authentication failed, reload the page
-      if (result.message && result.message.includes('Not authenticated')) {
+      if (response.status === 401) {
         setTimeout(() => {
           window.location.reload();
         }, 2000);
@@ -414,10 +421,12 @@ async function adjustBalance(userId) {
     const response = await fetch(`/admin/api/users/${userId}`, {
       credentials: 'same-origin'
     });
-    const result = await response.json();
     
-    if (result.success) {
-      const user = result.data;
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Handle the response based on structure
+      const user = result.success ? result.data : result;
       
       // Debug: Log the user data for balance adjustment
       console.log('Balance adjustment user data:', user);
@@ -440,11 +449,12 @@ async function adjustBalance(userId) {
       const adjustModal = new bootstrap.Modal(document.getElementById('adjustBalanceModal'));
       adjustModal.show();
     } else {
-      console.error('Adjust balance API error:', result);
-      showToast('Error loading user details: ' + (result.message || 'Unknown error'), 'danger');
+      const errorResult = await response.json();
+      console.error('Adjust balance API error:', response.status, errorResult);
+      showToast('Error loading user details: ' + (errorResult.message || 'Unknown error'), 'danger');
       
       // If authentication failed, reload the page
-      if (result.message && result.message.includes('Not authenticated')) {
+      if (response.status === 401) {
         setTimeout(() => {
           window.location.reload();
         }, 2000);

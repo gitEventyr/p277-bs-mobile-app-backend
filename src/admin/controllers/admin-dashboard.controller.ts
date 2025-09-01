@@ -8,6 +8,8 @@ import {
   Session,
   Query,
   Param,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import * as session from 'express-session';
@@ -254,24 +256,15 @@ export class AdminDashboardController {
     @Session() session: AdminSession,
   ) {
     if (!session.admin) {
-      return { success: false, message: 'Not authenticated' };
+      throw new UnauthorizedException('Not authenticated');
     }
 
     try {
       const user = await this.usersService.getProfile(parseInt(id));
-      if (!user) {
-        return { success: false, message: 'User not found' };
-      }
-      return {
-        success: true,
-        data: user,
-      };
+      return user;
     } catch (error) {
       console.error('Get user error:', error);
-      return {
-        success: false,
-        message: 'User not found',
-      };
+      throw new NotFoundException('User not found');
     }
   }
 
@@ -283,7 +276,7 @@ export class AdminDashboardController {
     @Session() session: AdminSession,
   ) {
     if (!session.admin) {
-      return { success: false, message: 'Not authenticated' };
+      throw new UnauthorizedException('Not authenticated');
     }
 
     try {
@@ -314,17 +307,10 @@ export class AdminDashboardController {
         parseInt(id, 10),
         profileUpdateData,
       );
-      return {
-        success: true,
-        data: updatedUser,
-        message: 'User updated successfully',
-      };
+      return updatedUser;
     } catch (error: any) {
       console.error('Update user error:', error);
-      return {
-        success: false,
-        message: error?.message || 'Error updating user',
-      };
+      throw new Error(error?.message || 'Error updating user');
     }
   }
 
@@ -336,18 +322,18 @@ export class AdminDashboardController {
     @Session() session: AdminSession,
   ) {
     if (!session.admin) {
-      return { success: false, message: 'Not authenticated' };
+      throw new UnauthorizedException('Not authenticated');
     }
 
     try {
       const { amount, reason } = adjustData;
 
       if (!amount || amount === 0) {
-        return { success: false, message: 'Amount must be a non-zero number' };
+        throw new Error('Amount must be a non-zero number');
       }
 
       if (!reason) {
-        return { success: false, message: 'Reason is required' };
+        throw new Error('Reason is required');
       }
 
       const result = await this.balanceService.adminAdjustBalance(
@@ -356,17 +342,10 @@ export class AdminDashboardController {
         reason,
       );
 
-      return {
-        success: true,
-        data: result,
-        message: `Balance ${amount > 0 ? 'increased' : 'decreased'} successfully`,
-      };
+      return result;
     } catch (error: any) {
       console.error('Adjust balance error:', error);
-      return {
-        success: false,
-        message: error?.message || 'Error adjusting balance',
-      };
+      throw new Error(error?.message || 'Error adjusting balance');
     }
   }
 
