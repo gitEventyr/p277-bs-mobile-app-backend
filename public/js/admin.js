@@ -54,6 +54,132 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+// Edit User Form Handler
+document.addEventListener('DOMContentLoaded', function() {
+  const editUserForm = document.getElementById('editUserForm');
+  if (editUserForm) {
+    editUserForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      const removeLoadingState = addLoadingState(submitBtn, originalText);
+      
+      try {
+        const formData = new FormData(this);
+        const userId = formData.get('userId');
+        
+        // Convert form data to object (excluding userId)
+        const userData = {
+          name: formData.get('name'),
+          email: formData.get('email'),
+          phone: formData.get('phone'),
+          device: formData.get('device'),
+          os: formData.get('os')
+        };
+        
+        const response = await fetch(`/admin/api/users/${userId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Close modal and refresh page
+          bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+          showToast('User updated successfully!', 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          showToast(result.message || 'Error updating user', 'danger');
+        }
+      } catch (error) {
+        console.error('Error updating user:', error);
+        showToast('Network error. Please try again.', 'danger');
+      } finally {
+        removeLoadingState();
+      }
+    });
+  }
+});
+
+// Adjust Balance Form Handler
+document.addEventListener('DOMContentLoaded', function() {
+  const adjustBalanceForm = document.getElementById('adjustBalanceForm');
+  if (adjustBalanceForm) {
+    adjustBalanceForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      const removeLoadingState = addLoadingState(submitBtn, originalText);
+      
+      try {
+        const formData = new FormData(this);
+        const userId = formData.get('userId');
+        const amount = parseInt(formData.get('amount'));
+        const reason = formData.get('reason');
+        const customReason = formData.get('customReason');
+        
+        const finalReason = reason === 'other' && customReason ? customReason : reason;
+        
+        const response = await fetch(`/admin/api/users/${userId}/adjust-balance`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: amount,
+            reason: finalReason
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Close modal and refresh page
+          bootstrap.Modal.getInstance(document.getElementById('adjustBalanceModal')).hide();
+          showToast(result.message, 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          showToast(result.message || 'Error adjusting balance', 'danger');
+        }
+      } catch (error) {
+        console.error('Error adjusting balance:', error);
+        showToast('Network error. Please try again.', 'danger');
+      } finally {
+        removeLoadingState();
+      }
+    });
+  }
+});
+
+// Reason dropdown handler
+document.addEventListener('DOMContentLoaded', function() {
+  const reasonSelect = document.getElementById('adjustReason');
+  const customReasonGroup = document.getElementById('customReasonGroup');
+  
+  if (reasonSelect && customReasonGroup) {
+    reasonSelect.addEventListener('change', function() {
+      if (this.value === 'other') {
+        customReasonGroup.style.display = 'block';
+        document.getElementById('customReason').required = true;
+      } else {
+        customReasonGroup.style.display = 'none';
+        document.getElementById('customReason').required = false;
+        document.getElementById('customReason').value = '';
+      }
+    });
+  }
+});
+
 // Clear Search Function
 function clearSearch() {
   document.getElementById('search').value = '';
@@ -205,10 +331,74 @@ async function viewUser(userId) {
   }
 }
 
-// Edit User Function (placeholder)
-function editUser(userId) {
-  // This would typically open an edit modal or navigate to edit page
-  alert('Edit user functionality would be implemented here for user ID: ' + userId);
+// Edit User Function
+async function editUser(userId) {
+  try {
+    // First get user details
+    const response = await fetch(`/admin/api/users/${userId}`);
+    const result = await response.json();
+    
+    if (result.success) {
+      const user = result.data;
+      
+      // Populate edit form
+      document.getElementById('editUserId').value = userId;
+      document.getElementById('editUserName').value = user.name || '';
+      document.getElementById('editUserEmail').value = user.email || '';
+      document.getElementById('editUserPhone').value = user.phone || '';
+      document.getElementById('editUserDevice').value = user.device || '';
+      document.getElementById('editUserOS').value = user.os || '';
+      
+      // Close user details modal if open
+      const userModal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+      if (userModal) {
+        userModal.hide();
+      }
+      
+      // Show edit modal
+      const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+      editModal.show();
+    } else {
+      showToast('Error loading user details: ' + result.message, 'danger');
+    }
+  } catch (error) {
+    console.error('Error loading user for edit:', error);
+    showToast('Error loading user details', 'danger');
+  }
+}
+
+// Adjust Balance Function
+async function adjustBalance(userId) {
+  try {
+    // First get user details
+    const response = await fetch(`/admin/api/users/${userId}`);
+    const result = await response.json();
+    
+    if (result.success) {
+      const user = result.data;
+      
+      // Populate adjustment form
+      document.getElementById('adjustUserId').value = userId;
+      document.getElementById('adjustUserName').textContent = user.name || 'N/A';
+      document.getElementById('adjustCurrentBalance').textContent = `${user.coins_balance || 0} coins`;
+      
+      // Reset form fields
+      document.getElementById('adjustAmount').value = '';
+      document.getElementById('adjustReason').value = '';
+      document.getElementById('customReason').value = '';
+      document.getElementById('customReasonGroup').style.display = 'none';
+      document.getElementById('customReason').required = false;
+      
+      // Show adjustment modal
+      const adjustModal = new bootstrap.Modal(document.getElementById('adjustBalanceModal'));
+      adjustModal.show();
+    } else {
+      showToast('Error loading user details: ' + result.message, 'danger');
+    }
+  } catch (error) {
+    console.error('Error loading user for balance adjustment:', error);
+    showToast('Error loading user details', 'danger');
+  }
 }
 
 // Date Formatting Helper
@@ -320,6 +510,7 @@ window.AdminDashboard = {
   refreshUsers,
   viewUser,
   editUser,
+  adjustBalance,
   formatDate,
   addLoadingState,
   confirmAction,

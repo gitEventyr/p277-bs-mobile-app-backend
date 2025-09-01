@@ -135,6 +135,10 @@
                         onclick="editUser('{{this.id}}')" title="Edit User">
                   <i class="bi bi-pencil"></i>
                 </button>
+                <button type="button" class="btn btn-outline-success" 
+                        onclick="adjustBalance('{{this.id}}')" title="Adjust Balance">
+                  <i class="bi bi-coin"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -228,6 +232,126 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" id="editUserBtn">Edit User</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil"></i>
+          Edit User
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editUserForm">
+        <div class="modal-body">
+          <input type="hidden" id="editUserId" name="userId">
+          <div class="mb-3">
+            <label for="editUserName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="editUserName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="editUserEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="editUserEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="editUserPhone" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="editUserPhone" name="phone">
+          </div>
+          <div class="mb-3">
+            <label for="editUserDevice" class="form-label">Device</label>
+            <input type="text" class="form-control" id="editUserDevice" name="device">
+          </div>
+          <div class="mb-3">
+            <label for="editUserOS" class="form-label">Operating System</label>
+            <input type="text" class="form-control" id="editUserOS" name="os">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div><!-- Adjust Balance Modal -->
+<div class="modal fade" id="adjustBalanceModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-coin"></i>
+          Adjust User Balance
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="adjustBalanceForm">
+        <div class="modal-body">
+          <input type="hidden" id="adjustUserId" name="userId">
+          
+          <div class="mb-3">
+            <label class="form-label fw-bold">User Information</label>
+            <div class="card bg-light">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-6">
+                    <strong>Name:</strong> <span id="adjustUserName">-</span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Current Balance:</strong> <span id="adjustCurrentBalance" class="badge bg-success">0 coins</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="adjustAmount" class="form-label">Adjustment Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">±</span>
+              <input type="number" class="form-control" id="adjustAmount" name="amount" 
+                     required step="1" placeholder="Enter amount (positive to add, negative to subtract)">
+              <span class="input-group-text">coins</span>
+            </div>
+            <div class="form-text">
+              Use positive numbers to add coins, negative numbers to subtract coins.
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="adjustReason" class="form-label">Reason</label>
+            <select class="form-select" id="adjustReason" name="reason" required>
+              <option value="">Select reason...</option>
+              <option value="bonus">Bonus Award</option>
+              <option value="correction">Balance Correction</option>
+              <option value="refund">Refund</option>
+              <option value="penalty">Penalty</option>
+              <option value="promotion">Promotional Credit</option>
+              <option value="manual">Manual Adjustment</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <div class="mb-3" id="customReasonGroup" style="display: none;">
+            <label for="customReason" class="form-label">Custom Reason</label>
+            <input type="text" class="form-control" id="customReason" name="customReason" 
+                   placeholder="Enter custom reason">
+          </div>
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            This action will create a transaction record in the system with mode "admin_change".
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Apply Adjustment</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

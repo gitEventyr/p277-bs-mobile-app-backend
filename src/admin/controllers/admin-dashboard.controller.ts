@@ -5,23 +5,18 @@ import {
   Body,
   Render,
   Res,
-  Req,
   Session,
   Query,
   Param,
-  UseGuards,
-  Redirect,
 } from '@nestjs/common';
-import type { Response, Request } from 'express';
+import type { Response } from 'express';
 import * as session from 'express-session';
 import { AdminService } from '../services/admin.service';
 import { AnalyticsService } from '../services/analytics.service';
 import { AdminLoginDto } from '../dto/admin-login.dto';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { AdminGuard } from '../../auth/guards/admin.guard';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import type { AuthenticatedAdmin } from '../../common/types/auth.types';
 import { UsersService } from '../../users/services/users.service';
+import { UpdateProfileDto } from '../../users/dto/update-profile.dto';
+import { BalanceService } from '../../users/services/balance.service';
 
 interface AdminSession extends session.Session {
   admin?: {
@@ -40,6 +35,7 @@ export class AdminDashboardController {
     private readonly adminService: AdminService,
     private readonly usersService: UsersService,
     private readonly analyticsService: AnalyticsService,
+    private readonly balanceService: BalanceService,
   ) {}
 
   // Admin Login Page
@@ -273,6 +269,78 @@ export class AdminDashboardController {
       return {
         success: false,
         message: 'User not found',
+      };
+    }
+  }
+
+  // Update User (Admin endpoint)
+  @Post('api/users/:id')
+  async updateUser(
+    @Param('id') id: string,
+    @Body() updateData: UpdateProfileDto,
+    @Session() session: AdminSession,
+  ) {
+    if (!session.admin) {
+      return { success: false, message: 'Not authenticated' };
+    }
+
+    try {
+      const updatedUser = await this.usersService.updateProfile(
+        parseInt(id, 10),
+        updateData,
+      );
+      return {
+        success: true,
+        data: updatedUser,
+        message: 'User updated successfully',
+      };
+    } catch (error: any) {
+      console.error('Update user error:', error);
+      return {
+        success: false,
+        message: error?.message || 'Error updating user',
+      };
+    }
+  }
+
+  // Adjust User Balance (Admin endpoint)
+  @Post('api/users/:id/adjust-balance')
+  async adjustBalance(
+    @Param('id') id: string,
+    @Body() adjustData: { amount: number; reason: string },
+    @Session() session: AdminSession,
+  ) {
+    if (!session.admin) {
+      return { success: false, message: 'Not authenticated' };
+    }
+
+    try {
+      const { amount, reason } = adjustData;
+      
+      if (!amount || amount === 0) {
+        return { success: false, message: 'Amount must be a non-zero number' };
+      }
+
+      if (!reason) {
+        return { success: false, message: 'Reason is required' };
+      }
+
+      const result = await this.balanceService.adminAdjustBalance(
+        parseInt(id, 10),
+        amount,
+        reason,
+      );
+
+      return {
+        success: true,
+        data: result,
+        message: `Balance ${amount > 0 ? 'increased' : 'decreased'} successfully`,
+      };
+    } catch (error: any) {
+      console.error('Adjust balance error:', error);
+      return {
+        success: false,
+        message: error?.message || 'Error adjusting balance',
       };
     }
   }
