@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { Player } from '../../entities/player.entity';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
@@ -220,5 +221,66 @@ export class UsersService {
     const data = await query.skip(skip).take(limit).getMany();
 
     return { data, total };
+  }
+
+  async findByEmail(email: string): Promise<Player | null> {
+    return await this.playerRepository.findOne({
+      where: { email, is_deleted: false },
+    });
+  }
+
+  async createUser(createData: {
+    name: string;
+    email: string;
+    phone?: string;
+    password: string;
+  }): Promise<UserProfileDto> {
+    const { name, email, phone, password } = createData;
+
+    // Generate unique visitor_id
+    let visitorId: string;
+    let attempts = 0;
+    do {
+      visitorId = this.generateVisitorId();
+      attempts++;
+      if (attempts > 10) {
+        throw new BadRequestException('Unable to generate unique visitor ID');
+      }
+    } while (
+      await this.playerRepository.findOne({
+        where: { visitor_id: visitorId, is_deleted: false },
+      })
+    );
+
+    // Hash password
+    const hashedPassword = await this.hashPassword(password);
+
+    // Create new player with default values
+    const player = this.playerRepository.create({
+      visitor_id: visitorId,
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      coins_balance: 1000, // Starting balance
+      level: 1,
+      scratch_cards: 0,
+    });
+
+    const savedPlayer = await this.playerRepository.save(player);
+    return this.getProfile(savedPlayer.id);
+  }
+
+  private generateVisitorId(): string {
+    return (
+      'visitor_' +
+      Math.random().toString(36).substr(2, 9) +
+      Date.now().toString(36)
+    );
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    const saltRounds = 12;
+    return await bcrypt.hash(password, saltRounds);
   }
 }

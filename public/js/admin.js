@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(this);
         const userData = Object.fromEntries(formData.entries());
         
-        const response = await fetch('/auth/register', {
+        const response = await fetch('/admin/api/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -232,7 +232,14 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.reload();
           }, 1000);
         } else {
-          showToast(result.message || 'Error creating user', 'error');
+          // Handle validation errors properly
+          let errorMessage = result.message || 'Error creating user';
+          if (result.message && result.message.details && Array.isArray(result.message.details)) {
+            errorMessage = result.message.details.join(', ');
+          } else if (typeof result.message === 'object' && result.message.details) {
+            errorMessage = result.message.details.join(', ');
+          }
+          showToast(errorMessage, 'danger');
         }
       } catch (error) {
         console.error('Error creating user:', error);

@@ -10,6 +10,7 @@ import {
   Param,
   UnauthorizedException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import * as session from 'express-session';
@@ -346,6 +347,51 @@ export class AdminDashboardController {
     } catch (error: any) {
       console.error('Adjust balance error:', error);
       throw new Error(error?.message || 'Error adjusting balance');
+    }
+  }
+
+  // Create User (Admin endpoint)
+  @Post('api/users')
+  async createUser(
+    @Body()
+    createData: {
+      name: string;
+      email: string;
+      phone?: string;
+      password: string;
+    },
+    @Session() session: AdminSession,
+  ) {
+    if (!session.admin) {
+      throw new UnauthorizedException('Not authenticated');
+    }
+
+    try {
+      const { name, email, phone, password } = createData;
+
+      // Validate required fields
+      if (!name || !email || !password) {
+        throw new BadRequestException('Name, email, and password are required');
+      }
+
+      // Check if email already exists
+      const existingUser = await this.usersService.findByEmail(email);
+      if (existingUser) {
+        throw new BadRequestException('Email already exists');
+      }
+
+      // Create user through users service
+      const user = await this.usersService.createUser({
+        name,
+        email,
+        phone,
+        password,
+      });
+
+      return user;
+    } catch (error: any) {
+      console.error('Create user error:', error);
+      throw error;
     }
   }
 
