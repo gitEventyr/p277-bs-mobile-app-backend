@@ -275,21 +275,21 @@ async function viewUser(userId) {
           <div class="col-md-6">
             <h6 class="fw-bold">Basic Information</h6>
             <table class="table table-sm">
-              <tr><td><strong>Name:</strong></td><td>${user.name || 'N/A'}</td></tr>
-              <tr><td><strong>Email:</strong></td><td>${user.email || 'N/A'}</td></tr>
-              <tr><td><strong>Phone:</strong></td><td>${user.phone || 'N/A'}</td></tr>
-              <tr><td><strong>Visitor ID:</strong></td><td>${user.visitor_id || 'N/A'}</td></tr>
-              <tr><td><strong>Balance:</strong></td><td><span class="badge bg-success">${user.coins_balance || 0} coins</span></td></tr>
-              <tr><td><strong>Level:</strong></td><td>${user.level || 1}</td></tr>
-              <tr><td><strong>Scratch Cards:</strong></td><td>${user.scratch_cards || 0}</td></tr>
+              <tr><td><strong>Name:</strong></td><td>${user.name && user.name.trim() !== '' ? user.name : 'N/A'}</td></tr>
+              <tr><td><strong>Email:</strong></td><td>${user.email && user.email.trim() !== '' ? user.email : 'N/A'}</td></tr>
+              <tr><td><strong>Phone:</strong></td><td>${user.phone && user.phone.trim() !== '' ? user.phone : 'N/A'}</td></tr>
+              <tr><td><strong>Visitor ID:</strong></td><td>${user.visitor_id && user.visitor_id.trim() !== '' ? user.visitor_id : 'N/A'}</td></tr>
+              <tr><td><strong>Balance:</strong></td><td><span class="badge bg-success">${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins</span></td></tr>
+              <tr><td><strong>Level:</strong></td><td>${user.level !== undefined && user.level !== null ? user.level : 1}</td></tr>
+              <tr><td><strong>Scratch Cards:</strong></td><td>${user.scratch_cards !== undefined && user.scratch_cards !== null ? user.scratch_cards : 0}</td></tr>
             </table>
           </div>
           <div class="col-md-6">
             <h6 class="fw-bold">Device Information</h6>
             <table class="table table-sm">
-              <tr><td><strong>Device UDID:</strong></td><td>${user.device_udid || 'N/A'}</td></tr>
-              <tr><td><strong>OS:</strong></td><td>${user.os || 'N/A'}</td></tr>
-              <tr><td><strong>Device:</strong></td><td>${user.device || 'N/A'}</td></tr>
+              <tr><td><strong>Device UDID:</strong></td><td>${user.device_udid && user.device_udid.trim() !== '' ? user.device_udid : 'N/A'}</td></tr>
+              <tr><td><strong>OS:</strong></td><td>${user.os && user.os.trim() !== '' ? user.os : 'N/A'}</td></tr>
+              <tr><td><strong>Device:</strong></td><td>${user.device && user.device.trim() !== '' ? user.device : 'N/A'}</td></tr>
               <tr><td><strong>Registered:</strong></td><td>${formatDate(user.created_at)}</td></tr>
               <tr><td><strong>Last Updated:</strong></td><td>${formatDate(user.updated_at)}</td></tr>
             </table>
@@ -384,7 +384,7 @@ async function adjustBalance(userId) {
       // Populate adjustment form
       document.getElementById('adjustUserId').value = userId;
       document.getElementById('adjustUserName').textContent = user.name || 'N/A';
-      document.getElementById('adjustCurrentBalance').textContent = `${user.coins_balance || 0} coins`;
+      document.getElementById('adjustCurrentBalance').textContent = `${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins`;
       
       // Reset form fields
       document.getElementById('adjustAmount').value = '';
