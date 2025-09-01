@@ -104,6 +104,12 @@ export class UsersService {
     if (updateProfileDto.device !== undefined) {
       player.device = updateProfileDto.device;
     }
+    if (updateProfileDto.level !== undefined) {
+      player.level = updateProfileDto.level;
+    }
+    if (updateProfileDto.scratch_cards !== undefined) {
+      player.scratch_cards = updateProfileDto.scratch_cards;
+    }
 
     // Save the updated player
     const updatedPlayer = await this.playerRepository.save(player);

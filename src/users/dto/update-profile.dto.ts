@@ -4,6 +4,8 @@ import {
   IsEmail,
   Length,
   MinLength,
+  IsNumber,
+  Min,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -58,4 +60,24 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   device?: string;
+
+  @ApiPropertyOptional({
+    description: 'User level',
+    example: 1,
+    minimum: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1, { message: 'Level must be at least 1' })
+  level?: number;
+
+  @ApiPropertyOptional({
+    description: 'Number of scratch cards',
+    example: 0,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0, { message: 'Scratch cards must be at least 0' })
+  scratch_cards?: number;
 }

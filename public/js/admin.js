@@ -75,7 +75,9 @@ document.addEventListener('DOMContentLoaded', function() {
           email: formData.get('email'),
           phone: formData.get('phone'),
           device: formData.get('device'),
-          os: formData.get('os')
+          os: formData.get('os'),
+          level: parseInt(formData.get('level')) || 1,
+          scratch_cards: parseInt(formData.get('scratch_cards')) || 0
         };
         
         const response = await fetch(`/admin/api/users/${userId}`, {
@@ -348,6 +350,8 @@ async function editUser(userId) {
       document.getElementById('editUserPhone').value = user.phone || '';
       document.getElementById('editUserDevice').value = user.device || '';
       document.getElementById('editUserOS').value = user.os || '';
+      document.getElementById('editUserLevel').value = user.level || 1;
+      document.getElementById('editUserScratchCards').value = user.scratch_cards || 0;
       
       // Close user details modal if open
       const userModal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
