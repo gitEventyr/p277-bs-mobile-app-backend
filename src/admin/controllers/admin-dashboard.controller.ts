@@ -15,7 +15,6 @@ import { AdminService } from '../services/admin.service';
 import { AnalyticsService } from '../services/analytics.service';
 import { AdminLoginDto } from '../dto/admin-login.dto';
 import { UsersService } from '../../users/services/users.service';
-import { UpdateProfileDto } from '../../users/dto/update-profile.dto';
 import { BalanceService } from '../../users/services/balance.service';
 
 interface AdminSession extends session.Session {
@@ -259,7 +258,10 @@ export class AdminDashboardController {
     }
 
     try {
-      const user = await this.usersService.findById(parseInt(id));
+      const user = await this.usersService.getProfile(parseInt(id));
+      if (!user) {
+        return { success: false, message: 'User not found' };
+      }
       return {
         success: true,
         data: user,
@@ -277,7 +279,7 @@ export class AdminDashboardController {
   @Post('api/users/:id')
   async updateUser(
     @Param('id') id: string,
-    @Body() updateData: UpdateProfileDto,
+    @Body() updateData: Record<string, any>,
     @Session() session: AdminSession,
   ) {
     if (!session.admin) {
@@ -285,9 +287,32 @@ export class AdminDashboardController {
     }
 
     try {
+      // Map admin form data to UpdateProfileDto format
+      const profileUpdateData: Record<string, any> = {
+        name: updateData.name,
+        email: updateData.email,
+        phone: updateData.phone,
+        device: updateData.device,
+        os: updateData.os,
+        level: updateData.level
+          ? parseInt(updateData.level as string, 10)
+          : undefined,
+        scratch_cards:
+          updateData.scratch_cards !== undefined
+            ? parseInt(updateData.scratch_cards as string, 10)
+            : undefined,
+      };
+
+      // Remove undefined values
+      Object.keys(profileUpdateData).forEach((key) => {
+        if (profileUpdateData[key] === undefined) {
+          delete profileUpdateData[key];
+        }
+      });
+
       const updatedUser = await this.usersService.updateProfile(
         parseInt(id, 10),
-        updateData,
+        profileUpdateData,
       );
       return {
         success: true,
@@ -316,7 +341,7 @@ export class AdminDashboardController {
 
     try {
       const { amount, reason } = adjustData;
-      
+
       if (!amount || amount === 0) {
         return { success: false, message: 'Amount must be a non-zero number' };
       }
