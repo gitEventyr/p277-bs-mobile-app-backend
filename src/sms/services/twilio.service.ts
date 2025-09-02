@@ -1,11 +1,11 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Twilio } from 'twilio';
+import twilio from 'twilio';
 
 @Injectable()
 export class TwilioService {
   private readonly logger = new Logger(TwilioService.name);
-  private client: Twilio;
+  private client: twilio.Twilio;
   private verifyServiceSid: string;
 
   constructor(private readonly configService: ConfigService) {
@@ -21,7 +21,7 @@ export class TwilioService {
         'Twilio Verify credentials not configured - SMS functionality will be disabled',
       );
     } else {
-      this.client = new Twilio(accountSid, authToken);
+      this.client = twilio(accountSid, authToken);
       this.logger.log('Twilio Verify service initialized');
     }
   }
