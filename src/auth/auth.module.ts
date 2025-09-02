@@ -15,6 +15,7 @@ import { EmailVerificationToken } from '../entities/email-verification-token.ent
 import { PhoneVerificationToken } from '../entities/phone-verification-token.entity';
 import { EmailModule } from '../email/email.module';
 import { DevicesModule } from '../devices/devices.module';
+import { SmsModule } from '../sms/sms.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { DevicesModule } from '../devices/devices.module';
     ]),
     EmailModule,
     DevicesModule,
+    SmsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],
