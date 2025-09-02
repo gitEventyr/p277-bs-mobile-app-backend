@@ -20,6 +20,7 @@ import {
 import type { Request } from 'express';
 import { IsEmail, IsString, IsIn } from 'class-validator';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { AuthService } from './services/auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -49,12 +50,15 @@ import {
   RequestEmailVerificationResponseDto,
 } from './dto/request-email-verification.dto';
 import { VerifyEmailDto, VerifyEmailResponseDto } from './dto/verify-email.dto';
+import { RequestPhoneVerificationResponseDto } from './dto/request-phone-verification.dto';
+import { VerifyPhoneDto, VerifyPhoneResponseDto } from './dto/verify-phone.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
 import { PhoneVerificationToken } from '../entities/phone-verification-token.entity';
 import { EmailService } from '../email/services/email.service';
 import { DevicesService } from '../devices/services/devices.service';
+import { TwilioService } from '../sms/services/twilio.service';
 import type {
   AuthenticatedUser,
   AuthenticatedAdmin,
@@ -89,6 +93,8 @@ export class AuthController {
     private readonly phoneVerificationTokenRepository: Repository<PhoneVerificationToken>,
     private readonly emailService: EmailService,
     private readonly devicesService: DevicesService,
+    private readonly twilioService: TwilioService,
+    private readonly configService: ConfigService,
   ) {}
 
   private generateVisitorId(): string {
@@ -510,16 +516,24 @@ export class AuthController {
 
     await this.passwordResetTokenRepository.save(passwordResetToken);
 
-    // Send password reset email with mobile deep link
-    const mobileAppScheme = process.env.MOBILE_APP_SCHEME || 'casino://';
-    const mobileResetPath = process.env.MOBILE_RESET_PATH || 'reset-password';
-    const resetUrl = `${mobileAppScheme}${mobileResetPath}?code=${resetCode}&email=${encodeURIComponent(user.email!)}`;
+    // Send password reset email with iOS universal link for deep linking
+    // The URL needs to match the paths in apple-app-site-association file
+    // This will be handled by the mobile app when opened on iOS
+    const baseUrl = this.configService.get<string>(
+      'APP_BASE_URL',
+      process.env.NODE_ENV === 'production'
+        ? 'https://your-domain.com' // Replace with actual production domain
+        : `http://localhost:${this.configService.get<number>('PORT', 3000)}`,
+    );
+
+    // Create the universal link that matches apple-app-site-association paths
+    const resetLink = `${baseUrl}/reset-password.html?code=${resetCode}&email=${encodeURIComponent(user.email!)}`;
 
     try {
       await this.emailService.sendPasswordReset(user.email!, {
         name: user.name,
-        resetUrl,
-        resetLink: resetUrl,
+        resetUrl: resetLink, // For backward compatibility
+        resetLink: resetLink, // This is what the SendGrid template expects
       });
     } catch (emailError) {
       this.logger.error('Failed to send password reset email:', emailError);
@@ -826,6 +840,119 @@ export class AuthController {
     return {
       message: 'Email verified successfully',
       emailVerified: true,
+    };
+  }
+
+  @Post('request-phone-verification')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Request phone verification',
+    description:
+      "Sends a 6-digit verification code to the authenticated user's phone via Twilio Verify",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification code sent successfully',
+    type: RequestPhoneVerificationResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Bad request - phone not set, already verified, or invalid phone format',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async requestPhoneVerification(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<RequestPhoneVerificationResponseDto> {
+    const player = await this.playerRepository.findOne({
+      where: { id: user.id },
+    });
+
+    if (!player || !player.phone) {
+      throw new BadRequestException('No phone number found for this account');
+    }
+
+    if (player.phone_verified) {
+      throw new BadRequestException('Phone is already verified');
+    }
+
+    // Send verification code via Twilio Verify
+    try {
+      await this.twilioService.sendVerificationCode(player.phone);
+    } catch (error) {
+      this.logger.error('Failed to send phone verification:', error);
+      throw error; // Twilio service already converts to BadRequestException
+    }
+
+    return {
+      message: 'Verification code sent to your phone number',
+      expiresIn: 600, // 10 minutes (Twilio default)
+    };
+  }
+
+  @Post('verify-phone')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Verify phone with 6-digit code',
+    description:
+      "Verifies the authenticated user's phone using the 6-digit code sent via Twilio Verify",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Phone verified successfully',
+    type: VerifyPhoneResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification code',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async verifyPhone(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() verifyPhoneDto: VerifyPhoneDto,
+  ): Promise<VerifyPhoneResponseDto> {
+    const player = await this.playerRepository.findOne({
+      where: { id: user.id },
+    });
+
+    if (!player || !player.phone) {
+      throw new BadRequestException('No phone number found for this account');
+    }
+
+    if (player.phone_verified) {
+      throw new BadRequestException('Phone is already verified');
+    }
+
+    // Verify code with Twilio Verify
+    const isValid = await this.twilioService.verifyCode(
+      player.phone,
+      verifyPhoneDto.code,
+    );
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid or expired verification code');
+    }
+
+    // Update user's phone verification status
+    await this.playerRepository.update(
+      { id: user.id },
+      {
+        phone_verified: true,
+        phone_verified_at: new Date(),
+      },
+    );
+
+    return {
+      message: 'Phone verified successfully',
+      phoneVerified: true,
     };
   }
 

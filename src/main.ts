@@ -25,6 +25,26 @@ async function bootstrap() {
   // Serve static assets
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
+  // Serve apple-app-site-association with correct content type
+  app
+    .getHttpAdapter()
+    .get('/apple-app-site-association', (req: any, res: any) => {
+      res.type('application/json');
+      res.sendFile(
+        join(__dirname, '..', 'public', 'apple-app-site-association'),
+      );
+    });
+
+  // Also serve from .well-known path (Apple's preferred location)
+  app
+    .getHttpAdapter()
+    .get('/.well-known/apple-app-site-association', (req: any, res: any) => {
+      res.type('application/json');
+      res.sendFile(
+        join(__dirname, '..', 'public', 'apple-app-site-association'),
+      );
+    });
+
   // Session configuration using memory store
   const isProduction = configService.get<string>('NODE_ENV') === 'production';
   const useHttps = configService.get<string>('USE_HTTPS') === 'true';
