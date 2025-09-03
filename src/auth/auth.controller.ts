@@ -586,16 +586,16 @@ export class AuthController {
       resetPasswordDto.newPassword,
     );
 
+    // Mark code as used FIRST to prevent race conditions
+    await this.passwordResetTokenRepository.update(
+      { id: resetToken.id },
+      { used: true },
+    );
+
     // Update user password
     await this.playerRepository.update(
       { id: resetToken.user_id },
       { password: hashedPassword },
-    );
-
-    // Mark code as used
-    await this.passwordResetTokenRepository.update(
-      { id: resetToken.id },
-      { used: true },
     );
 
     return {
