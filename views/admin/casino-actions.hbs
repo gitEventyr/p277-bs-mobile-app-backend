@@ -363,7 +363,8 @@ async function viewCasinoAction(actionId) {
       throw new Error('Failed to fetch casino action details');
     }
     
-    const action = await response.json();
+    const response_data = await response.json();
+    const action = response_data.data || response_data;
     
     document.getElementById('casinoActionModalBody').innerHTML = `
       <div class="row">
@@ -407,7 +408,8 @@ async function editCasinoAction(actionId) {
       throw new Error('Failed to fetch casino action details');
     }
     
-    const action = await response.json();
+    const response_data = await response.json();
+    const action = response_data.data || response_data;
     
     document.getElementById('editActionId').value = action.id;
     document.getElementById('editActionCasinoName').value = action.casino_name;
