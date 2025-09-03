@@ -248,20 +248,24 @@ async function viewCasino(casinoId) {
       throw new Error('Failed to fetch casino details');
     }
     
-    const casino = await response.json();
+    const response_data = await response.json();
+    const casino = response_data.data || response_data;
+    
+    // If this is a casino action response, extract the casino details
+    const casinoDetails = casino.casino || casino;
     
     document.getElementById('casinoModalBody').innerHTML = `
       <div class="row">
         <div class="col-md-6">
-          <p><strong>ID:</strong> ${casino.id}</p>
-          <p><strong>Casino Name:</strong> ${casino.casino_name}</p>
-          <p><strong>Created:</strong> ${new Date(casino.created_at).toLocaleString()}</p>
-          <p><strong>Last Updated:</strong> ${new Date(casino.updated_at).toLocaleString()}</p>
+          <p><strong>ID:</strong> ${casinoDetails.id || 'N/A'}</p>
+          <p><strong>Casino Name:</strong> ${casinoDetails.casino_name || 'N/A'}</p>
+          <p><strong>Created:</strong> ${casinoDetails.created_at ? new Date(casinoDetails.created_at).toLocaleString() : 'N/A'}</p>
+          <p><strong>Last Updated:</strong> ${casinoDetails.updated_at ? new Date(casinoDetails.updated_at).toLocaleString() : 'N/A'}</p>
         </div>
         <div class="col-md-6">
-          <p><strong>Total Actions:</strong> ${casino.actions?.length || 0}</p>
-          <p><strong>Registrations:</strong> ${casino.actions?.filter(a => a.registration).length || 0}</p>
-          <p><strong>Deposits:</strong> ${casino.actions?.filter(a => a.deposit).length || 0}</p>
+          <p><strong>Total Actions:</strong> ${casinoDetails.actions?.length || 0}</p>
+          <p><strong>Registrations:</strong> ${casinoDetails.actions?.filter(a => a.registration).length || 0}</p>
+          <p><strong>Deposits:</strong> ${casinoDetails.actions?.filter(a => a.deposit).length || 0}</p>
         </div>
       </div>
     `;
@@ -289,10 +293,14 @@ async function editCasino(casinoId) {
       throw new Error('Failed to fetch casino details');
     }
     
-    const casino = await response.json();
+    const response_data = await response.json();
+    const casino = response_data.data || response_data;
     
-    document.getElementById('editCasinoId').value = casino.id;
-    document.getElementById('editCasinoName').value = casino.casino_name;
+    // If this is a casino action response, extract the casino details
+    const casinoDetails = casino.casino || casino;
+    
+    document.getElementById('editCasinoId').value = casinoDetails.id;
+    document.getElementById('editCasinoName').value = casinoDetails.casino_name;
     
     new bootstrap.Modal(document.getElementById('editCasinoModal')).show();
   } catch (error) {
