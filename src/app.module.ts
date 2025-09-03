@@ -11,6 +11,8 @@ import { InAppPurchase } from './entities/in-app-purchase.entity';
 import { Voucher } from './entities/voucher.entity';
 import { UserVoucher } from './entities/user-voucher.entity';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { Casino } from './entities/casino.entity';
+import { CasinoAction } from './entities/casino-action.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
@@ -39,6 +41,8 @@ import { PurchasesModule } from './purchases/purchases.module';
           Voucher,
           UserVoucher,
           PasswordResetToken,
+          Casino,
+          CasinoAction,
         ],
       }),
     }),
