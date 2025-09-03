@@ -13,9 +13,18 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBody,
+  ApiParam,
+  ApiResponse,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 import * as session from 'express-session';
 import { CasinoService } from '../services/casino.service';
+import { CreateCasinoDto } from '../dto/create-casino.dto';
+import { UpdateCasinoDto } from '../dto/update-casino.dto';
 
 interface AdminSession extends session.Session {
   admin?: {
@@ -28,6 +37,7 @@ interface AdminSession extends session.Session {
   flashType?: 'success' | 'error' | 'warning' | 'info';
 }
 
+@ApiTags('Admin - Casino Management')
 @Controller('admin/casinos')
 export class CasinoController {
   constructor(private readonly casinoService: CasinoService) {}
@@ -91,6 +101,11 @@ export class CasinoController {
 
   // Get Casino Details (API endpoint)
   @Get('api/:id')
+  @ApiOperation({ summary: 'Get casino details by ID' })
+  @ApiParam({ name: 'id', description: 'Casino ID' })
+  @ApiResponse({ status: 200, description: 'Casino details retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Casino not found' })
   async getCasinoDetails(
     @Param('id') id: string,
     @Session() session: AdminSession,
@@ -113,8 +128,13 @@ export class CasinoController {
 
   // Create Casino (API endpoint)
   @Post('api')
+  @ApiOperation({ summary: 'Create a new casino' })
+  @ApiBody({ type: CreateCasinoDto })
+  @ApiResponse({ status: 201, description: 'Casino created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - Invalid casino name or casino name already exists' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createCasino(
-    @Body() createData: { casino_name: string },
+    @Body() createData: CreateCasinoDto,
     @Session() session: AdminSession,
   ) {
     if (!session.admin) {
@@ -144,9 +164,16 @@ export class CasinoController {
 
   // Update Casino (API endpoint)
   @Put('api/:id')
+  @ApiOperation({ summary: 'Update an existing casino' })
+  @ApiParam({ name: 'id', description: 'Casino ID' })
+  @ApiBody({ type: UpdateCasinoDto })
+  @ApiResponse({ status: 200, description: 'Casino updated successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - Invalid casino name or casino name already exists' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Casino not found' })
   async updateCasino(
     @Param('id') id: string,
-    @Body() updateData: { casino_name: string },
+    @Body() updateData: UpdateCasinoDto,
     @Session() session: AdminSession,
   ) {
     if (!session.admin) {
@@ -183,6 +210,11 @@ export class CasinoController {
 
   // Delete Casino (API endpoint)
   @Delete('api/:id')
+  @ApiOperation({ summary: 'Delete a casino' })
+  @ApiParam({ name: 'id', description: 'Casino ID' })
+  @ApiResponse({ status: 200, description: 'Casino deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Casino not found' })
   async deleteCasino(
     @Param('id') id: string,
     @Session() session: AdminSession,
