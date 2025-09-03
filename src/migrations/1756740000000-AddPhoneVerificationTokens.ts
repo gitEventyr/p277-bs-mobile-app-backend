@@ -6,7 +6,7 @@ export class AddPhoneVerificationTokens1756740000000
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Check if table already exists
     const tableExists = await queryRunner.hasTable('phone_verification_tokens');
-    
+
     if (!tableExists) {
       // Create phone_verification_tokens table
       await queryRunner.createTable(
@@ -74,7 +74,7 @@ export class AddPhoneVerificationTokens1756740000000
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const tableExists = await queryRunner.hasTable('phone_verification_tokens');
-    
+
     if (tableExists) {
       // Drop indexes using raw SQL
       await queryRunner.query(

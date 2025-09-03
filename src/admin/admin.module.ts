@@ -7,11 +7,17 @@ import { Player } from '../entities/player.entity';
 import { PlayHistory } from '../entities/play-history.entity';
 import { InAppPurchase } from '../entities/in-app-purchase.entity';
 import { CoinsBalanceChange } from '../entities/coins-balance-change.entity';
+import { Casino } from '../entities/casino.entity';
+import { CasinoAction } from '../entities/casino-action.entity';
 import { AdminService } from './services/admin.service';
 import { AnalyticsService } from './services/analytics.service';
+import { CasinoService } from './services/casino.service';
+import { CasinoActionService } from './services/casino-action.service';
 import { AdminController } from './controllers/admin.controller';
 import { AdminDashboardController } from './controllers/admin-dashboard.controller';
 import { AnalyticsController } from './controllers/analytics.controller';
+import { CasinoController } from './controllers/casino.controller';
+import { CasinoActionController } from './controllers/casino-action.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 
@@ -23,6 +29,8 @@ import { UsersModule } from '../users/users.module';
       PlayHistory,
       InAppPurchase,
       CoinsBalanceChange,
+      Casino,
+      CasinoAction,
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -37,8 +45,19 @@ import { UsersModule } from '../users/users.module';
     AuthModule, // Import AuthModule to get access to guards
     UsersModule, // Import UsersModule to get access to UsersService
   ],
-  controllers: [AdminController, AdminDashboardController, AnalyticsController],
-  providers: [AdminService, AnalyticsService],
-  exports: [AdminService, AnalyticsService],
+  controllers: [
+    AdminController,
+    AdminDashboardController,
+    AnalyticsController,
+    CasinoController,
+    CasinoActionController,
+  ],
+  providers: [
+    AdminService,
+    AnalyticsService,
+    CasinoService,
+    CasinoActionService,
+  ],
+  exports: [AdminService, AnalyticsService, CasinoService, CasinoActionService],
 })
 export class AdminModule {}

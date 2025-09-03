@@ -1,0 +1,406 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="bi bi-building"></i>
+    Casino Management
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <button type="button" class="btn btn-sm btn-primary" onclick="showCreateCasinoModal()">
+        <i class="bi bi-plus-circle"></i>
+        Create Casino
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshCasinos()">
+        <i class="bi bi-arrow-clockwise"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-funnel"></i>
+    Search & Filter Casinos
+  </div>
+  <div class="card-body">
+    <form id="casinoSearchForm">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="search" class="form-label">Search</label>
+          <input type="text" class="form-control" id="search" placeholder="Casino name..." 
+                 value="{{searchQuery}}">
+        </div>
+        <div class="col-md-3">
+          <label for="sortBy" class="form-label">Sort By</label>
+          <select class="form-select" id="sortBy">
+            <option value="created_at" {{#if (eq sortBy 'created_at')}}selected{{/if}}>Creation Date</option>
+            <option value="casino_name" {{#if (eq sortBy 'casino_name')}}selected{{/if}}>Casino Name</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i>
+            Search
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" onclick="clearSearch()">
+            <i class="bi bi-x-circle"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Casinos Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>
+      <i class="bi bi-table"></i>
+      Casinos List ({{pagination.total}} total)
+    </span>
+    <small class="text-muted">
+      Showing {{pagination.from}}-{{pagination.to}} of {{pagination.total}}
+    </small>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Casino Name</th>
+            <th>Actions Count</th>
+            <th>Created</th>
+            <th>Last Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each casinos}}
+          <tr>
+            <td>
+              <span class="badge bg-info">{{this.id}}</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar-sm me-3">
+                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                       style="width: 40px; height: 40px;">
+                    <i class="bi bi-building"></i>
+                  </div>
+                </div>
+                <div>
+                  <div class="fw-bold">{{this.casino_name}}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-success">{{this.actions.length}} actions</span>
+            </td>
+            <td>
+              <small class="text-muted">{{formatDate this.created_at}}</small>
+            </td>
+            <td>
+              <small class="text-muted">{{formatDate this.updated_at}}</small>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-primary" 
+                        onclick="viewCasino('{{this.id}}')" title="View Details">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" 
+                        onclick="editCasino('{{this.id}}')" title="Edit Casino">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger" 
+                        onclick="deleteCasino('{{this.id}}')" title="Delete Casino">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+    
+    {{#if pagination.hasPages}}
+    <div class="card-footer">
+      <nav>
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          <li class="page-item {{#unless pagination.hasPrev}}disabled{{/unless}}">
+            <a class="page-link" href="?page={{pagination.prevPage}}&{{queryString}}">Previous</a>
+          </li>
+          
+          {{#each pagination.pages}}
+          <li class="page-item {{#if this.active}}active{{/if}}">
+            <a class="page-link" href="?page={{this.number}}&{{../queryString}}">{{this.number}}</a>
+          </li>
+          {{/each}}
+          
+          <li class="page-item {{#unless pagination.hasNext}}disabled{{/unless}}">
+            <a class="page-link" href="?page={{pagination.nextPage}}&{{queryString}}">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {{/if}}
+  </div>
+</div>
+
+<!-- Create Casino Modal -->
+<div class="modal fade" id="createCasinoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-plus-circle"></i>
+          Create New Casino
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="createCasinoForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="casinoName" class="form-label">Casino Name</label>
+            <input type="text" class="form-control" id="casinoName" name="casino_name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Casino</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Casino Details Modal -->
+<div class="modal fade" id="casinoModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-building"></i>
+          Casino Details
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="casinoModalBody">
+        <!-- Casino details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="editCasinoBtn">Edit Casino</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Casino Modal -->
+<div class="modal fade" id="editCasinoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil"></i>
+          Edit Casino
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editCasinoForm">
+        <div class="modal-body">
+          <input type="hidden" id="editCasinoId" name="casinoId">
+          <div class="mb-3">
+            <label for="editCasinoName" class="form-label">Casino Name</label>
+            <input type="text" class="form-control" id="editCasinoName" name="casino_name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Casino management JavaScript functions
+function showCreateCasinoModal() {
+  document.getElementById('createCasinoForm').reset();
+  new bootstrap.Modal(document.getElementById('createCasinoModal')).show();
+}
+
+async function viewCasino(casinoId) {
+  try {
+    const response = await fetch(`/admin/casinos/api/${casinoId}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch casino details');
+    }
+    
+    const casino = await response.json();
+    
+    document.getElementById('casinoModalBody').innerHTML = `
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>ID:</strong> ${casino.id}</p>
+          <p><strong>Casino Name:</strong> ${casino.casino_name}</p>
+          <p><strong>Created:</strong> ${new Date(casino.created_at).toLocaleString()}</p>
+          <p><strong>Last Updated:</strong> ${new Date(casino.updated_at).toLocaleString()}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Total Actions:</strong> ${casino.actions?.length || 0}</p>
+          <p><strong>Registrations:</strong> ${casino.actions?.filter(a => a.registration).length || 0}</p>
+          <p><strong>Deposits:</strong> ${casino.actions?.filter(a => a.deposit).length || 0}</p>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('editCasinoBtn').onclick = () => {
+      document.getElementById('casinoModal').querySelector('[data-bs-dismiss="modal"]').click();
+      editCasino(casinoId);
+    };
+    
+    new bootstrap.Modal(document.getElementById('casinoModal')).show();
+  } catch (error) {
+    console.error('Error viewing casino:', error);
+    alert('Error loading casino details');
+  }
+}
+
+async function editCasino(casinoId) {
+  try {
+    const response = await fetch(`/admin/casinos/api/${casinoId}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch casino details');
+    }
+    
+    const casino = await response.json();
+    
+    document.getElementById('editCasinoId').value = casino.id;
+    document.getElementById('editCasinoName').value = casino.casino_name;
+    
+    new bootstrap.Modal(document.getElementById('editCasinoModal')).show();
+  } catch (error) {
+    console.error('Error loading casino for edit:', error);
+    alert('Error loading casino details');
+  }
+}
+
+async function deleteCasino(casinoId) {
+  if (!confirm('Are you sure you want to delete this casino? This action cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/admin/casinos/api/${casinoId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete casino');
+    }
+    
+    location.reload();
+  } catch (error) {
+    console.error('Error deleting casino:', error);
+    alert('Error deleting casino');
+  }
+}
+
+function refreshCasinos() {
+  location.reload();
+}
+
+function clearSearch() {
+  document.getElementById('search').value = '';
+  document.getElementById('sortBy').value = 'created_at';
+  document.getElementById('casinoSearchForm').submit();
+}
+
+// Form submissions
+document.getElementById('createCasinoForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData);
+  
+  try {
+    const response = await fetch('/admin/casinos/api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create casino');
+    }
+    
+    location.reload();
+  } catch (error) {
+    console.error('Error creating casino:', error);
+    alert('Error creating casino: ' + error.message);
+  }
+});
+
+document.getElementById('editCasinoForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData);
+  const casinoId = data.casinoId;
+  delete data.casinoId;
+  
+  try {
+    const response = await fetch(`/admin/casinos/api/${casinoId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to update casino');
+    }
+    
+    location.reload();
+  } catch (error) {
+    console.error('Error updating casino:', error);
+    alert('Error updating casino: ' + error.message);
+  }
+});
+
+document.getElementById('casinoSearchForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  const params = new URLSearchParams();
+  
+  for (const [key, value] of formData) {
+    if (value) params.append(key, value);
+  }
+  
+  window.location.search = params.toString();
+});
+</script>
