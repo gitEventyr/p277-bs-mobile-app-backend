@@ -142,7 +142,7 @@ export class CasinoController {
     }
 
     try {
-      const { casino_name } = createData;
+      const { casino_name, casino_id } = createData;
 
       if (!casino_name) {
         throw new BadRequestException('Casino name is required');
@@ -154,7 +154,7 @@ export class CasinoController {
         throw new BadRequestException('Casino name already exists');
       }
 
-      const casino = await this.casinoService.create({ casino_name });
+      const casino = await this.casinoService.create({ casino_name, casino_id });
       return casino;
     } catch (error: any) {
       console.error('Create casino error:', error);
@@ -181,7 +181,7 @@ export class CasinoController {
     }
 
     try {
-      const { casino_name } = updateData;
+      const { casino_name, casino_id } = updateData;
 
       if (!casino_name) {
         throw new BadRequestException('Casino name is required');
@@ -200,6 +200,7 @@ export class CasinoController {
 
       const updatedCasino = await this.casinoService.update(parseInt(id), {
         casino_name,
+        casino_id,
       });
       return updatedCasino;
     } catch (error: any) {

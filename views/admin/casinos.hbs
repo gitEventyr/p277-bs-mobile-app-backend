@@ -73,6 +73,7 @@
           <tr>
             <th>ID</th>
             <th>Casino Name</th>
+            <th>Casino ID</th>
             <th>Actions Count</th>
             <th>Created</th>
             <th>Last Updated</th>
@@ -97,6 +98,13 @@
                   <div class="fw-bold">{{this.casino_name}}</div>
                 </div>
               </div>
+            </td>
+            <td>
+              {{#if this.casino_id}}
+              <span class="badge bg-info">{{this.casino_id}}</span>
+              {{else}}
+              <span class="text-muted">-</span>
+              {{/if}}
             </td>
             <td>
               <span class="badge bg-success">{{this.actions.length}} actions</span>
@@ -170,6 +178,11 @@
             <label for="casinoName" class="form-label">Casino Name</label>
             <input type="text" class="form-control" id="casinoName" name="casino_name" required>
           </div>
+          <div class="mb-3">
+            <label for="casinoId" class="form-label">Casino ID (optional)</label>
+            <input type="text" class="form-control" id="casinoId" name="casino_id" placeholder="External casino ID for API integration">
+            <div class="form-text">This ID will be used for third-party API integration.</div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -220,6 +233,11 @@
             <label for="editCasinoName" class="form-label">Casino Name</label>
             <input type="text" class="form-control" id="editCasinoName" name="casino_name" required>
           </div>
+          <div class="mb-3">
+            <label for="editCasinoExternalId" class="form-label">Casino ID (optional)</label>
+            <input type="text" class="form-control" id="editCasinoExternalId" name="casino_id" placeholder="External casino ID for API integration">
+            <div class="form-text">This ID will be used for third-party API integration.</div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -259,6 +277,7 @@ async function viewCasino(casinoId) {
         <div class="col-md-6">
           <p><strong>ID:</strong> ${casinoDetails.id || 'N/A'}</p>
           <p><strong>Casino Name:</strong> ${casinoDetails.casino_name || 'N/A'}</p>
+          <p><strong>Casino ID:</strong> ${casinoDetails.casino_id || 'Not set'}</p>
           <p><strong>Created:</strong> ${casinoDetails.created_at ? new Date(casinoDetails.created_at).toLocaleString() : 'N/A'}</p>
           <p><strong>Last Updated:</strong> ${casinoDetails.updated_at ? new Date(casinoDetails.updated_at).toLocaleString() : 'N/A'}</p>
         </div>
@@ -301,6 +320,7 @@ async function editCasino(casinoId) {
     
     document.getElementById('editCasinoId').value = casinoDetails.id;
     document.getElementById('editCasinoName').value = casinoDetails.casino_name;
+    document.getElementById('editCasinoExternalId').value = casinoDetails.casino_id || '';
     
     new bootstrap.Modal(document.getElementById('editCasinoModal')).show();
   } catch (error) {

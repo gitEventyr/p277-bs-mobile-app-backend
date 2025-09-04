@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateCasinoDto {
@@ -9,4 +9,13 @@ export class UpdateCasinoDto {
   @IsString()
   @IsNotEmpty()
   casino_name: string;
+
+  @ApiProperty({
+    description: 'External casino ID for third-party API integration',
+    example: 'bella_vegas_updated_123',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  casino_id?: string;
 }

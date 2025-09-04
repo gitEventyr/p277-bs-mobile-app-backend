@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { IsString } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 import { CasinoAction } from './casino-action.entity';
 
 @Entity('casinos')
@@ -17,6 +17,11 @@ export class Casino {
   @Column({ type: 'varchar', unique: true })
   @IsString()
   casino_name: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  @IsOptional()
+  @IsString()
+  casino_id?: string;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   created_at: Date;

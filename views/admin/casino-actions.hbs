@@ -9,6 +9,10 @@
         <i class="bi bi-plus-circle"></i>
         Create Action
       </button>
+      <button type="button" class="btn btn-sm btn-success" onclick="showBulkUploadModal()">
+        <i class="bi bi-upload"></i>
+        Bulk Upload CSV
+      </button>
       <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshCasinoActions()">
         <i class="bi bi-arrow-clockwise"></i>
         Refresh
@@ -341,8 +345,95 @@
   </div>
 </div>
 
+<!-- Bulk Upload CSV Modal -->
+<div class="modal fade" id="bulkUploadModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-upload"></i>
+          Bulk Upload Casino Actions from CSV
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="bulkUploadForm" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>CSV Format Requirements:</strong>
+            <ul class="mb-0 mt-2">
+              <li><strong>Headers:</strong> casino_name, visitor_id, date_of_action, registration, deposit</li>
+              <li><strong>Date Format:</strong> YYYY-MM-DD HH:MM:SS or YYYY-MM-DD</li>
+              <li><strong>Boolean Values:</strong> true/false, 1/0, yes/no (case insensitive)</li>
+              <li><strong>Example:</strong> "Bella Vegas", "visitor_123", "2024-01-15 14:30:00", true, false</li>
+            </ul>
+          </div>
+          
+          <div class="mb-3">
+            <label for="csvFile" class="form-label">CSV File</label>
+            <input type="file" class="form-control" id="csvFile" name="csvFile" accept=".csv" required>
+            <div class="form-text">Select a CSV file containing casino actions data.</div>
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="skipErrors" name="skipErrors" value="true" checked>
+              <label class="form-check-label" for="skipErrors">
+                Skip rows with errors and continue processing
+              </label>
+              <div class="form-text">If unchecked, the entire upload will fail on the first error.</div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="createMissingCasinos" name="createMissingCasinos" value="true" checked>
+              <label class="form-check-label" for="createMissingCasinos">
+                Auto-create missing casinos
+              </label>
+              <div class="form-text">Automatically create casino records for casino names that don't exist yet.</div>
+            </div>
+          </div>
+          
+          <!-- Upload Progress -->
+          <div id="uploadProgress" style="display: none;">
+            <div class="mb-3">
+              <label class="form-label">Upload Progress</label>
+              <div class="progress">
+                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <small id="progressText" class="text-muted">Starting upload...</small>
+            </div>
+          </div>
+          
+          <!-- Upload Results -->
+          <div id="uploadResults" style="display: none;">
+            <div class="alert" id="resultsAlert">
+              <div id="resultsContent"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success" id="uploadButton">
+            <i class="bi bi-upload"></i>
+            Upload CSV
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
 // Casino Actions management JavaScript functions
+function showBulkUploadModal() {
+  document.getElementById('bulkUploadForm').reset();
+  document.getElementById('uploadProgress').style.display = 'none';
+  document.getElementById('uploadResults').style.display = 'none';
+  new bootstrap.Modal(document.getElementById('bulkUploadModal')).show();
+}
+
 function showCreateCasinoActionModal() {
   document.getElementById('createCasinoActionForm').reset();
   // Set current date/time as default
@@ -542,5 +633,95 @@ document.getElementById('casinoActionSearchForm').addEventListener('submit', fun
   }
   
   window.location.search = params.toString();
+});
+
+// Bulk Upload Form Handler
+document.getElementById('bulkUploadForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const uploadButton = document.getElementById('uploadButton');
+  const progressDiv = document.getElementById('uploadProgress');
+  const resultsDiv = document.getElementById('uploadResults');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  
+  // Show progress
+  progressDiv.style.display = 'block';
+  resultsDiv.style.display = 'none';
+  uploadButton.disabled = true;
+  uploadButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
+  
+  progressBar.style.width = '10%';
+  progressText.textContent = 'Uploading file...';
+  
+  try {
+    const response = await fetch('/admin/casino-actions/api/bulk-upload', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    });
+    
+    progressBar.style.width = '90%';
+    progressText.textContent = 'Processing...';
+    
+    const result = await response.json();
+    
+    progressBar.style.width = '100%';
+    progressText.textContent = 'Complete!';
+    
+    // Show results
+    setTimeout(() => {
+      progressDiv.style.display = 'none';
+      resultsDiv.style.display = 'block';
+      
+      const resultsAlert = document.getElementById('resultsAlert');
+      const resultsContent = document.getElementById('resultsContent');
+      
+      if (response.ok) {
+        resultsAlert.className = 'alert alert-success';
+        resultsContent.innerHTML = `
+          <h6><i class="bi bi-check-circle"></i> Upload Successful!</h6>
+          <p><strong>Total Rows:</strong> ${result.summary.totalRows}</p>
+          <p><strong>Successfully Processed:</strong> ${result.summary.successfulRows}</p>
+          <p><strong>Skipped/Errors:</strong> ${result.summary.errorRows}</p>
+          ${result.summary.createdCasinos > 0 ? `<p><strong>New Casinos Created:</strong> ${result.summary.createdCasinos}</p>` : ''}
+          ${result.errors && result.errors.length > 0 ? 
+            `<hr><h6>Errors/Warnings:</h6><ul class="mb-0">${result.errors.map(err => `<li>Row ${err.row}: ${err.message}</li>`).join('')}</ul>` 
+            : ''}
+        `;
+        
+        // Auto-close and refresh after 3 seconds
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      } else {
+        resultsAlert.className = 'alert alert-danger';
+        resultsContent.innerHTML = `
+          <h6><i class="bi bi-exclamation-triangle"></i> Upload Failed</h6>
+          <p>${result.message || 'An error occurred during upload.'}</p>
+          ${result.errors && result.errors.length > 0 ? 
+            `<hr><h6>Errors:</h6><ul class="mb-0">${result.errors.map(err => `<li>Row ${err.row}: ${err.message}</li>`).join('')}</ul>` 
+            : ''}
+        `;
+      }
+    }, 500);
+    
+  } catch (error) {
+    console.error('Error uploading CSV:', error);
+    progressDiv.style.display = 'none';
+    resultsDiv.style.display = 'block';
+    
+    const resultsAlert = document.getElementById('resultsAlert');
+    const resultsContent = document.getElementById('resultsContent');
+    resultsAlert.className = 'alert alert-danger';
+    resultsContent.innerHTML = `
+      <h6><i class="bi bi-exclamation-triangle"></i> Upload Error</h6>
+      <p>Failed to upload CSV file: ${error.message}</p>
+    `;
+  } finally {
+    uploadButton.disabled = false;
+    uploadButton.innerHTML = '<i class="bi bi-upload"></i> Upload CSV';
+  }
 });
 </script>

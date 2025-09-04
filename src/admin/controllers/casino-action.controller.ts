@@ -12,7 +12,10 @@ import {
   UnauthorizedException,
   NotFoundException,
   BadRequestException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import * as session from 'express-session';
 import { CasinoActionService } from '../services/casino-action.service';
@@ -258,6 +261,52 @@ export class CasinoActionController {
     } catch (error: any) {
       console.error('Delete casino action error:', error);
       throw error;
+    }
+  }
+
+  // Bulk Upload CSV (API endpoint)
+  @Post('api/bulk-upload')
+  @UseInterceptors(FileInterceptor('csvFile'))
+  async bulkUploadCSV(
+    @UploadedFile() file: any,
+    @Body() body: any,
+    @Session() session: AdminSession,
+  ) {
+    if (!session.admin) {
+      throw new UnauthorizedException('Not authenticated');
+    }
+
+    if (!file) {
+      throw new BadRequestException('CSV file is required');
+    }
+
+    if (file.mimetype !== 'text/csv' && !file.originalname.endsWith('.csv')) {
+      throw new BadRequestException('File must be a CSV file');
+    }
+
+    try {
+      // Convert buffer to string
+      const csvContent = file.buffer.toString('utf-8');
+
+      // Parse options from form data
+      const skipErrors = body.skipErrors === 'true';
+      const createMissingCasinos = body.createMissingCasinos === 'true';
+
+      // Process the CSV
+      const results = await this.casinoActionService.bulkCreateFromCSV(csvContent, {
+        skipErrors,
+        createMissingCasinos,
+      });
+
+      return {
+        success: true,
+        message: 'CSV upload completed successfully',
+        summary: results,
+        errors: results.errors,
+      };
+    } catch (error: any) {
+      console.error('Bulk upload error:', error);
+      throw new BadRequestException(error.message || 'Failed to process CSV file');
     }
   }
 

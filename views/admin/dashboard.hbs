@@ -52,7 +52,7 @@
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-              Total Balance
+              Total Coin Balance
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.totalBalance}}</div>
           </div>
@@ -91,7 +91,7 @@
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-              Total Revenue
+              Total Purchase History Revenue
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">${{stats.totalRevenue}}</div>
           </div>
@@ -109,7 +109,7 @@
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-              Average Balance
+              Average Coin Balance
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.averageBalance}}</div>
           </div>
@@ -121,41 +121,7 @@
     </div>
   </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-primary shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-              Games Played
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.totalGamesPlayed}}</div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-controller fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-warning shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-              Avg Transaction Value
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">${{revenueAnalytics.averageTransactionValue}}</div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-graph-up fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- Analytics Details -->
@@ -188,65 +154,7 @@
     </div>
   </div>
 
-  <!-- Revenue by Platform -->
-  <div class="col-lg-4 mb-4">
-    <div class="card shadow">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="bi bi-phone"></i>
-          Revenue by Platform
-        </h6>
-      </div>
-      <div class="card-body">
-        {{#each revenueAnalytics.revenueByPlatform}}
-        <div class="row align-items-center mb-2">
-          <div class="col-6">
-            <span class="text-capitalize">{{this.platform}}</span>
-          </div>
-          <div class="col-3 text-right">
-            <strong>${{this.revenue}}</strong>
-          </div>
-          <div class="col-3 text-right">
-            <small class="text-muted">{{this.transactions}} txns</small>
-          </div>
-        </div>
-        {{/each}}
-        {{#unless revenueAnalytics.revenueByPlatform.length}}
-        <p class="text-muted text-center">No revenue data available</p>
-        {{/unless}}
-      </div>
-    </div>
-  </div>
 
-  <!-- Game Performance -->
-  <div class="col-lg-4 mb-4">
-    <div class="card shadow">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="bi bi-controller"></i>
-          Game Performance
-        </h6>
-      </div>
-      <div class="card-body">
-        {{#each gameAnalytics.gamePerformance}}
-        <div class="row align-items-center mb-2">
-          <div class="col-6">
-            <span>{{this.gameName}}</span>
-          </div>
-          <div class="col-3 text-right">
-            <strong>{{this.totalPlays}}</strong>
-          </div>
-          <div class="col-3 text-right">
-            <small class="text-muted">{{this.winRate}}% win</small>
-          </div>
-        </div>
-        {{/each}}
-        {{#unless gameAnalytics.gamePerformance.length}}
-        <p class="text-muted text-center">No game data available</p>
-        {{/unless}}
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- User Level Distribution & Top Spenders -->
