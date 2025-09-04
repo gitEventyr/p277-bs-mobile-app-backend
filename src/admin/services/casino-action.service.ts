@@ -218,6 +218,7 @@ export class CasinoActionService {
         }
 
         // Ensure player exists (create if needed and option is enabled)
+        let playerExists = false;
         if (options.createMissingPlayers) {
           const existingPlayer = await this.playerRepository.findOne({
             where: { visitor_id: casinoActionData.visitor_id }
@@ -229,7 +230,21 @@ export class CasinoActionService {
             });
             createdPlayerIds.add(casinoActionData.visitor_id);
             results.createdPlayers++;
+            playerExists = true;
+          } else if (existingPlayer || createdPlayerIds.has(casinoActionData.visitor_id)) {
+            playerExists = true;
           }
+        } else {
+          // Check if player exists when not creating missing players
+          const existingPlayer = await this.playerRepository.findOne({
+            where: { visitor_id: casinoActionData.visitor_id }
+          });
+          playerExists = !!existingPlayer;
+        }
+
+        // Only create casino action if player exists (to avoid foreign key constraint violation)
+        if (!playerExists) {
+          throw new Error(`Player with visitor_id '${casinoActionData.visitor_id}' does not exist`);
         }
 
         // Create the casino action
