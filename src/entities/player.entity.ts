@@ -19,6 +19,7 @@ import { CoinsBalanceChange } from './coins-balance-change.entity';
 import { PlayHistory } from './play-history.entity';
 import { InAppPurchase } from './in-app-purchase.entity';
 import { UserVoucher } from './user-voucher.entity';
+import { CasinoAction } from './casino-action.entity';
 
 @Entity('players')
 export class Player {
@@ -228,4 +229,7 @@ export class Player {
 
   @OneToMany(() => UserVoucher, (userVoucher) => userVoucher.user)
   userVouchers: UserVoucher[];
+
+  @OneToMany(() => CasinoAction, (casinoAction) => casinoAction.player)
+  casinoActions: CasinoAction[];
 }
