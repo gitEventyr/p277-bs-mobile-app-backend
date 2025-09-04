@@ -395,6 +395,16 @@
             </div>
           </div>
           
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="createMissingPlayers" name="createMissingPlayers" value="true" checked>
+              <label class="form-check-label" for="createMissingPlayers">
+                Auto-create missing players
+              </label>
+              <div class="form-text">Automatically create player records for visitor IDs that don't exist yet.</div>
+            </div>
+          </div>
+          
           <!-- Upload Progress -->
           <div id="uploadProgress" style="display: none;">
             <div class="mb-3">
@@ -682,12 +692,13 @@ document.getElementById('bulkUploadForm').addEventListener('submit', async funct
         resultsAlert.className = 'alert alert-success';
         resultsContent.innerHTML = `
           <h6><i class="bi bi-check-circle"></i> Upload Successful!</h6>
-          <p><strong>Total Rows:</strong> ${result.summary.totalRows}</p>
-          <p><strong>Successfully Processed:</strong> ${result.summary.successfulRows}</p>
-          <p><strong>Skipped/Errors:</strong> ${result.summary.errorRows}</p>
-          ${result.summary.createdCasinos > 0 ? `<p><strong>New Casinos Created:</strong> ${result.summary.createdCasinos}</p>` : ''}
-          ${result.errors && result.errors.length > 0 ? 
-            `<hr><h6>Errors/Warnings:</h6><ul class="mb-0">${result.errors.map(err => `<li>Row ${err.row}: ${err.message}</li>`).join('')}</ul>` 
+          <p><strong>Total Rows:</strong> ${result.data.summary.totalRows}</p>
+          <p><strong>Successfully Processed:</strong> ${result.data.summary.successfulRows}</p>
+          <p><strong>Skipped/Errors:</strong> ${result.data.summary.errorRows}</p>
+          ${result.data.summary.createdCasinos > 0 ? `<p><strong>New Casinos Created:</strong> ${result.data.summary.createdCasinos}</p>` : ''}
+          ${result.data.summary.createdPlayers > 0 ? `<p><strong>New Players Created:</strong> ${result.data.summary.createdPlayers}</p>` : ''}
+          ${result.data.errors && result.data.errors.length > 0 ? 
+            `<hr><h6>Errors/Warnings:</h6><ul class="mb-0">${result.data.errors.map(err => `<li>Row ${err.row}: ${err.message}</li>`).join('')}</ul>` 
             : ''}
         `;
         
@@ -699,9 +710,9 @@ document.getElementById('bulkUploadForm').addEventListener('submit', async funct
         resultsAlert.className = 'alert alert-danger';
         resultsContent.innerHTML = `
           <h6><i class="bi bi-exclamation-triangle"></i> Upload Failed</h6>
-          <p>${result.message || 'An error occurred during upload.'}</p>
-          ${result.errors && result.errors.length > 0 ? 
-            `<hr><h6>Errors:</h6><ul class="mb-0">${result.errors.map(err => `<li>Row ${err.row}: ${err.message}</li>`).join('')}</ul>` 
+          <p>${result.data?.message || result.message || 'An error occurred during upload.'}</p>
+          ${result.data?.errors && result.data.errors.length > 0 ? 
+            `<hr><h6>Errors:</h6><ul class="mb-0">${result.data.errors.map(err => `<li>Row ${err.row}: ${err.message}</li>`).join('')}</ul>` 
             : ''}
         `;
       }

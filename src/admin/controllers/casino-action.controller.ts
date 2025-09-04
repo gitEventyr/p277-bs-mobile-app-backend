@@ -291,11 +291,13 @@ export class CasinoActionController {
       // Parse options from form data
       const skipErrors = body.skipErrors === 'true';
       const createMissingCasinos = body.createMissingCasinos === 'true';
+      const createMissingPlayers = body.createMissingPlayers === 'true';
 
       // Process the CSV
       const results = await this.casinoActionService.bulkCreateFromCSV(csvContent, {
         skipErrors,
         createMissingCasinos,
+        createMissingPlayers,
       });
 
       return {

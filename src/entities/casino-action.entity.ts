@@ -42,11 +42,11 @@ export class CasinoAction {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Casino, (casino) => casino.actions)
+  @ManyToOne(() => Casino, (casino) => casino.actions, { nullable: true })
   @JoinColumn({ name: 'casino_name', referencedColumnName: 'casino_name' })
-  casino: Casino;
+  casino?: Casino;
 
-  @ManyToOne(() => Player, (player) => player.id)
+  @ManyToOne(() => Player, (player) => player.id, { nullable: true })
   @JoinColumn({ name: 'visitor_id', referencedColumnName: 'visitor_id' })
-  player: Player;
+  player?: Player;
 }

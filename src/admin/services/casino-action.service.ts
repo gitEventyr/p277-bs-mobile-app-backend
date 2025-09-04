@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { CasinoAction } from '../../entities/casino-action.entity';
 import { Casino } from '../../entities/casino.entity';
+import { Player } from '../../entities/player.entity';
 
 @Injectable()
 export class CasinoActionService {
@@ -11,6 +12,8 @@ export class CasinoActionService {
     private casinoActionRepository: Repository<CasinoAction>,
     @InjectRepository(Casino)
     private casinoRepository: Repository<Casino>,
+    @InjectRepository(Player)
+    private playerRepository: Repository<Player>,
   ) {}
 
   async findAll(options: {
@@ -153,6 +156,7 @@ export class CasinoActionService {
   async bulkCreateFromCSV(csvContent: string, options: {
     skipErrors?: boolean;
     createMissingCasinos?: boolean;
+    createMissingPlayers?: boolean;
   }) {
     const lines = csvContent.trim().split('\n');
     if (lines.length < 2) {
@@ -175,9 +179,11 @@ export class CasinoActionService {
       errorRows: 0,
       errors: [] as Array<{ row: number; message: string }>,
       createdCasinos: 0,
+      createdPlayers: 0,
     };
 
     const createdCasinoNames = new Set<string>();
+    const createdPlayerIds = new Set<string>();
 
     // Process each data row
     for (let i = 1; i < lines.length; i++) {
@@ -208,6 +214,21 @@ export class CasinoActionService {
             });
             createdCasinoNames.add(casinoActionData.casino_name);
             results.createdCasinos++;
+          }
+        }
+
+        // Ensure player exists (create if needed and option is enabled)
+        if (options.createMissingPlayers) {
+          const existingPlayer = await this.playerRepository.findOne({
+            where: { visitor_id: casinoActionData.visitor_id }
+          });
+
+          if (!existingPlayer && !createdPlayerIds.has(casinoActionData.visitor_id)) {
+            await this.playerRepository.save({
+              visitor_id: casinoActionData.visitor_id
+            });
+            createdPlayerIds.add(casinoActionData.visitor_id);
+            results.createdPlayers++;
           }
         }
 
