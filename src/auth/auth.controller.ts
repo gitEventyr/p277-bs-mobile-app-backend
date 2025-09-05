@@ -59,6 +59,7 @@ import { PhoneVerificationToken } from '../entities/phone-verification-token.ent
 import { EmailService } from '../email/services/email.service';
 import { DevicesService } from '../devices/services/devices.service';
 import { TwilioService } from '../sms/services/twilio.service';
+import { CasinoApiService } from '../external/casino/casino-api.service';
 import type {
   AuthenticatedUser,
   AuthenticatedAdmin,
@@ -94,6 +95,7 @@ export class AuthController {
     private readonly emailService: EmailService,
     private readonly devicesService: DevicesService,
     private readonly twilioService: TwilioService,
+    private readonly casinoApiService: CasinoApiService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -141,20 +143,41 @@ export class AuthController {
       }
     }
 
-    // Generate unique visitor_id
+    // Get visitor_id from external casino API or generate locally as fallback
     let visitorId: string;
-    let attempts = 0;
-    do {
-      visitorId = this.generateVisitorId();
-      attempts++;
-      if (attempts > 10) {
-        throw new BadRequestException('Unable to generate unique visitor ID');
+
+    if (this.casinoApiService.isConfigured()) {
+      try {
+        visitorId = await this.casinoApiService.registerUser(
+          registerDto,
+          this.getClientIp(req),
+        );
+        this.logger.log(`Received visitor_id from casino API: ${visitorId}`);
+      } catch (error) {
+        this.logger.error(
+          'Failed to register with casino API, falling back to local generation',
+          error.message,
+        );
+        throw error; // Don't fallback, throw the error to the user
       }
-    } while (
-      await this.playerRepository.findOne({
-        where: { visitor_id: visitorId, is_deleted: false },
-      })
-    );
+    } else {
+      // Fallback to local generation if casino API is not configured
+      this.logger.warn(
+        'Casino API not configured, using local visitor_id generation',
+      );
+      let attempts = 0;
+      do {
+        visitorId = this.generateVisitorId();
+        attempts++;
+        if (attempts > 10) {
+          throw new BadRequestException('Unable to generate unique visitor ID');
+        }
+      } while (
+        await this.playerRepository.findOne({
+          where: { visitor_id: visitorId, is_deleted: false },
+        })
+      );
+    }
 
     // Hash password if provided
     const hashedPassword = registerDto.password

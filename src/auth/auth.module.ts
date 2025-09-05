@@ -16,6 +16,7 @@ import { PhoneVerificationToken } from '../entities/phone-verification-token.ent
 import { EmailModule } from '../email/email.module';
 import { DevicesModule } from '../devices/devices.module';
 import { SmsModule } from '../sms/sms.module';
+import { CasinoApiModule } from '../external/casino/casino-api.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { SmsModule } from '../sms/sms.module';
     EmailModule,
     DevicesModule,
     SmsModule,
+    CasinoApiModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],
