@@ -33,7 +33,10 @@ export interface CasinoApiRegisterRequest {
 }
 
 export interface CasinoApiRegisterResponse {
-  visitor_id: string;
+  visitor_id?: string;
+  user?: {
+    visitor_id: string;
+  };
 }
 
 @Injectable()
