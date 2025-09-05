@@ -61,3 +61,4 @@ ecosystem.config.js
 
 # Documentation with sensitive examples
 TWILIO_VERIFY_SETUP.md
+/initial-files/casino_register_doc.png

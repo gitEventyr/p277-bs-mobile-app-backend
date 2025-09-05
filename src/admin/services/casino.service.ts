@@ -80,7 +80,10 @@ export class CasinoService {
     });
   }
 
-  async create(createData: { casino_name: string; casino_id?: string }): Promise<Casino> {
+  async create(createData: {
+    casino_name: string;
+    casino_id?: string;
+  }): Promise<Casino> {
     const casino = this.casinoRepository.create(createData);
     return await this.casinoRepository.save(casino);
   }

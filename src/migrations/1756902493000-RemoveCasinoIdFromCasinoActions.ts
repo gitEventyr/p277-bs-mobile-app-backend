@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RemoveCasinoIdFromCasinoActions1756902493000 implements MigrationInterface {
+export class RemoveCasinoIdFromCasinoActions1756902493000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // First, add unique constraint to casino_name in casinos table
     await queryRunner.query(`
@@ -20,7 +22,10 @@ export class RemoveCasinoIdFromCasinoActions1756902493000 implements MigrationIn
     `);
 
     // Remove casino_id column from casino_actions table
-    const hasCasinoIdColumn = await queryRunner.hasColumn('casino_actions', 'casino_id');
+    const hasCasinoIdColumn = await queryRunner.hasColumn(
+      'casino_actions',
+      'casino_id',
+    );
     if (hasCasinoIdColumn) {
       await queryRunner.query(`
         ALTER TABLE "casino_actions" 
@@ -55,7 +60,10 @@ export class RemoveCasinoIdFromCasinoActions1756902493000 implements MigrationIn
     `);
 
     // Add back casino_id column to casino_actions table
-    const hasCasinoIdColumn = await queryRunner.hasColumn('casino_actions', 'casino_id');
+    const hasCasinoIdColumn = await queryRunner.hasColumn(
+      'casino_actions',
+      'casino_id',
+    );
     if (!hasCasinoIdColumn) {
       await queryRunner.query(`
         ALTER TABLE "casino_actions" 

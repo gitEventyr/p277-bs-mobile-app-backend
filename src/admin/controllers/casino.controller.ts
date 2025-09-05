@@ -103,7 +103,10 @@ export class CasinoController {
   @Get('api/:id')
   @ApiOperation({ summary: 'Get casino details by ID' })
   @ApiParam({ name: 'id', description: 'Casino ID' })
-  @ApiResponse({ status: 200, description: 'Casino details retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Casino details retrieved successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Casino not found' })
   async getCasinoDetails(
@@ -131,7 +134,11 @@ export class CasinoController {
   @ApiOperation({ summary: 'Create a new casino' })
   @ApiBody({ type: CreateCasinoDto })
   @ApiResponse({ status: 201, description: 'Casino created successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request - Invalid casino name or casino name already exists' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Bad request - Invalid casino name or casino name already exists',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createCasino(
     @Body() createData: CreateCasinoDto,
@@ -154,7 +161,10 @@ export class CasinoController {
         throw new BadRequestException('Casino name already exists');
       }
 
-      const casino = await this.casinoService.create({ casino_name, casino_id });
+      const casino = await this.casinoService.create({
+        casino_name,
+        casino_id,
+      });
       return casino;
     } catch (error: any) {
       console.error('Create casino error:', error);
@@ -168,7 +178,11 @@ export class CasinoController {
   @ApiParam({ name: 'id', description: 'Casino ID' })
   @ApiBody({ type: UpdateCasinoDto })
   @ApiResponse({ status: 200, description: 'Casino updated successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request - Invalid casino name or casino name already exists' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Bad request - Invalid casino name or casino name already exists',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Casino not found' })
   async updateCasino(

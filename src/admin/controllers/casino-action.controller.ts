@@ -217,7 +217,9 @@ export class CasinoActionController {
 
       // Verify casino exists if casino_name is being updated
       if (updateData.casino_name) {
-        const casino = await this.casinoService.findByName(updateData.casino_name);
+        const casino = await this.casinoService.findByName(
+          updateData.casino_name,
+        );
         if (!casino) {
           throw new BadRequestException('Casino not found');
         }
@@ -294,11 +296,14 @@ export class CasinoActionController {
       const createMissingPlayers = body.createMissingPlayers === 'true';
 
       // Process the CSV
-      const results = await this.casinoActionService.bulkCreateFromCSV(csvContent, {
-        skipErrors,
-        createMissingCasinos,
-        createMissingPlayers,
-      });
+      const results = await this.casinoActionService.bulkCreateFromCSV(
+        csvContent,
+        {
+          skipErrors,
+          createMissingCasinos,
+          createMissingPlayers,
+        },
+      );
 
       return {
         success: true,
@@ -308,7 +313,9 @@ export class CasinoActionController {
       };
     } catch (error: any) {
       console.error('Bulk upload error:', error);
-      throw new BadRequestException(error.message || 'Failed to process CSV file');
+      throw new BadRequestException(
+        error.message || 'Failed to process CSV file',
+      );
     }
   }
 

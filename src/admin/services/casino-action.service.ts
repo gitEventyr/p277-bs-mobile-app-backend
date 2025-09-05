@@ -153,24 +153,37 @@ export class CasinoActionService {
   }
 
   // CSV Bulk Upload Methods
-  async bulkCreateFromCSV(csvContent: string, options: {
-    skipErrors?: boolean;
-    createMissingCasinos?: boolean;
-    createMissingPlayers?: boolean;
-  }) {
+  async bulkCreateFromCSV(
+    csvContent: string,
+    options: {
+      skipErrors?: boolean;
+      createMissingCasinos?: boolean;
+      createMissingPlayers?: boolean;
+    },
+  ) {
     const lines = csvContent.trim().split('\n');
     if (lines.length < 2) {
-      throw new BadRequestException('CSV file must contain headers and at least one data row');
+      throw new BadRequestException(
+        'CSV file must contain headers and at least one data row',
+      );
     }
 
     // Parse headers
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-    const expectedHeaders = ['casino_name', 'visitor_id', 'date_of_action', 'registration', 'deposit'];
-    
+    const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));
+    const expectedHeaders = [
+      'casino_name',
+      'visitor_id',
+      'date_of_action',
+      'registration',
+      'deposit',
+    ];
+
     // Validate headers
-    const missingHeaders = expectedHeaders.filter(h => !headers.includes(h));
+    const missingHeaders = expectedHeaders.filter((h) => !headers.includes(h));
     if (missingHeaders.length > 0) {
-      throw new BadRequestException(`Missing required headers: ${missingHeaders.join(', ')}`);
+      throw new BadRequestException(
+        `Missing required headers: ${missingHeaders.join(', ')}`,
+      );
     }
 
     const results = {
@@ -190,7 +203,9 @@ export class CasinoActionService {
       try {
         const rowData = this.parseCSVRow(lines[i]);
         if (rowData.length !== headers.length) {
-          throw new Error(`Row has ${rowData.length} columns but expected ${headers.length}`);
+          throw new Error(
+            `Row has ${rowData.length} columns but expected ${headers.length}`,
+          );
         }
 
         // Create row object
@@ -205,12 +220,15 @@ export class CasinoActionService {
         // Ensure casino exists (create if needed and option is enabled)
         if (options.createMissingCasinos) {
           const existingCasino = await this.casinoRepository.findOne({
-            where: { casino_name: casinoActionData.casino_name }
+            where: { casino_name: casinoActionData.casino_name },
           });
 
-          if (!existingCasino && !createdCasinoNames.has(casinoActionData.casino_name)) {
+          if (
+            !existingCasino &&
+            !createdCasinoNames.has(casinoActionData.casino_name)
+          ) {
             await this.casinoRepository.save({
-              casino_name: casinoActionData.casino_name
+              casino_name: casinoActionData.casino_name,
             });
             createdCasinoNames.add(casinoActionData.casino_name);
             results.createdCasinos++;
@@ -221,45 +239,54 @@ export class CasinoActionService {
         let playerExists = false;
         if (options.createMissingPlayers) {
           const existingPlayer = await this.playerRepository.findOne({
-            where: { visitor_id: casinoActionData.visitor_id }
+            where: { visitor_id: casinoActionData.visitor_id },
           });
 
-          if (!existingPlayer && !createdPlayerIds.has(casinoActionData.visitor_id)) {
+          if (
+            !existingPlayer &&
+            !createdPlayerIds.has(casinoActionData.visitor_id)
+          ) {
             await this.playerRepository.save({
-              visitor_id: casinoActionData.visitor_id
+              visitor_id: casinoActionData.visitor_id,
             });
             createdPlayerIds.add(casinoActionData.visitor_id);
             results.createdPlayers++;
             playerExists = true;
-          } else if (existingPlayer || createdPlayerIds.has(casinoActionData.visitor_id)) {
+          } else if (
+            existingPlayer ||
+            createdPlayerIds.has(casinoActionData.visitor_id)
+          ) {
             playerExists = true;
           }
         } else {
           // Check if player exists when not creating missing players
           const existingPlayer = await this.playerRepository.findOne({
-            where: { visitor_id: casinoActionData.visitor_id }
+            where: { visitor_id: casinoActionData.visitor_id },
           });
           playerExists = !!existingPlayer;
         }
 
         // Only create casino action if player exists (to avoid foreign key constraint violation)
         if (!playerExists) {
-          throw new Error(`Player with visitor_id '${casinoActionData.visitor_id}' does not exist`);
+          throw new Error(
+            `Player with visitor_id '${casinoActionData.visitor_id}' does not exist`,
+          );
         }
 
         // Create the casino action
         await this.create(casinoActionData);
         results.successfulRows++;
-
       } catch (error) {
         results.errorRows++;
         results.errors.push({
           row: i + 1,
-          message: error.message
+          message: error.message,
         });
 
         if (!options.skipErrors) {
-          throw new BadRequestException(`Error on row ${i + 1}: ${error.message}`);
+          throw new BadRequestException(
+            `Error on row ${i + 1}: ${error.message}`,
+          );
         }
       }
     }
@@ -271,11 +298,11 @@ export class CasinoActionService {
     const result: string[] = [];
     let current = '';
     let inQuotes = false;
-    
+
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
       const nextChar = line[i + 1];
-      
+
       if (char === '"') {
         if (inQuotes && nextChar === '"') {
           // Escaped quote
@@ -293,13 +320,16 @@ export class CasinoActionService {
         current += char;
       }
     }
-    
+
     // Add last field
     result.push(current.trim());
     return result;
   }
 
-  private async validateAndParseCSVRow(row: any, rowNumber: number): Promise<{
+  private async validateAndParseCSVRow(
+    row: any,
+    rowNumber: number,
+  ): Promise<{
     casino_name: string;
     visitor_id: string;
     date_of_action: Date;
@@ -324,7 +354,9 @@ export class CasinoActionService {
         throw new Error('Invalid date format');
       }
     } catch (error) {
-      throw new Error('date_of_action must be a valid date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)');
+      throw new Error(
+        'date_of_action must be a valid date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)',
+      );
     }
 
     // Parse registration boolean
@@ -346,7 +378,7 @@ export class CasinoActionService {
     if (typeof value === 'boolean') {
       return value;
     }
-    
+
     if (typeof value === 'string') {
       const lowerValue = value.toLowerCase().trim();
       if (lowerValue === 'true' || lowerValue === '1' || lowerValue === 'yes') {
@@ -356,7 +388,9 @@ export class CasinoActionService {
         return false;
       }
     }
-    
-    throw new Error(`${fieldName} must be a boolean value (true/false, 1/0, yes/no)`);
+
+    throw new Error(
+      `${fieldName} must be a boolean value (true/false, 1/0, yes/no)`,
+    );
   }
 }

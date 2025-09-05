@@ -1,9 +1,14 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddCasinoNameToCasinoActions1756902385000 implements MigrationInterface {
+export class AddCasinoNameToCasinoActions1756902385000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add casino_name column to casino_actions table
-    const hasCasinoNameColumn = await queryRunner.hasColumn('casino_actions', 'casino_name');
+    const hasCasinoNameColumn = await queryRunner.hasColumn(
+      'casino_actions',
+      'casino_name',
+    );
     if (!hasCasinoNameColumn) {
       await queryRunner.query(`
         ALTER TABLE "casino_actions" 
@@ -22,7 +27,10 @@ export class AddCasinoNameToCasinoActions1756902385000 implements MigrationInter
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Remove casino_name column from casino_actions table
-    const hasCasinoNameColumn = await queryRunner.hasColumn('casino_actions', 'casino_name');
+    const hasCasinoNameColumn = await queryRunner.hasColumn(
+      'casino_actions',
+      'casino_name',
+    );
     if (hasCasinoNameColumn) {
       await queryRunner.query(`
         ALTER TABLE "casino_actions" 
