@@ -14,12 +14,6 @@ import {
   IsBoolean,
   Min,
 } from 'class-validator';
-import { Device } from './device.entity';
-import { CoinsBalanceChange } from './coins-balance-change.entity';
-import { PlayHistory } from './play-history.entity';
-import { InAppPurchase } from './in-app-purchase.entity';
-import { UserVoucher } from './user-voucher.entity';
-import { CasinoAction } from './casino-action.entity';
 
 @Entity('players')
 export class Player {
@@ -215,21 +209,21 @@ export class Player {
   deletion_reason?: string;
 
   // Relationships
-  @OneToMany(() => Device, (device) => device.user)
-  devices: Device[];
+  @OneToMany('Device', (device: any) => device.user)
+  devices: any[];
 
-  @OneToMany(() => CoinsBalanceChange, (change) => change.user)
-  balanceChanges: CoinsBalanceChange[];
+  @OneToMany('CoinsBalanceChange', (change: any) => change.user)
+  balanceChanges: any[];
 
-  @OneToMany(() => PlayHistory, (play) => play.user)
-  playHistory: PlayHistory[];
+  @OneToMany('PlayHistory', (play: any) => play.user)
+  playHistory: any[];
 
-  @OneToMany(() => InAppPurchase, (purchase) => purchase.user)
-  purchases: InAppPurchase[];
+  @OneToMany('InAppPurchase', (purchase: any) => purchase.user)
+  purchases: any[];
 
-  @OneToMany(() => UserVoucher, (userVoucher) => userVoucher.user)
-  userVouchers: UserVoucher[];
+  @OneToMany('UserVoucher', (userVoucher: any) => userVoucher.user)
+  userVouchers: any[];
 
-  @OneToMany(() => CasinoAction, (casinoAction) => casinoAction.player)
-  casinoActions: CasinoAction[];
+  @OneToMany('CasinoAction', (casinoAction: any) => casinoAction.player)
+  casinoActions: any[];
 }

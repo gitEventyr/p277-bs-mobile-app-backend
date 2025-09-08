@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { IsString, IsNumber, Min } from 'class-validator';
-import { UserVoucher } from './user-voucher.entity';
 
 @Entity('vouchers')
 export class Voucher {
@@ -34,6 +33,6 @@ export class Voucher {
   updated_at: Date;
 
   // Relationships
-  @OneToMany(() => UserVoucher, (userVoucher) => userVoucher.voucher)
-  userVouchers: UserVoucher[];
+  @OneToMany('UserVoucher', (userVoucher: any) => userVoucher.voucher)
+  userVouchers: any[];
 }

@@ -7,8 +7,6 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Player } from './player.entity';
-import { Voucher } from './voucher.entity';
 
 @Entity('users_vouchers')
 export class UserVoucher {
@@ -28,11 +26,11 @@ export class UserVoucher {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Player, (player) => player.userVouchers)
+  @ManyToOne('Player', (player: any) => player.userVouchers)
   @JoinColumn({ name: 'user_id' })
-  user: Player;
+  user: any;
 
-  @ManyToOne(() => Voucher, (voucher) => voucher.userVouchers)
+  @ManyToOne('Voucher', (voucher: any) => voucher.userVouchers)
   @JoinColumn({ name: 'voucher_id' })
-  voucher: Voucher;
+  voucher: any;
 }

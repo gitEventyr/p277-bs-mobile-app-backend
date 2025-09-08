@@ -8,8 +8,6 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { IsString, IsBoolean } from 'class-validator';
-import { Casino } from './casino.entity';
-import { Player } from './player.entity';
 
 @Entity('casino_actions')
 export class CasinoAction {
@@ -42,11 +40,11 @@ export class CasinoAction {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Casino, (casino) => casino.actions, { nullable: true })
+  @ManyToOne('Casino', (casino: any) => casino.actions, { nullable: true })
   @JoinColumn({ name: 'casino_name', referencedColumnName: 'casino_name' })
-  casino?: Casino;
+  casino?: any;
 
-  @ManyToOne(() => Player, (player) => player.casinoActions, { nullable: true })
+  @ManyToOne('Player', (player: any) => player.casinoActions, { nullable: true })
   @JoinColumn({ name: 'visitor_id', referencedColumnName: 'visitor_id' })
-  player?: Player;
+  player?: any;
 }

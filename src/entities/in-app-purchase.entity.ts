@@ -8,7 +8,6 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { IsString, IsNumber, Min } from 'class-validator';
-import { Player } from './player.entity';
 
 @Entity('in_app_purchases')
 export class InAppPurchase {
@@ -49,7 +48,7 @@ export class InAppPurchase {
   updated_at: Date;
 
   // Relationships
-  @ManyToOne(() => Player, (player) => player.purchases)
+  @ManyToOne('Player', (player: any) => player.purchases)
   @JoinColumn({ name: 'user_id' })
-  user: Player;
+  user: any;
 }

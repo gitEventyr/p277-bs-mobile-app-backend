@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { IsString, IsOptional } from 'class-validator';
-import { CasinoAction } from './casino-action.entity';
 
 @Entity('casinos')
 export class Casino {
@@ -30,6 +29,6 @@ export class Casino {
   updated_at: Date;
 
   // Relationships
-  @OneToMany(() => CasinoAction, (action) => action.casino)
-  actions: CasinoAction[];
+  @OneToMany('CasinoAction', (action: any) => action.casino)
+  actions: any[];
 }
