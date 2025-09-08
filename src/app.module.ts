@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createDatabaseConfig } from './config/database.config';
+import { validationSchema } from './config/env.validation';
 import { Player } from './entities/player.entity';
 import { AdminUser } from './entities/admin-user.entity';
 import { Device } from './entities/device.entity';
@@ -26,7 +27,14 @@ import { PurchasesModule } from './purchases/purchases.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema,
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: false,
+      },
+    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

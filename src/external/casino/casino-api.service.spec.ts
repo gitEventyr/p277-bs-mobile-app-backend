@@ -89,11 +89,11 @@ describe('CasinoApiService', () => {
 
     it('should successfully register user and return visitor_id', async () => {
       const mockResponse = {
-        data: { 
+        data: {
           user: {
             created: true,
-            visitor_id: 'visitor_12345'
-          }
+            visitor_id: 'visitor_12345',
+          },
         },
       };
 
@@ -198,11 +198,11 @@ describe('CasinoApiService', () => {
     it('should handle empty RegisterDto values gracefully', async () => {
       const emptyRegisterDto: RegisterDto = {};
       const mockResponse = {
-        data: { 
+        data: {
           user: {
             created: false,
-            visitor_id: 'visitor_empty_test'
-          }
+            visitor_id: 'visitor_empty_test',
+          },
         },
       };
 

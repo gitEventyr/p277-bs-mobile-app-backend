@@ -117,10 +117,11 @@ export class CasinoApiService {
       );
 
       const responseData = response.data;
-      
+
       // Handle both response formats: direct visitor_id or nested in user object
-      const visitorId = responseData?.visitor_id || responseData?.user?.visitor_id;
-      
+      const visitorId =
+        responseData?.visitor_id || responseData?.user?.visitor_id;
+
       if (!visitorId) {
         throw new BadRequestException(
           'Invalid response from casino API: missing visitor_id',

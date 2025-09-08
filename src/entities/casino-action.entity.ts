@@ -44,7 +44,9 @@ export class CasinoAction {
   @JoinColumn({ name: 'casino_name', referencedColumnName: 'casino_name' })
   casino?: any;
 
-  @ManyToOne('Player', (player: any) => player.casinoActions, { nullable: true })
+  @ManyToOne('Player', (player: any) => player.casinoActions, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'visitor_id', referencedColumnName: 'visitor_id' })
   player?: any;
 }
