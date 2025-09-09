@@ -235,8 +235,8 @@ export class CasinoActionService {
         // Validate and parse the row data
         const casinoActionData = await this.validateAndParseCSVRow(row, i + 1);
 
-        // Ensure casino exists
-        const existingCasino = await this.casinoRepository.findOne({
+        // Enhanced casino lookup: check both by name and casino_id to prevent duplicates
+        let existingCasino = await this.casinoRepository.findOne({
           where: { casino_name: casinoActionData.casino_name },
         });
 
@@ -253,12 +253,15 @@ export class CasinoActionService {
                 if (external.admin_name === casinoActionData.casino_name) {
                   return true;
                 }
-                
+
                 // Try case-insensitive match
-                if (external.admin_name.toLowerCase() === casinoActionData.casino_name.toLowerCase()) {
+                if (
+                  external.admin_name.toLowerCase() ===
+                  casinoActionData.casino_name.toLowerCase()
+                ) {
                   return true;
                 }
-                
+
                 // Try normalized match (remove special chars, extra spaces, and common suffixes)
                 const normalizeString = (str: string) => {
                   return str
@@ -271,40 +274,73 @@ export class CasinoActionService {
                     .replace(/\s+/g, ' ') // normalize multiple spaces to single space
                     .trim();
                 };
-                
+
                 const normalizedExternal = normalizeString(external.admin_name);
-                const normalizedCsv = normalizeString(casinoActionData.casino_name);
-                
+                const normalizedCsv = normalizeString(
+                  casinoActionData.casino_name,
+                );
+
                 // Check if normalized strings match
                 if (normalizedExternal === normalizedCsv) {
                   return true;
                 }
-                
+
                 // Check if one contains the other (for partial matches)
-                if (normalizedExternal.includes(normalizedCsv) || normalizedCsv.includes(normalizedExternal)) {
+                if (
+                  normalizedExternal.includes(normalizedCsv) ||
+                  normalizedCsv.includes(normalizedExternal)
+                ) {
                   // Only match if the shorter string is at least 5 characters to avoid false positives
-                  const shorterLength = Math.min(normalizedExternal.length, normalizedCsv.length);
+                  const shorterLength = Math.min(
+                    normalizedExternal.length,
+                    normalizedCsv.length,
+                  );
                   return shorterLength >= 5;
                 }
-                
+
                 return false;
-              }
+              },
             );
 
             if (matchingExternalCasino) {
-              // Create casino with external ID
-              await this.casinoRepository.save({
-                casino_name: casinoActionData.casino_name,
-                casino_id: matchingExternalCasino.id.toString(),
-              });
-              createdCasinoNames.add(casinoActionData.casino_name);
-              results.createdCasinos++;
-              console.log(`✓ Matched casino '${casinoActionData.casino_name}' with external '${matchingExternalCasino.admin_name}' (ID: ${matchingExternalCasino.id})`);
+              // Double-check: ensure no casino already exists with this casino_id to prevent duplicates
+              const duplicateByExternalId = await this.casinoRepository.findOne(
+                {
+                  where: { casino_id: matchingExternalCasino.id.toString() },
+                },
+              );
+
+              if (duplicateByExternalId) {
+                console.log(
+                  `✓ Found existing casino with casino_id '${matchingExternalCasino.id}': '${duplicateByExternalId.casino_name}'. Using existing casino for CSV name '${casinoActionData.casino_name}'.`,
+                );
+                existingCasino = duplicateByExternalId;
+              } else {
+                // Create casino with external ID using the EXTERNAL API name to ensure consistency
+                existingCasino = await this.casinoRepository.save({
+                  casino_name: matchingExternalCasino.admin_name, // Use external name, not CSV name
+                  casino_id: matchingExternalCasino.id.toString(),
+                });
+                createdCasinoNames.add(matchingExternalCasino.admin_name); // Track by external name
+                results.createdCasinos++;
+                console.log(
+                  `✓ Created new casino '${matchingExternalCasino.admin_name}' (was '${casinoActionData.casino_name}' in CSV) with external ID: ${matchingExternalCasino.id}`,
+                );
+              }
             } else {
               // Log available external casinos for debugging
-              console.log(`✗ No match found for '${casinoActionData.casino_name}'`);
-              console.log(`Available external casinos: ${externalCasinosList.slice(0, 10).map(c => `'${c.admin_name}'`).join(', ')}${externalCasinosList.length > 10 ? ` ... (and ${externalCasinosList.length - 10} more)` : ''}`);
-              
+              console.log(
+                `✗ No match found for '${casinoActionData.casino_name}'`,
+              );
+              console.log(
+                `Available external casinos: ${externalCasinosList
+                  .slice(0, 10)
+                  .map((c) => `'${c.admin_name}'`)
+                  .join(
+                    ', ',
+                  )}${externalCasinosList.length > 10 ? ` ... (and ${externalCasinosList.length - 10} more)` : ''}`,
+              );
+
               // Casino not found in external API, skip this casino action
               throw new Error(
                 `Casino '${casinoActionData.casino_name}' not found in internal system or external API`,
@@ -356,8 +392,11 @@ export class CasinoActionService {
           );
         }
 
-        // Create the casino action
-        await this.create(casinoActionData);
+        // Create the casino action using the consistent casino name from database
+        await this.create({
+          ...casinoActionData,
+          casino_name: existingCasino!.casino_name, // Use the actual casino name from database, not CSV
+        });
         results.successfulRows++;
       } catch (error) {
         // Check if this is a casino not found error (which should be skipped)

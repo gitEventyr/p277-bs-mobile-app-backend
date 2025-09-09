@@ -343,7 +343,53 @@ export class CasinoActionController {
     }
 
     try {
-      // Convert buffer to string
+      // Step 1: Auto-sync casinos to ensure existing casinos have casino_id values
+      let syncResults: {
+        syncedCount: number;
+        totalInternalCasinos: number;
+        externalCasinosAvailable: number;
+      } | null = null;
+      if (this.casinoApiService.isConfigured()) {
+        try {
+          console.log('Auto-syncing casinos before CSV upload...');
+          const externalCasinos = await this.casinoApiService.getCasinos();
+          const internalCasinos = await this.casinoService.findAllForSync();
+
+          let syncedCount = 0;
+          for (const internalCasino of internalCasinos) {
+            // Skip if casino already has casino_id
+            if (internalCasino.casino_id) continue;
+
+            const matchingExternal = externalCasinos.find(
+              (external) => external.admin_name === internalCasino.casino_name,
+            );
+
+            if (matchingExternal) {
+              await this.casinoService.updateCasinoId(
+                internalCasino.id,
+                matchingExternal.id.toString(),
+              );
+              syncedCount++;
+            }
+          }
+
+          syncResults = {
+            syncedCount,
+            totalInternalCasinos: internalCasinos.length,
+            externalCasinosAvailable: externalCasinos.length,
+          };
+          console.log(
+            `Auto-sync completed: ${syncedCount} casinos updated with casino_id`,
+          );
+        } catch (error) {
+          console.warn(
+            'Auto-sync failed, continuing with CSV upload:',
+            error.message,
+          );
+        }
+      }
+
+      // Step 2: Convert buffer to string
       const csvContent = file.buffer.toString('utf-8');
 
       // Parse options from form data
@@ -351,7 +397,7 @@ export class CasinoActionController {
       const createMissingCasinos = body.createMissingCasinos === 'true';
       const createMissingPlayers = body.createMissingPlayers === 'true';
 
-      // Process the CSV
+      // Step 3: Process the CSV
       const results = await this.casinoActionService.bulkCreateFromCSV(
         csvContent,
         {
@@ -365,6 +411,7 @@ export class CasinoActionController {
         success: true,
         message: 'CSV upload completed successfully',
         summary: results,
+        autoSyncResults: syncResults,
         errors: results.errors,
       };
     } catch (error: any) {
