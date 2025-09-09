@@ -1,0 +1,11 @@
+ {
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "RJ64R52SA7.com.Olikaone.BonusandSpin",
+        "paths": ["/reset-password.html", "/reset-password.html/*", "/reset-password/*"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,361 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="bi bi-people"></i>
+    User Management
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <button type="button" class="btn btn-sm btn-primary" onclick="showCreateUserModal()">
+        <i class="bi bi-person-plus"></i>
+        Create User
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshUsers()">
+        <i class="bi bi-arrow-clockwise"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-funnel"></i>
+    Search & Filter Users
+  </div>
+  <div class="card-body">
+    <form id="userSearchForm">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="search" class="form-label">Search</label>
+          <input type="text" class="form-control" id="search" placeholder="Name, email, phone, visitor ID..." 
+                 value="{{searchQuery}}">
+        </div>
+        <div class="col-md-3">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status">
+            <option value="">All Users</option>
+            <option value="active" {{#if (eq statusFilter 'active')}}selected{{/if}}>Active</option>
+            <option value="inactive" {{#if (eq statusFilter 'inactive')}}selected{{/if}}>Inactive</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="sortBy" class="form-label">Sort By</label>
+          <select class="form-select" id="sortBy">
+            <option value="created_at" {{#if (eq sortBy 'created_at')}}selected{{/if}}>Registration Date</option>
+            <option value="name" {{#if (eq sortBy 'name')}}selected{{/if}}>Name</option>
+            <option value="email" {{#if (eq sortBy 'email')}}selected{{/if}}>Email</option>
+            <option value="coins_balance" {{#if (eq sortBy 'coins_balance')}}selected{{/if}}>Balance</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i>
+            Search
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" onclick="clearSearch()">
+            <i class="bi bi-x-circle"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>
+      <i class="bi bi-table"></i>
+      Users List ({{pagination.total}} total)
+    </span>
+    <small class="text-muted">
+      Showing {{pagination.from}}-{{pagination.to}} of {{pagination.total}}
+    </small>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>User</th>
+            <th>Contact</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Registered</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each users}}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar-sm me-3">
+                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                       style="width: 40px; height: 40px;">
+                    {{firstChar this.name}}
+                  </div>
+                </div>
+                <div>
+                  <div class="fw-bold">{{this.name}}</div>
+                  <small class="text-muted">ID: {{this.visitor_id}}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div>{{this.email}}</div>
+              {{#if this.phone}}
+              <small class="text-muted">{{this.phone}}</small>
+              {{/if}}
+            </td>
+            <td>
+              <span class="badge bg-success">{{this.coins_balance}} coins</span>
+            </td>
+            <td>
+              {{#if (isRecentlyActive this.updated_at)}}
+              <span class="badge bg-success">Active</span>
+              {{else}}
+              <span class="badge bg-secondary">Inactive</span>
+              {{/if}}
+            </td>
+            <td>
+              <small class="text-muted">{{formatDate this.created_at}}</small>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-primary" 
+                        onclick="viewUser('{{this.id}}')" title="View Details">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" 
+                        onclick="editUser('{{this.id}}')" title="Edit User">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button type="button" class="btn btn-outline-success" 
+                        onclick="adjustBalance('{{this.id}}')" title="Adjust Balance">
+                  <i class="bi bi-coin"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+    
+    {{#if pagination.hasPages}}
+    <div class="card-footer">
+      <nav>
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          <li class="page-item {{#unless pagination.hasPrev}}disabled{{/unless}}">
+            <a class="page-link" href="?page={{pagination.prevPage}}&{{queryString}}">Previous</a>
+          </li>
+          
+          {{#each pagination.pages}}
+          <li class="page-item {{#if this.active}}active{{/if}}">
+            <a class="page-link" href="?page={{this.number}}&{{../queryString}}">{{this.number}}</a>
+          </li>
+          {{/each}}
+          
+          <li class="page-item {{#unless pagination.hasNext}}disabled{{/unless}}">
+            <a class="page-link" href="?page={{pagination.nextPage}}&{{queryString}}">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {{/if}}
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-person-plus"></i>
+          Create New User
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="createUserForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="userName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="userName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="userEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="userEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="userPhone" class="form-label">Phone (optional)</label>
+            <input type="tel" class="form-control" id="userPhone" name="phone">
+          </div>
+          <div class="mb-3">
+            <label for="userPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="userPassword" name="password" required minlength="6">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-person-circle"></i>
+          User Details
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="userModalBody">
+        <!-- User details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="editUserBtn">Edit User</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil"></i>
+          Edit User
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editUserForm">
+        <div class="modal-body">
+          <input type="hidden" id="editUserId" name="userId">
+          <div class="mb-3">
+            <label for="editUserName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="editUserName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="editUserEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="editUserEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="editUserPhone" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="editUserPhone" name="phone">
+          </div>
+          <div class="mb-3">
+            <label for="editUserDevice" class="form-label">Device</label>
+            <input type="text" class="form-control" id="editUserDevice" name="device">
+          </div>
+          <div class="mb-3">
+            <label for="editUserOS" class="form-label">Operating System</label>
+            <input type="text" class="form-control" id="editUserOS" name="os">
+          </div>
+          <div class="mb-3">
+            <label for="editUserLevel" class="form-label">Level</label>
+            <input type="number" class="form-control" id="editUserLevel" name="level" min="1" value="1">
+          </div>
+          <div class="mb-3">
+            <label for="editUserScratchCards" class="form-label">Scratch Cards</label>
+            <input type="number" class="form-control" id="editUserScratchCards" name="scratch_cards" min="0" value="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div><!-- Adjust Balance Modal -->
+<div class="modal fade" id="adjustBalanceModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-coin"></i>
+          Adjust User Balance
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="adjustBalanceForm">
+        <div class="modal-body">
+          <input type="hidden" id="adjustUserId" name="userId">
+          
+          <div class="mb-3">
+            <label class="form-label fw-bold">User Information</label>
+            <div class="card bg-light">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-6">
+                    <strong>Name:</strong> <span id="adjustUserName">-</span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Current Balance:</strong> <span id="adjustCurrentBalance" class="badge bg-success">0 coins</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="adjustAmount" class="form-label">Adjustment Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">±</span>
+              <input type="number" class="form-control" id="adjustAmount" name="amount" 
+                     required step="1" placeholder="Enter amount (positive to add, negative to subtract)">
+              <span class="input-group-text">coins</span>
+            </div>
+            <div class="form-text">
+              Use positive numbers to add coins, negative numbers to subtract coins.
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="adjustReason" class="form-label">Reason</label>
+            <select class="form-select" id="adjustReason" name="reason" required>
+              <option value="">Select reason...</option>
+              <option value="bonus">Bonus Award</option>
+              <option value="correction">Balance Correction</option>
+              <option value="refund">Refund</option>
+              <option value="penalty">Penalty</option>
+              <option value="promotion">Promotional Credit</option>
+              <option value="manual">Manual Adjustment</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <div class="mb-3" id="customReasonGroup" style="display: none;">
+            <label for="customReason" class="form-label">Custom Reason</label>
+            <input type="text" class="form-control" id="customReason" name="customReason" 
+                   placeholder="Enter custom reason">
+          </div>
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            This action will create a transaction record in the system with mode "admin_change".
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Apply Adjustment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
