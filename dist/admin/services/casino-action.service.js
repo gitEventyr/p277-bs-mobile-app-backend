@@ -181,7 +181,35 @@ let CasinoActionService = class CasinoActionService {
                     !createdCasinoNames.has(casinoActionData.casino_name)) {
                     if (options.createMissingCasinos) {
                         const externalCasinosList = await fetchExternalCasinos();
-                        const matchingExternalCasino = externalCasinosList.find((external) => external.admin_name === casinoActionData.casino_name);
+                        const matchingExternalCasino = externalCasinosList.find((external) => {
+                            if (external.admin_name === casinoActionData.casino_name) {
+                                return true;
+                            }
+                            if (external.admin_name.toLowerCase() === casinoActionData.casino_name.toLowerCase()) {
+                                return true;
+                            }
+                            const normalizeString = (str) => {
+                                return str
+                                    .toLowerCase()
+                                    .replace(/[–-]/g, '-')
+                                    .replace(/\s*–\s*bns!?/gi, '')
+                                    .replace(/\s*-\s*bns!?/gi, '')
+                                    .replace(/\s*bns!?$/gi, '')
+                                    .replace(/\s*-\s*(fr|ca|en)\s*$/gi, '')
+                                    .replace(/\s+/g, ' ')
+                                    .trim();
+                            };
+                            const normalizedExternal = normalizeString(external.admin_name);
+                            const normalizedCsv = normalizeString(casinoActionData.casino_name);
+                            if (normalizedExternal === normalizedCsv) {
+                                return true;
+                            }
+                            if (normalizedExternal.includes(normalizedCsv) || normalizedCsv.includes(normalizedExternal)) {
+                                const shorterLength = Math.min(normalizedExternal.length, normalizedCsv.length);
+                                return shorterLength >= 5;
+                            }
+                            return false;
+                        });
                         if (matchingExternalCasino) {
                             await this.casinoRepository.save({
                                 casino_name: casinoActionData.casino_name,
@@ -189,8 +217,11 @@ let CasinoActionService = class CasinoActionService {
                             });
                             createdCasinoNames.add(casinoActionData.casino_name);
                             results.createdCasinos++;
+                            console.log(`✓ Matched casino '${casinoActionData.casino_name}' with external '${matchingExternalCasino.admin_name}' (ID: ${matchingExternalCasino.id})`);
                         }
                         else {
+                            console.log(`✗ No match found for '${casinoActionData.casino_name}'`);
+                            console.log(`Available external casinos: ${externalCasinosList.slice(0, 10).map(c => `'${c.admin_name}'`).join(', ')}${externalCasinosList.length > 10 ? ` ... (and ${externalCasinosList.length - 10} more)` : ''}`);
                             throw new Error(`Casino '${casinoActionData.casino_name}' not found in internal system or external API`);
                         }
                     }
