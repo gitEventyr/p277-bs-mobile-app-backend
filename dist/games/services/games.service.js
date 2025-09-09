@@ -31,7 +31,7 @@ let GamesService = GamesService_1 = class GamesService {
         this.balanceService = balanceService;
     }
     async recordGameSession(userId, playSessionDto) {
-        this.logger.log(`Recording game session for user ${userId}: ${playSessionDto.game_name}`);
+        this.logger.log(`Recording game session for analytics (no balance change) for user ${userId}: ${playSessionDto.game_name}`);
         this.validateGameSession(playSessionDto);
         const netResult = playSessionDto.won - playSessionDto.lost;
         const gameSession = this.playHistoryRepository.create({
@@ -42,36 +42,7 @@ let GamesService = GamesService_1 = class GamesService {
             game_name: playSessionDto.game_name,
         });
         const savedSession = await this.playHistoryRepository.save(gameSession);
-        this.logger.log(`Game session ${savedSession.id} created for user ${userId}`);
-        let balanceChange;
-        try {
-            if (netResult > 0) {
-                balanceChange = await this.balanceService.increaseBalance(userId, {
-                    amount: netResult,
-                    mode: 'game_win',
-                    description: `Win from ${playSessionDto.game_name} - Session ${savedSession.id}`,
-                });
-                this.logger.log(`Increased balance by ${netResult} for user ${userId} - game win`);
-            }
-            else if (netResult < 0) {
-                const lossAmount = Math.abs(netResult);
-                balanceChange = await this.balanceService.decreaseBalance(userId, {
-                    amount: lossAmount,
-                    mode: 'game_loss',
-                    description: `Loss from ${playSessionDto.game_name} - Session ${savedSession.id}`,
-                });
-                this.logger.log(`Decreased balance by ${lossAmount} for user ${userId} - game loss`);
-            }
-            else {
-                this.logger.log(`No balance change for user ${userId} - break even game`);
-                balanceChange = null;
-            }
-        }
-        catch (balanceError) {
-            this.logger.error(`Failed to update balance for user ${userId}:`, balanceError.message);
-            await this.playHistoryRepository.delete(savedSession.id);
-            throw balanceError;
-        }
+        this.logger.log(`Game session ${savedSession.id} created for analytics tracking for user ${userId} - balance unchanged`);
         return {
             id: savedSession.id,
             bet: savedSession.bet,
@@ -82,13 +53,7 @@ let GamesService = GamesService_1 = class GamesService {
             game_mode: playSessionDto.game_mode,
             session_duration: playSessionDto.session_duration,
             created_at: savedSession.created_at,
-            balance_change: balanceChange
-                ? {
-                    balance_before: balanceChange.balance_before,
-                    balance_after: balanceChange.balance_after,
-                    transaction_id: balanceChange.transaction_id,
-                }
-                : null,
+            balance_change: null,
         };
     }
     async getGameHistory(userId, filters) {

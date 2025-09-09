@@ -44,15 +44,18 @@ let GamesController = class GamesController {
 };
 exports.GamesController = GamesController;
 __decorate([
-    (0, swagger_1.ApiOperation)({ summary: 'Record a game session' }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Record a game session for analytics',
+        description: 'Records game session data for analytics tracking without modifying player balance',
+    }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.CREATED,
-        description: 'Game session recorded successfully',
+        description: 'Game session recorded successfully for analytics tracking',
         type: play_session_dto_1.PlaySessionResponseDto,
     }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.BAD_REQUEST,
-        description: 'Invalid game session data or insufficient balance',
+        description: 'Invalid game session data',
     }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.UNAUTHORIZED,

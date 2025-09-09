@@ -18,6 +18,8 @@ const swagger_1 = require("@nestjs/swagger");
 const users_service_1 = require("../services/users.service");
 const balance_service_1 = require("../services/balance.service");
 const update_profile_dto_1 = require("../dto/update-profile.dto");
+const update_level_dto_1 = require("../dto/update-level.dto");
+const update_scratch_cards_dto_1 = require("../dto/update-scratch-cards.dto");
 const user_profile_dto_1 = require("../dto/user-profile.dto");
 const balance_change_dto_1 = require("../dto/balance-change.dto");
 const balance_response_dto_1 = require("../dto/balance-response.dto");
@@ -47,6 +49,16 @@ let UsersController = class UsersController {
     }
     async getTransactionById(user, transactionId) {
         return await this.balanceService.getTransactionById(user.id, transactionId);
+    }
+    async updateLevel(user, updateLevelDto) {
+        return await this.usersService.updateProfile(user.id, {
+            level: updateLevelDto.level,
+        });
+    }
+    async updateScratchCards(user, updateScratchCardsDto) {
+        return await this.usersService.updateProfile(user.id, {
+            scratch_cards: updateScratchCardsDto.scratch_cards,
+        });
     }
 };
 exports.UsersController = UsersController;
@@ -196,6 +208,60 @@ __decorate([
     __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getTransactionById", null);
+__decorate([
+    (0, swagger_1.ApiTags)('📱 Mobile: User Profile'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update user level' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'User level updated successfully',
+        type: user_profile_dto_1.UserProfileDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.UNAUTHORIZED,
+        description: 'Authentication required',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.NOT_FOUND,
+        description: 'User not found',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'Invalid level value',
+    }),
+    (0, common_1.Put)('level'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_level_dto_1.UpdateLevelDto]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "updateLevel", null);
+__decorate([
+    (0, swagger_1.ApiTags)('📱 Mobile: User Profile'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update scratch cards count' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Scratch cards count updated successfully',
+        type: user_profile_dto_1.UserProfileDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.UNAUTHORIZED,
+        description: 'Authentication required',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.NOT_FOUND,
+        description: 'User not found',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'Invalid scratch cards value',
+    }),
+    (0, common_1.Put)('scratch-cards'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_scratch_cards_dto_1.UpdateScratchCardsDto]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "updateScratchCards", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
