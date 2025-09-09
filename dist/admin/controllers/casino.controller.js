@@ -18,10 +18,13 @@ const swagger_1 = require("@nestjs/swagger");
 const casino_service_1 = require("../services/casino.service");
 const create_casino_dto_1 = require("../dto/create-casino.dto");
 const update_casino_dto_1 = require("../dto/update-casino.dto");
+const casino_api_service_1 = require("../../external/casino/casino-api.service");
 let CasinoController = class CasinoController {
     casinoService;
-    constructor(casinoService) {
+    casinoApiService;
+    constructor(casinoService, casinoApiService) {
         this.casinoService = casinoService;
+        this.casinoApiService = casinoApiService;
     }
     async casinos(session, query, res) {
         if (!session.admin) {
@@ -155,6 +158,50 @@ let CasinoController = class CasinoController {
             throw error;
         }
     }
+    async syncCasinos(session) {
+        if (!session.admin) {
+            throw new common_1.UnauthorizedException('Not authenticated');
+        }
+        try {
+            if (!this.casinoApiService.isConfigured()) {
+                throw new common_1.BadRequestException('Casino API is not configured');
+            }
+            const externalCasinos = await this.casinoApiService.getCasinos();
+            const internalCasinos = await this.casinoService.findAllForSync();
+            let syncedCount = 0;
+            const syncResults = [];
+            for (const internalCasino of internalCasinos) {
+                const matchingExternal = externalCasinos.find((external) => external.admin_name === internalCasino.casino_name);
+                if (matchingExternal) {
+                    await this.casinoService.updateCasinoId(internalCasino.id, matchingExternal.id.toString());
+                    syncedCount++;
+                    syncResults.push({
+                        casinoName: internalCasino.casino_name,
+                        matched: true,
+                        externalId: matchingExternal.id,
+                    });
+                }
+                else {
+                    syncResults.push({
+                        casinoName: internalCasino.casino_name,
+                        matched: false,
+                    });
+                }
+            }
+            return {
+                success: true,
+                message: `Synced ${syncedCount} out of ${internalCasinos.length} casinos`,
+                syncedCount,
+                totalCasinos: internalCasinos.length,
+                externalCasinosFound: externalCasinos.length,
+                results: syncResults,
+            };
+        }
+        catch (error) {
+            console.error('Sync casinos error:', error);
+            throw error;
+        }
+    }
     buildQueryString(query) {
         const params = new URLSearchParams();
         Object.keys(query).forEach((key) => {
@@ -239,9 +286,21 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], CasinoController.prototype, "deleteCasino", null);
+__decorate([
+    (0, common_1.Post)('api/sync'),
+    (0, swagger_1.ApiOperation)({ summary: 'Sync casinos with external API' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Casinos synced successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
+    __param(0, (0, common_1.Session)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], CasinoController.prototype, "syncCasinos", null);
 exports.CasinoController = CasinoController = __decorate([
     (0, swagger_1.ApiTags)('Admin - Casino Management'),
     (0, common_1.Controller)('admin/casinos'),
-    __metadata("design:paramtypes", [casino_service_1.CasinoService])
+    __metadata("design:paramtypes", [casino_service_1.CasinoService,
+        casino_api_service_1.CasinoApiService])
 ], CasinoController);
 //# sourceMappingURL=casino.controller.js.map

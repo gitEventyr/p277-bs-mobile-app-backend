@@ -9,6 +9,10 @@
         <i class="bi bi-plus-circle"></i>
         Create Casino
       </button>
+      <button type="button" class="btn btn-sm btn-success" onclick="syncCasinos()" id="syncCasinosBtn">
+        <i class="bi bi-cloud-download"></i>
+        Sync Casino
+      </button>
       <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshCasinos()">
         <i class="bi bi-arrow-clockwise"></i>
         Refresh
@@ -359,6 +363,62 @@ function clearSearch() {
   document.getElementById('search').value = '';
   document.getElementById('sortBy').value = 'created_at';
   document.getElementById('casinoSearchForm').submit();
+}
+
+async function syncCasinos() {
+  const syncBtn = document.getElementById('syncCasinosBtn');
+  const originalHtml = syncBtn.innerHTML;
+  
+  // Show loading state
+  syncBtn.disabled = true;
+  syncBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Syncing...';
+  
+  try {
+    const response = await fetch('/admin/casinos/api/sync', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to sync casinos');
+    }
+    
+    const result = await response.json();
+    const data = result.data || result;
+    
+    // Show success message with sync details
+    let message = `Sync completed successfully!\n\n`;
+    message += `• Synced: ${data.syncedCount} casinos\n`;
+    message += `• Total internal casinos: ${data.totalCasinos}\n`;
+    message += `• External casinos found: ${data.externalCasinosFound}\n\n`;
+    
+    if (data.results && data.results.length > 0) {
+      message += `Details:\n`;
+      data.results.forEach(result => {
+        if (result.matched) {
+          message += `✓ ${result.casinoName} → External ID: ${result.externalId}\n`;
+        } else {
+          message += `✗ ${result.casinoName} → No match found\n`;
+        }
+      });
+    }
+    
+    alert(message);
+    
+    // Refresh the page to show updated casino IDs
+    location.reload();
+  } catch (error) {
+    console.error('Error syncing casinos:', error);
+    alert('Error syncing casinos: ' + error.message);
+  } finally {
+    // Restore button state
+    syncBtn.disabled = false;
+    syncBtn.innerHTML = originalHtml;
+  }
 }
 
 // Form submissions

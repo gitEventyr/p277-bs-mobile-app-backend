@@ -33,6 +33,10 @@ export interface CasinoApiRegisterResponse {
         visitor_id: string;
     };
 }
+export interface ExternalCasino {
+    id: number;
+    admin_name: string;
+}
 export declare class CasinoApiService {
     private readonly configService;
     private readonly httpService;
@@ -42,5 +46,6 @@ export declare class CasinoApiService {
     private readonly casinoAppId;
     constructor(configService: ConfigService, httpService: HttpService);
     registerUser(registerDto: RegisterDto, ipAddress: string): Promise<string>;
+    getCasinos(): Promise<ExternalCasino[]>;
     isConfigured(): boolean;
 }

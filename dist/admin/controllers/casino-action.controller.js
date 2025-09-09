@@ -17,12 +17,15 @@ const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const casino_action_service_1 = require("../services/casino-action.service");
 const casino_service_1 = require("../services/casino.service");
+const casino_api_service_1 = require("../../external/casino/casino-api.service");
 let CasinoActionController = class CasinoActionController {
     casinoActionService;
     casinoService;
-    constructor(casinoActionService, casinoService) {
+    casinoApiService;
+    constructor(casinoActionService, casinoService, casinoApiService) {
         this.casinoActionService = casinoActionService;
         this.casinoService = casinoService;
+        this.casinoApiService = casinoApiService;
     }
     async casinoActions(session, query, res) {
         if (!session.admin) {
@@ -113,9 +116,30 @@ let CasinoActionController = class CasinoActionController {
             if (!casino_name || !date_of_action || !visitor_id) {
                 throw new common_1.BadRequestException('Casino name, date of action, and visitor ID are required');
             }
-            const casino = await this.casinoService.findByName(casino_name);
+            let casino = await this.casinoService.findByName(casino_name);
             if (!casino) {
-                throw new common_1.BadRequestException('Casino not found');
+                if (this.casinoApiService.isConfigured()) {
+                    try {
+                        const externalCasinos = await this.casinoApiService.getCasinos();
+                        const matchingExternal = externalCasinos.find((external) => external.admin_name === casino_name);
+                        if (matchingExternal) {
+                            casino = await this.casinoService.create({
+                                casino_name,
+                                casino_id: matchingExternal.id.toString(),
+                            });
+                        }
+                        else {
+                            throw new common_1.BadRequestException(`Casino '${casino_name}' not found in internal system or external API`);
+                        }
+                    }
+                    catch (error) {
+                        throw new common_1.BadRequestException(error.message ||
+                            'Casino not found and failed to check external API');
+                    }
+                }
+                else {
+                    throw new common_1.BadRequestException('Casino not found');
+                }
             }
             const casinoAction = await this.casinoActionService.create({
                 casino_name,
@@ -142,9 +166,30 @@ let CasinoActionController = class CasinoActionController {
             }
             const updatePayload = { ...updateData };
             if (updateData.casino_name) {
-                const casino = await this.casinoService.findByName(updateData.casino_name);
+                let casino = await this.casinoService.findByName(updateData.casino_name);
                 if (!casino) {
-                    throw new common_1.BadRequestException('Casino not found');
+                    if (this.casinoApiService.isConfigured()) {
+                        try {
+                            const externalCasinos = await this.casinoApiService.getCasinos();
+                            const matchingExternal = externalCasinos.find((external) => external.admin_name === updateData.casino_name);
+                            if (matchingExternal) {
+                                casino = await this.casinoService.create({
+                                    casino_name: updateData.casino_name,
+                                    casino_id: matchingExternal.id.toString(),
+                                });
+                            }
+                            else {
+                                throw new common_1.BadRequestException(`Casino '${updateData.casino_name}' not found in internal system or external API`);
+                            }
+                        }
+                        catch (error) {
+                            throw new common_1.BadRequestException(error.message ||
+                                'Casino not found and failed to check external API');
+                        }
+                    }
+                    else {
+                        throw new common_1.BadRequestException('Casino not found');
+                    }
                 }
             }
             if (updateData.date_of_action) {
@@ -273,6 +318,7 @@ __decorate([
 exports.CasinoActionController = CasinoActionController = __decorate([
     (0, common_1.Controller)('admin/casino-actions'),
     __metadata("design:paramtypes", [casino_action_service_1.CasinoActionService,
-        casino_service_1.CasinoService])
+        casino_service_1.CasinoService,
+        casino_api_service_1.CasinoApiService])
 ], CasinoActionController);
 //# sourceMappingURL=casino-action.controller.js.map

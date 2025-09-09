@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import * as session from 'express-session';
 import { CasinoActionService } from '../services/casino-action.service';
 import { CasinoService } from '../services/casino.service';
+import { CasinoApiService } from '../../external/casino/casino-api.service';
 interface AdminSession extends session.Session {
     admin?: {
         id: string;
@@ -15,7 +16,8 @@ interface AdminSession extends session.Session {
 export declare class CasinoActionController {
     private readonly casinoActionService;
     private readonly casinoService;
-    constructor(casinoActionService: CasinoActionService, casinoService: CasinoService);
+    private readonly casinoApiService;
+    constructor(casinoActionService: CasinoActionService, casinoService: CasinoService, casinoApiService: CasinoApiService);
     casinoActions(session: AdminSession, query: any, res: Response): Promise<void>;
     getCasinoActionDetails(id: string, session: AdminSession): Promise<import("../../entities/casino-action.entity").CasinoAction>;
     createCasinoAction(createData: {
@@ -43,6 +45,7 @@ export declare class CasinoActionController {
             totalRows: number;
             successfulRows: number;
             errorRows: number;
+            skippedRows: number;
             errors: {
                 row: number;
                 message: string;

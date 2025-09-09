@@ -39,4 +39,6 @@ export declare class CasinoService {
     }): Promise<Casino>;
     delete(id: number): Promise<void>;
     count(): Promise<number>;
+    findAllForSync(): Promise<Casino[]>;
+    updateCasinoId(id: number, casino_id: string): Promise<void>;
 }

@@ -20,6 +20,7 @@ import type { Response } from 'express';
 import * as session from 'express-session';
 import { CasinoActionService } from '../services/casino-action.service';
 import { CasinoService } from '../services/casino.service';
+import { CasinoApiService } from '../../external/casino/casino-api.service';
 
 interface AdminSession extends session.Session {
   admin?: {
@@ -37,6 +38,7 @@ export class CasinoActionController {
   constructor(
     private readonly casinoActionService: CasinoActionService,
     private readonly casinoService: CasinoService,
+    private readonly casinoApiService: CasinoApiService,
   ) {}
 
   // Casino Actions Management Page
@@ -166,10 +168,37 @@ export class CasinoActionController {
         );
       }
 
-      // Verify casino exists by name
-      const casino = await this.casinoService.findByName(casino_name);
+      // Verify casino exists by name, create if needed from external API
+      let casino = await this.casinoService.findByName(casino_name);
       if (!casino) {
-        throw new BadRequestException('Casino not found');
+        // Try to find and create casino from external API
+        if (this.casinoApiService.isConfigured()) {
+          try {
+            const externalCasinos = await this.casinoApiService.getCasinos();
+            const matchingExternal = externalCasinos.find(
+              (external) => external.admin_name === casino_name,
+            );
+
+            if (matchingExternal) {
+              // Create casino from external API
+              casino = await this.casinoService.create({
+                casino_name,
+                casino_id: matchingExternal.id.toString(),
+              });
+            } else {
+              throw new BadRequestException(
+                `Casino '${casino_name}' not found in internal system or external API`,
+              );
+            }
+          } catch (error) {
+            throw new BadRequestException(
+              error.message ||
+                'Casino not found and failed to check external API',
+            );
+          }
+        } else {
+          throw new BadRequestException('Casino not found');
+        }
       }
 
       const casinoAction = await this.casinoActionService.create({
@@ -215,13 +244,40 @@ export class CasinoActionController {
 
       const updatePayload: any = { ...updateData };
 
-      // Verify casino exists if casino_name is being updated
+      // Verify casino exists if casino_name is being updated, create if needed from external API
       if (updateData.casino_name) {
-        const casino = await this.casinoService.findByName(
+        let casino = await this.casinoService.findByName(
           updateData.casino_name,
         );
         if (!casino) {
-          throw new BadRequestException('Casino not found');
+          // Try to find and create casino from external API
+          if (this.casinoApiService.isConfigured()) {
+            try {
+              const externalCasinos = await this.casinoApiService.getCasinos();
+              const matchingExternal = externalCasinos.find(
+                (external) => external.admin_name === updateData.casino_name,
+              );
+
+              if (matchingExternal) {
+                // Create casino from external API
+                casino = await this.casinoService.create({
+                  casino_name: updateData.casino_name,
+                  casino_id: matchingExternal.id.toString(),
+                });
+              } else {
+                throw new BadRequestException(
+                  `Casino '${updateData.casino_name}' not found in internal system or external API`,
+                );
+              }
+            } catch (error) {
+              throw new BadRequestException(
+                error.message ||
+                  'Casino not found and failed to check external API',
+              );
+            }
+          } else {
+            throw new BadRequestException('Casino not found');
+          }
         }
       }
 

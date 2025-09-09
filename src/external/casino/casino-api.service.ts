@@ -39,6 +39,11 @@ export interface CasinoApiRegisterResponse {
   };
 }
 
+export interface ExternalCasino {
+  id: number;
+  admin_name: string;
+}
+
 @Injectable()
 export class CasinoApiService {
   private readonly logger = new Logger(CasinoApiService.name);
@@ -149,6 +154,52 @@ export class CasinoApiService {
       // For 5xx errors or network issues, throw a generic error
       throw new BadRequestException(
         'Unable to complete registration. Please try again later.',
+      );
+    }
+  }
+
+  async getCasinos(): Promise<ExternalCasino[]> {
+    if (!this.casinoApiUrl || !this.casinoBearerToken || !this.casinoAppId) {
+      throw new BadRequestException('Casino API is not configured');
+    }
+
+    const url = `${this.casinoApiUrl}/api/mobile/v1/${this.casinoAppId}/casinos`;
+
+    try {
+      this.logger.debug(`Calling casino API to fetch casinos: ${url}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get<ExternalCasino[]>(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.casinoBearerToken}`,
+          },
+          timeout: 10000, // 10 seconds timeout
+        }),
+      );
+
+      const casinos = response.data || [];
+
+      this.logger.log(
+        `Successfully fetched ${casinos.length} casinos from external API`,
+      );
+      return casinos;
+    } catch (error) {
+      this.logger.error('Failed to fetch casinos from casino API', {
+        error: error.message,
+        url,
+        response: error.response?.data,
+      });
+
+      if (error.response?.status >= 400 && error.response?.status < 500) {
+        throw new BadRequestException(
+          `Casino API error: ${error.response?.data?.message || error.message}`,
+        );
+      }
+
+      // For 5xx errors or network issues, throw a generic error
+      throw new BadRequestException(
+        'Unable to fetch casinos from external API. Please try again later.',
       );
     }
   }

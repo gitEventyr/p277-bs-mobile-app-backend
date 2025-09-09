@@ -2,11 +2,13 @@ import { Repository } from 'typeorm';
 import { CasinoAction } from '../../entities/casino-action.entity';
 import { Casino } from '../../entities/casino.entity';
 import { Player } from '../../entities/player.entity';
+import { CasinoApiService } from '../../external/casino/casino-api.service';
 export declare class CasinoActionService {
     private casinoActionRepository;
     private casinoRepository;
     private playerRepository;
-    constructor(casinoActionRepository: Repository<CasinoAction>, casinoRepository: Repository<Casino>, playerRepository: Repository<Player>);
+    private readonly casinoApiService;
+    constructor(casinoActionRepository: Repository<CasinoAction>, casinoRepository: Repository<Casino>, playerRepository: Repository<Player>, casinoApiService: CasinoApiService);
     findAll(options: {
         page: number;
         limit: number;
@@ -61,6 +63,7 @@ export declare class CasinoActionService {
         totalRows: number;
         successfulRows: number;
         errorRows: number;
+        skippedRows: number;
         errors: Array<{
             row: number;
             message: string;

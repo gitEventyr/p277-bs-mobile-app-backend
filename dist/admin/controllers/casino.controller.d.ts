@@ -3,6 +3,7 @@ import * as session from 'express-session';
 import { CasinoService } from '../services/casino.service';
 import { CreateCasinoDto } from '../dto/create-casino.dto';
 import { UpdateCasinoDto } from '../dto/update-casino.dto';
+import { CasinoApiService } from '../../external/casino/casino-api.service';
 interface AdminSession extends session.Session {
     admin?: {
         id: string;
@@ -15,7 +16,8 @@ interface AdminSession extends session.Session {
 }
 export declare class CasinoController {
     private readonly casinoService;
-    constructor(casinoService: CasinoService);
+    private readonly casinoApiService;
+    constructor(casinoService: CasinoService, casinoApiService: CasinoApiService);
     casinos(session: AdminSession, query: any, res: Response): Promise<void>;
     getCasinoDetails(id: string, session: AdminSession): Promise<import("../../entities/casino.entity").Casino>;
     createCasino(createData: CreateCasinoDto, session: AdminSession): Promise<import("../../entities/casino.entity").Casino>;
@@ -23,6 +25,18 @@ export declare class CasinoController {
     deleteCasino(id: string, session: AdminSession): Promise<{
         success: boolean;
         message: string;
+    }>;
+    syncCasinos(session: AdminSession): Promise<{
+        success: boolean;
+        message: string;
+        syncedCount: number;
+        totalCasinos: number;
+        externalCasinosFound: number;
+        results: {
+            casinoName: string;
+            matched: boolean;
+            externalId?: number;
+        }[];
     }>;
     private buildQueryString;
 }

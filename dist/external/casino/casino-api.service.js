@@ -93,6 +93,36 @@ let CasinoApiService = CasinoApiService_1 = class CasinoApiService {
             throw new common_1.BadRequestException('Unable to complete registration. Please try again later.');
         }
     }
+    async getCasinos() {
+        if (!this.casinoApiUrl || !this.casinoBearerToken || !this.casinoAppId) {
+            throw new common_1.BadRequestException('Casino API is not configured');
+        }
+        const url = `${this.casinoApiUrl}/api/mobile/v1/${this.casinoAppId}/casinos`;
+        try {
+            this.logger.debug(`Calling casino API to fetch casinos: ${url}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${this.casinoBearerToken}`,
+                },
+                timeout: 10000,
+            }));
+            const casinos = response.data || [];
+            this.logger.log(`Successfully fetched ${casinos.length} casinos from external API`);
+            return casinos;
+        }
+        catch (error) {
+            this.logger.error('Failed to fetch casinos from casino API', {
+                error: error.message,
+                url,
+                response: error.response?.data,
+            });
+            if (error.response?.status >= 400 && error.response?.status < 500) {
+                throw new common_1.BadRequestException(`Casino API error: ${error.response?.data?.message || error.message}`);
+            }
+            throw new common_1.BadRequestException('Unable to fetch casinos from external API. Please try again later.');
+        }
+    }
     isConfigured() {
         return !!(this.casinoApiUrl && this.casinoBearerToken && this.casinoAppId);
     }

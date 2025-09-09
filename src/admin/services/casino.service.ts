@@ -107,4 +107,12 @@ export class CasinoService {
   async count(): Promise<number> {
     return await this.casinoRepository.count();
   }
+
+  async findAllForSync(): Promise<Casino[]> {
+    return await this.casinoRepository.find();
+  }
+
+  async updateCasinoId(id: number, casino_id: string): Promise<void> {
+    await this.casinoRepository.update(id, { casino_id });
+  }
 }

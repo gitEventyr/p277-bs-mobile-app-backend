@@ -20,6 +20,7 @@ import { CasinoController } from './controllers/casino.controller';
 import { CasinoActionController } from './controllers/casino-action.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
+import { CasinoApiModule } from '../external/casino/casino-api.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UsersModule } from '../users/users.module';
     }),
     AuthModule, // Import AuthModule to get access to guards
     UsersModule, // Import UsersModule to get access to UsersService
+    CasinoApiModule, // Import CasinoApiModule to get access to CasinoApiService
   ],
   controllers: [
     AdminController,

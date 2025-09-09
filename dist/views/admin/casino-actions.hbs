@@ -694,7 +694,8 @@ document.getElementById('bulkUploadForm').addEventListener('submit', async funct
           <h6><i class="bi bi-check-circle"></i> Upload Successful!</h6>
           <p><strong>Total Rows:</strong> ${result.data.summary.totalRows}</p>
           <p><strong>Successfully Processed:</strong> ${result.data.summary.successfulRows}</p>
-          <p><strong>Skipped/Errors:</strong> ${result.data.summary.errorRows}</p>
+          <p><strong>Skipped (Casino not found):</strong> ${result.data.summary.skippedRows || 0}</p>
+          <p><strong>Errors:</strong> ${result.data.summary.errorRows}</p>
           ${result.data.summary.createdCasinos > 0 ? `<p><strong>New Casinos Created:</strong> ${result.data.summary.createdCasinos}</p>` : ''}
           ${result.data.summary.createdPlayers > 0 ? `<p><strong>New Players Created:</strong> ${result.data.summary.createdPlayers}</p>` : ''}
           ${result.data.errors && result.data.errors.length > 0 ? 

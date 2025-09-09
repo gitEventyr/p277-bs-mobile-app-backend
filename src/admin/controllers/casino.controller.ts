@@ -25,6 +25,7 @@ import * as session from 'express-session';
 import { CasinoService } from '../services/casino.service';
 import { CreateCasinoDto } from '../dto/create-casino.dto';
 import { UpdateCasinoDto } from '../dto/update-casino.dto';
+import { CasinoApiService } from '../../external/casino/casino-api.service';
 
 interface AdminSession extends session.Session {
   admin?: {
@@ -40,7 +41,10 @@ interface AdminSession extends session.Session {
 @ApiTags('Admin - Casino Management')
 @Controller('admin/casinos')
 export class CasinoController {
-  constructor(private readonly casinoService: CasinoService) {}
+  constructor(
+    private readonly casinoService: CasinoService,
+    private readonly casinoApiService: CasinoApiService,
+  ) {}
 
   // Casino Management Page
   @Get()
@@ -248,6 +252,75 @@ export class CasinoController {
       return { success: true, message: 'Casino deleted successfully' };
     } catch (error: any) {
       console.error('Delete casino error:', error);
+      throw error;
+    }
+  }
+
+  // Sync Casinos with External API (API endpoint)
+  @Post('api/sync')
+  @ApiOperation({ summary: 'Sync casinos with external API' })
+  @ApiResponse({ status: 200, description: 'Casinos synced successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async syncCasinos(@Session() session: AdminSession) {
+    if (!session.admin) {
+      throw new UnauthorizedException('Not authenticated');
+    }
+
+    try {
+      // Check if casino API is configured
+      if (!this.casinoApiService.isConfigured()) {
+        throw new BadRequestException('Casino API is not configured');
+      }
+
+      // Fetch external casinos
+      const externalCasinos = await this.casinoApiService.getCasinos();
+
+      // Fetch internal casinos
+      const internalCasinos = await this.casinoService.findAllForSync();
+
+      let syncedCount = 0;
+      const syncResults: Array<{
+        casinoName: string;
+        matched: boolean;
+        externalId?: number;
+      }> = [];
+
+      // Match and update casinos
+      for (const internalCasino of internalCasinos) {
+        const matchingExternal = externalCasinos.find(
+          (external) => external.admin_name === internalCasino.casino_name,
+        );
+
+        if (matchingExternal) {
+          await this.casinoService.updateCasinoId(
+            internalCasino.id,
+            matchingExternal.id.toString(),
+          );
+          syncedCount++;
+          syncResults.push({
+            casinoName: internalCasino.casino_name,
+            matched: true,
+            externalId: matchingExternal.id,
+          });
+        } else {
+          syncResults.push({
+            casinoName: internalCasino.casino_name,
+            matched: false,
+          });
+        }
+      }
+
+      return {
+        success: true,
+        message: `Synced ${syncedCount} out of ${internalCasinos.length} casinos`,
+        syncedCount,
+        totalCasinos: internalCasinos.length,
+        externalCasinosFound: externalCasinos.length,
+        results: syncResults,
+      };
+    } catch (error: any) {
+      console.error('Sync casinos error:', error);
       throw error;
     }
   }

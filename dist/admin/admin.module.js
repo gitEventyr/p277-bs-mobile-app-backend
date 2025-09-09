@@ -29,6 +29,7 @@ const casino_controller_1 = require("./controllers/casino.controller");
 const casino_action_controller_1 = require("./controllers/casino-action.controller");
 const auth_module_1 = require("../auth/auth.module");
 const users_module_1 = require("../users/users.module");
+const casino_api_module_1 = require("../external/casino/casino-api.module");
 let AdminModule = class AdminModule {
 };
 exports.AdminModule = AdminModule;
@@ -56,6 +57,7 @@ exports.AdminModule = AdminModule = __decorate([
             }),
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
+            casino_api_module_1.CasinoApiModule,
         ],
         controllers: [
             admin_controller_1.AdminController,

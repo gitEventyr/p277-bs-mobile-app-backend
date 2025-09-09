@@ -96,6 +96,12 @@ let CasinoService = class CasinoService {
     async count() {
         return await this.casinoRepository.count();
     }
+    async findAllForSync() {
+        return await this.casinoRepository.find();
+    }
+    async updateCasinoId(id, casino_id) {
+        await this.casinoRepository.update(id, { casino_id });
+    }
 };
 exports.CasinoService = CasinoService;
 exports.CasinoService = CasinoService = __decorate([

@@ -4,6 +4,7 @@ import { Repository, Like } from 'typeorm';
 import { CasinoAction } from '../../entities/casino-action.entity';
 import { Casino } from '../../entities/casino.entity';
 import { Player } from '../../entities/player.entity';
+import { CasinoApiService } from '../../external/casino/casino-api.service';
 
 @Injectable()
 export class CasinoActionService {
@@ -14,6 +15,7 @@ export class CasinoActionService {
     private casinoRepository: Repository<Casino>,
     @InjectRepository(Player)
     private playerRepository: Repository<Player>,
+    private readonly casinoApiService: CasinoApiService,
   ) {}
 
   async findAll(options: {
@@ -190,6 +192,7 @@ export class CasinoActionService {
       totalRows: lines.length - 1,
       successfulRows: 0,
       errorRows: 0,
+      skippedRows: 0,
       errors: [] as Array<{ row: number; message: string }>,
       createdCasinos: 0,
       createdPlayers: 0,
@@ -197,6 +200,21 @@ export class CasinoActionService {
 
     const createdCasinoNames = new Set<string>();
     const createdPlayerIds = new Set<string>();
+
+    // Cache for external casinos to avoid multiple API calls
+    let externalCasinos: Array<{ id: number; admin_name: string }> | null =
+      null;
+    const fetchExternalCasinos = async () => {
+      if (externalCasinos === null && this.casinoApiService.isConfigured()) {
+        try {
+          externalCasinos = await this.casinoApiService.getCasinos();
+        } catch (error) {
+          console.warn('Failed to fetch external casinos:', error.message);
+          externalCasinos = []; // Set to empty array to avoid retrying
+        }
+      }
+      return externalCasinos || [];
+    };
 
     // Process each data row
     for (let i = 1; i < lines.length; i++) {
@@ -217,21 +235,42 @@ export class CasinoActionService {
         // Validate and parse the row data
         const casinoActionData = await this.validateAndParseCSVRow(row, i + 1);
 
-        // Ensure casino exists (create if needed and option is enabled)
-        if (options.createMissingCasinos) {
-          const existingCasino = await this.casinoRepository.findOne({
-            where: { casino_name: casinoActionData.casino_name },
-          });
+        // Ensure casino exists
+        const existingCasino = await this.casinoRepository.findOne({
+          where: { casino_name: casinoActionData.casino_name },
+        });
 
-          if (
-            !existingCasino &&
-            !createdCasinoNames.has(casinoActionData.casino_name)
-          ) {
-            await this.casinoRepository.save({
-              casino_name: casinoActionData.casino_name,
-            });
-            createdCasinoNames.add(casinoActionData.casino_name);
-            results.createdCasinos++;
+        if (
+          !existingCasino &&
+          !createdCasinoNames.has(casinoActionData.casino_name)
+        ) {
+          if (options.createMissingCasinos) {
+            // First, try to find the casino in external API
+            const externalCasinosList = await fetchExternalCasinos();
+            const matchingExternalCasino = externalCasinosList.find(
+              (external) =>
+                external.admin_name === casinoActionData.casino_name,
+            );
+
+            if (matchingExternalCasino) {
+              // Create casino with external ID
+              await this.casinoRepository.save({
+                casino_name: casinoActionData.casino_name,
+                casino_id: matchingExternalCasino.id.toString(),
+              });
+              createdCasinoNames.add(casinoActionData.casino_name);
+              results.createdCasinos++;
+            } else {
+              // Casino not found in external API, skip this casino action
+              throw new Error(
+                `Casino '${casinoActionData.casino_name}' not found in internal system or external API`,
+              );
+            }
+          } else {
+            // createMissingCasinos is disabled, throw error
+            throw new Error(
+              `Casino '${casinoActionData.casino_name}' does not exist`,
+            );
           }
         }
 
@@ -277,6 +316,21 @@ export class CasinoActionService {
         await this.create(casinoActionData);
         results.successfulRows++;
       } catch (error) {
+        // Check if this is a casino not found error (which should be skipped)
+        if (
+          error.message.includes('not found in internal system or external API')
+        ) {
+          results.skippedRows++;
+          results.errors.push({
+            row: i + 1,
+            message: `Skipped: ${error.message}`,
+          });
+
+          // Always skip these rows, even if skipErrors is false
+          continue;
+        }
+
+        // Regular errors
         results.errorRows++;
         results.errors.push({
           row: i + 1,
