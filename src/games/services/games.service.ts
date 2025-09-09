@@ -37,7 +37,7 @@ export class GamesService {
     playSessionDto: PlaySessionDto,
   ): Promise<PlaySessionResponseDto> {
     this.logger.log(
-      `Recording game session for user ${userId}: ${playSessionDto.game_name}`,
+      `Recording game session for analytics (no balance change) for user ${userId}: ${playSessionDto.game_name}`,
     );
 
     // Validate the game session data
@@ -46,7 +46,7 @@ export class GamesService {
     // Calculate net result
     const netResult = playSessionDto.won - playSessionDto.lost;
 
-    // Start transaction by creating the play history record first
+    // Create the play history record for analytics only
     const gameSession = this.playHistoryRepository.create({
       user_id: userId,
       bet: playSessionDto.bet,
@@ -57,51 +57,10 @@ export class GamesService {
 
     const savedSession = await this.playHistoryRepository.save(gameSession);
     this.logger.log(
-      `Game session ${savedSession.id} created for user ${userId}`,
+      `Game session ${savedSession.id} created for analytics tracking for user ${userId} - balance unchanged`,
     );
 
-    // Update player balance based on net result
-    let balanceChange;
-    try {
-      if (netResult > 0) {
-        // Player won money - increase balance
-        balanceChange = await this.balanceService.increaseBalance(userId, {
-          amount: netResult,
-          mode: 'game_win',
-          description: `Win from ${playSessionDto.game_name} - Session ${savedSession.id}`,
-        });
-        this.logger.log(
-          `Increased balance by ${netResult} for user ${userId} - game win`,
-        );
-      } else if (netResult < 0) {
-        // Player lost money - decrease balance
-        const lossAmount = Math.abs(netResult);
-        balanceChange = await this.balanceService.decreaseBalance(userId, {
-          amount: lossAmount,
-          mode: 'game_loss',
-          description: `Loss from ${playSessionDto.game_name} - Session ${savedSession.id}`,
-        });
-        this.logger.log(
-          `Decreased balance by ${lossAmount} for user ${userId} - game loss`,
-        );
-      } else {
-        // No net change - but we still record the session
-        this.logger.log(
-          `No balance change for user ${userId} - break even game`,
-        );
-        balanceChange = null;
-      }
-    } catch (balanceError) {
-      this.logger.error(
-        `Failed to update balance for user ${userId}:`,
-        balanceError.message,
-      );
-      // Delete the game session since balance update failed
-      await this.playHistoryRepository.delete(savedSession.id);
-      throw balanceError;
-    }
-
-    // Return the complete session response
+    // Return the session response without any balance modifications
     return {
       id: savedSession.id,
       bet: savedSession.bet,
@@ -112,13 +71,7 @@ export class GamesService {
       game_mode: playSessionDto.game_mode,
       session_duration: playSessionDto.session_duration,
       created_at: savedSession.created_at,
-      balance_change: balanceChange
-        ? {
-            balance_before: balanceChange.balance_before,
-            balance_after: balanceChange.balance_after,
-            transaction_id: balanceChange.transaction_id,
-          }
-        : null,
+      balance_change: null, // No balance changes in analytics-only mode
     };
   }
 

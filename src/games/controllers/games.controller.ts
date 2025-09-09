@@ -40,15 +40,19 @@ import type { AuthenticatedUser } from '../../common/types/auth.types';
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
-  @ApiOperation({ summary: 'Record a game session' })
+  @ApiOperation({
+    summary: 'Record a game session for analytics',
+    description:
+      'Records game session data for analytics tracking without modifying player balance',
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Game session recorded successfully',
+    description: 'Game session recorded successfully for analytics tracking',
     type: PlaySessionResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid game session data or insufficient balance',
+    description: 'Invalid game session data',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,

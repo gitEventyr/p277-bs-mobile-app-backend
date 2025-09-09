@@ -20,6 +20,8 @@ import {
 import { UsersService } from '../services/users.service';
 import { BalanceService } from '../services/balance.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { UpdateLevelDto } from '../dto/update-level.dto';
+import { UpdateScratchCardsDto } from '../dto/update-scratch-cards.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
 import { BalanceChangeDto, ModifyBalanceDto } from '../dto/balance-change.dto';
 import {
@@ -190,5 +192,63 @@ export class UsersController {
     @Param('id', ParseIntPipe) transactionId: number,
   ): Promise<TransactionHistoryDto> {
     return await this.balanceService.getTransactionById(user.id, transactionId);
+  }
+
+  @ApiTags('📱 Mobile: User Profile')
+  @ApiOperation({ summary: 'Update user level' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User level updated successfully',
+    type: UserProfileDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentication required',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid level value',
+  })
+  @Put('level')
+  async updateLevel(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateLevelDto: UpdateLevelDto,
+  ): Promise<UserProfileDto> {
+    return await this.usersService.updateProfile(user.id, {
+      level: updateLevelDto.level,
+    });
+  }
+
+  @ApiTags('📱 Mobile: User Profile')
+  @ApiOperation({ summary: 'Update scratch cards count' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Scratch cards count updated successfully',
+    type: UserProfileDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentication required',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid scratch cards value',
+  })
+  @Put('scratch-cards')
+  async updateScratchCards(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateScratchCardsDto: UpdateScratchCardsDto,
+  ): Promise<UserProfileDto> {
+    return await this.usersService.updateProfile(user.id, {
+      scratch_cards: updateScratchCardsDto.scratch_cards,
+    });
   }
 }
