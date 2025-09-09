@@ -248,8 +248,47 @@ export class CasinoActionService {
             // First, try to find the casino in external API
             const externalCasinosList = await fetchExternalCasinos();
             const matchingExternalCasino = externalCasinosList.find(
-              (external) =>
-                external.admin_name === casinoActionData.casino_name,
+              (external) => {
+                // First try exact match
+                if (external.admin_name === casinoActionData.casino_name) {
+                  return true;
+                }
+                
+                // Try case-insensitive match
+                if (external.admin_name.toLowerCase() === casinoActionData.casino_name.toLowerCase()) {
+                  return true;
+                }
+                
+                // Try normalized match (remove special chars, extra spaces, and common suffixes)
+                const normalizeString = (str: string) => {
+                  return str
+                    .toLowerCase()
+                    .replace(/[–-]/g, '-') // normalize different dash types
+                    .replace(/\s*–\s*bns!?/gi, '') // remove " – BNS" or " – BNS!" suffixes
+                    .replace(/\s*-\s*bns!?/gi, '') // remove " - BNS" or " - BNS!" suffixes
+                    .replace(/\s*bns!?$/gi, '') // remove "BNS" or "BNS!" at the end
+                    .replace(/\s*-\s*(fr|ca|en)\s*$/gi, '') // remove language codes like " - FR", " - CA"
+                    .replace(/\s+/g, ' ') // normalize multiple spaces to single space
+                    .trim();
+                };
+                
+                const normalizedExternal = normalizeString(external.admin_name);
+                const normalizedCsv = normalizeString(casinoActionData.casino_name);
+                
+                // Check if normalized strings match
+                if (normalizedExternal === normalizedCsv) {
+                  return true;
+                }
+                
+                // Check if one contains the other (for partial matches)
+                if (normalizedExternal.includes(normalizedCsv) || normalizedCsv.includes(normalizedExternal)) {
+                  // Only match if the shorter string is at least 5 characters to avoid false positives
+                  const shorterLength = Math.min(normalizedExternal.length, normalizedCsv.length);
+                  return shorterLength >= 5;
+                }
+                
+                return false;
+              }
             );
 
             if (matchingExternalCasino) {
@@ -260,7 +299,12 @@ export class CasinoActionService {
               });
               createdCasinoNames.add(casinoActionData.casino_name);
               results.createdCasinos++;
+              console.log(`✓ Matched casino '${casinoActionData.casino_name}' with external '${matchingExternalCasino.admin_name}' (ID: ${matchingExternalCasino.id})`);
             } else {
+              // Log available external casinos for debugging
+              console.log(`✗ No match found for '${casinoActionData.casino_name}'`);
+              console.log(`Available external casinos: ${externalCasinosList.slice(0, 10).map(c => `'${c.admin_name}'`).join(', ')}${externalCasinosList.length > 10 ? ` ... (and ${externalCasinosList.length - 10} more)` : ''}`);
+              
               // Casino not found in external API, skip this casino action
               throw new Error(
                 `Casino '${casinoActionData.casino_name}' not found in internal system or external API`,
