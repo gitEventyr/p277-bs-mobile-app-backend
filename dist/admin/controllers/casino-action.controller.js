@@ -231,6 +231,33 @@ let CasinoActionController = class CasinoActionController {
             throw new common_1.BadRequestException('File must be a CSV file');
         }
         try {
+            let syncResults = null;
+            if (this.casinoApiService.isConfigured()) {
+                try {
+                    console.log('Auto-syncing casinos before CSV upload...');
+                    const externalCasinos = await this.casinoApiService.getCasinos();
+                    const internalCasinos = await this.casinoService.findAllForSync();
+                    let syncedCount = 0;
+                    for (const internalCasino of internalCasinos) {
+                        if (internalCasino.casino_id)
+                            continue;
+                        const matchingExternal = externalCasinos.find((external) => external.admin_name === internalCasino.casino_name);
+                        if (matchingExternal) {
+                            await this.casinoService.updateCasinoId(internalCasino.id, matchingExternal.id.toString());
+                            syncedCount++;
+                        }
+                    }
+                    syncResults = {
+                        syncedCount,
+                        totalInternalCasinos: internalCasinos.length,
+                        externalCasinosAvailable: externalCasinos.length,
+                    };
+                    console.log(`Auto-sync completed: ${syncedCount} casinos updated with casino_id`);
+                }
+                catch (error) {
+                    console.warn('Auto-sync failed, continuing with CSV upload:', error.message);
+                }
+            }
             const csvContent = file.buffer.toString('utf-8');
             const skipErrors = body.skipErrors === 'true';
             const createMissingCasinos = body.createMissingCasinos === 'true';
@@ -244,6 +271,7 @@ let CasinoActionController = class CasinoActionController {
                 success: true,
                 message: 'CSV upload completed successfully',
                 summary: results,
+                autoSyncResults: syncResults,
                 errors: results.errors,
             };
         }

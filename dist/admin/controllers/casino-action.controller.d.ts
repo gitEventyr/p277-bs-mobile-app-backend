@@ -53,6 +53,11 @@ export declare class CasinoActionController {
             createdCasinos: number;
             createdPlayers: number;
         };
+        autoSyncResults: {
+            syncedCount: number;
+            totalInternalCasinos: number;
+            externalCasinosAvailable: number;
+        } | null;
         errors: {
             row: number;
             message: string;
