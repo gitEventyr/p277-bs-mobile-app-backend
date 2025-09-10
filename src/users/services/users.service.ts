@@ -60,6 +60,11 @@ export class UsersService {
       af_sub3: player.af_sub3,
       af_sub4: player.af_sub4,
       af_sub5: player.af_sub5,
+      // Verification status
+      email_verified: player.email_verified,
+      email_verified_at: player.email_verified_at,
+      phone_verified: player.phone_verified,
+      phone_verified_at: player.phone_verified_at,
     };
 
     return profile;
@@ -79,6 +84,11 @@ export class UsersService {
       rp_balance: fullProfile.rp_balance,
       level: fullProfile.level,
       scratch_cards: fullProfile.scratch_cards,
+      // Verification status
+      email_verified: fullProfile.email_verified,
+      email_verified_at: fullProfile.email_verified_at,
+      phone_verified: fullProfile.phone_verified,
+      phone_verified_at: fullProfile.phone_verified_at,
     };
 
     return mobileProfile;

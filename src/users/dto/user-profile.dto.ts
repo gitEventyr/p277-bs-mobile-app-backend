@@ -181,4 +181,28 @@ export class UserProfileDto {
     example: 'value5',
   })
   af_sub5?: string;
+
+  @ApiProperty({
+    description: 'Whether email is verified',
+    example: false,
+  })
+  email_verified: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Email verification timestamp',
+    example: '2025-01-01T10:00:00Z',
+  })
+  email_verified_at?: Date;
+
+  @ApiProperty({
+    description: 'Whether phone is verified',
+    example: false,
+  })
+  phone_verified: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Phone verification timestamp',
+    example: '2025-01-01T10:00:00Z',
+  })
+  phone_verified_at?: Date;
 }
