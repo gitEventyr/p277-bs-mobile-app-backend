@@ -11,6 +11,7 @@ import { InAppPurchase } from './entities/in-app-purchase.entity';
 import { Voucher } from './entities/voucher.entity';
 import { UserVoucher } from './entities/user-voucher.entity';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { RpBalanceTransaction } from './entities/rp-balance-transaction.entity';
 import { Casino } from './entities/casino.entity';
 import { CasinoAction } from './entities/casino-action.entity';
 import { AppController } from './app.controller';
@@ -38,6 +39,7 @@ import { PurchasesModule } from './purchases/purchases.module';
           AdminUser,
           Device,
           CoinsBalanceChange,
+          RpBalanceTransaction,
           PlayHistory,
           InAppPurchase,
           Voucher,
