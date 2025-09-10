@@ -7,6 +7,7 @@ import { Player } from '../entities/player.entity';
 import { PlayHistory } from '../entities/play-history.entity';
 import { InAppPurchase } from '../entities/in-app-purchase.entity';
 import { CoinsBalanceChange } from '../entities/coins-balance-change.entity';
+import { RpBalanceTransaction } from '../entities/rp-balance-transaction.entity';
 import { Casino } from '../entities/casino.entity';
 import { CasinoAction } from '../entities/casino-action.entity';
 import { AdminService } from './services/admin.service';
@@ -30,6 +31,7 @@ import { CasinoApiModule } from '../external/casino/casino-api.module';
       PlayHistory,
       InAppPurchase,
       CoinsBalanceChange,
+      RpBalanceTransaction,
       Casino,
       CasinoAction,
     ]),

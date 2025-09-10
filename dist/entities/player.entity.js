@@ -20,6 +20,7 @@ let Player = class Player {
     phone;
     password;
     coins_balance;
+    rp_balance;
     level;
     pid;
     c;
@@ -55,6 +56,7 @@ let Player = class Player {
     deletion_reason;
     devices;
     balanceChanges;
+    rpBalanceTransactions;
     playHistory;
     purchases;
     userVouchers;
@@ -100,6 +102,12 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], Player.prototype, "coins_balance", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'double precision', default: 0 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], Player.prototype, "rp_balance", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'integer', default: 1 }),
     (0, class_validator_1.IsNumber)(),
@@ -295,6 +303,10 @@ __decorate([
     (0, typeorm_1.OneToMany)('CoinsBalanceChange', (change) => change.user),
     __metadata("design:type", Array)
 ], Player.prototype, "balanceChanges", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)('RpBalanceTransaction', (transaction) => transaction.user),
+    __metadata("design:type", Array)
+], Player.prototype, "rpBalanceTransactions", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)('PlayHistory', (play) => play.user),
     __metadata("design:type", Array)

@@ -9,6 +9,7 @@ import {
   UnauthorizedException,
   Req,
   Logger,
+  UseFilters,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,6 +29,7 @@ import { AdminGuard } from './guards/admin.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { HideFromSwagger } from '../common/decorators/hide-from-swagger.decorator';
+import { MobileExceptionFilter } from '../common/filters/mobile-exception.filter';
 import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import {
@@ -79,6 +81,7 @@ class TestTokenDto {
 
 @ApiTags('📱 Mobile: Authentication')
 @Controller('auth')
+@UseFilters(MobileExceptionFilter)
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
@@ -277,6 +280,7 @@ export class AuthController {
         coins_balance: savedPlayer.coins_balance,
         level: savedPlayer.level,
         scratch_cards: savedPlayer.scratch_cards,
+        rp_balance: savedPlayer.rp_balance,
         ipaddress: this.getClientIp(req),
         avatar: savedPlayer.avatar,
       },
@@ -365,6 +369,7 @@ export class AuthController {
         coins_balance: player.coins_balance,
         level: player.level,
         scratch_cards: player.scratch_cards,
+        rp_balance: player.rp_balance,
         ipaddress: this.getClientIp(req),
         avatar: player.avatar,
       },
@@ -422,6 +427,7 @@ export class AuthController {
         email: fullUser.email,
         phone: fullUser.phone,
         coins_balance: fullUser.coins_balance,
+        rp_balance: fullUser.rp_balance,
         level: fullUser.level,
         scratch_cards: fullUser.scratch_cards,
         avatar: fullUser.avatar,

@@ -6,6 +6,7 @@ export declare class Player {
     phone?: string;
     password?: string;
     coins_balance: number;
+    rp_balance: number;
     level: number;
     pid?: string;
     c?: string;
@@ -41,6 +42,7 @@ export declare class Player {
     deletion_reason?: string;
     devices: any[];
     balanceChanges: any[];
+    rpBalanceTransactions: any[];
     playHistory: any[];
     purchases: any[];
     userVouchers: any[];

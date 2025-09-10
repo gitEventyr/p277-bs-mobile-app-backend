@@ -26,6 +26,7 @@ const admin_guard_1 = require("./guards/admin.guard");
 const public_decorator_1 = require("./decorators/public.decorator");
 const current_user_decorator_1 = require("./decorators/current-user.decorator");
 const hide_from_swagger_decorator_1 = require("../common/decorators/hide-from-swagger.decorator");
+const mobile_exception_filter_1 = require("../common/filters/mobile-exception.filter");
 const register_dto_1 = require("./dto/register.dto");
 const login_dto_1 = require("./dto/login.dto");
 const password_recovery_dto_1 = require("./dto/password-recovery.dto");
@@ -203,6 +204,7 @@ let AuthController = AuthController_1 = class AuthController {
                 coins_balance: savedPlayer.coins_balance,
                 level: savedPlayer.level,
                 scratch_cards: savedPlayer.scratch_cards,
+                rp_balance: savedPlayer.rp_balance,
                 ipaddress: this.getClientIp(req),
                 avatar: savedPlayer.avatar,
             },
@@ -257,6 +259,7 @@ let AuthController = AuthController_1 = class AuthController {
                 coins_balance: player.coins_balance,
                 level: player.level,
                 scratch_cards: player.scratch_cards,
+                rp_balance: player.rp_balance,
                 ipaddress: this.getClientIp(req),
                 avatar: player.avatar,
             },
@@ -292,6 +295,7 @@ let AuthController = AuthController_1 = class AuthController {
                 email: fullUser.email,
                 phone: fullUser.phone,
                 coins_balance: fullUser.coins_balance,
+                rp_balance: fullUser.rp_balance,
                 level: fullUser.level,
                 scratch_cards: fullUser.scratch_cards,
                 avatar: fullUser.avatar,
@@ -844,6 +848,7 @@ __decorate([
 exports.AuthController = AuthController = AuthController_1 = __decorate([
     (0, swagger_1.ApiTags)('📱 Mobile: Authentication'),
     (0, common_1.Controller)('auth'),
+    (0, common_1.UseFilters)(mobile_exception_filter_1.MobileExceptionFilter),
     __param(1, (0, typeorm_1.InjectRepository)(player_entity_1.Player)),
     __param(2, (0, typeorm_1.InjectRepository)(password_reset_token_entity_1.PasswordResetToken)),
     __param(3, (0, typeorm_1.InjectRepository)(email_verification_token_entity_1.EmailVerificationToken)),

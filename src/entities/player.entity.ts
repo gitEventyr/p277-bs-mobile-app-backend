@@ -49,6 +49,11 @@ export class Player {
   @Min(0)
   coins_balance: number;
 
+  @Column({ type: 'double precision', default: 0 })
+  @IsNumber()
+  @Min(0)
+  rp_balance: number;
+
   @Column({ type: 'integer', default: 1 })
   @IsNumber()
   @Min(1)
@@ -214,6 +219,9 @@ export class Player {
 
   @OneToMany('CoinsBalanceChange', (change: any) => change.user)
   balanceChanges: any[];
+
+  @OneToMany('RpBalanceTransaction', (transaction: any) => transaction.user)
+  rpBalanceTransactions: any[];
 
   @OneToMany('PlayHistory', (play: any) => play.user)
   playHistory: any[];

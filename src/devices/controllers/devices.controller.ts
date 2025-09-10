@@ -5,6 +5,7 @@ import {
   ParseIntPipe,
   UseGuards,
   HttpStatus,
+  UseFilters,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,7 @@ import {
 import { DevicesService } from '../services/devices.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { MobileExceptionFilter } from '../../common/filters/mobile-exception.filter';
 import {
   DeviceResponseDto,
   DeviceListResponseDto,
@@ -26,6 +28,7 @@ import type { AuthenticatedUser } from '../../common/types/auth.types';
 @Controller('devices')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
+@UseFilters(MobileExceptionFilter)
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 

@@ -19,16 +19,19 @@ const analytics_service_1 = require("../services/analytics.service");
 const admin_login_dto_1 = require("../dto/admin-login.dto");
 const users_service_1 = require("../../users/services/users.service");
 const balance_service_1 = require("../../users/services/balance.service");
+const rp_balance_service_1 = require("../../users/services/rp-balance.service");
 let AdminDashboardController = class AdminDashboardController {
     adminService;
     usersService;
     analyticsService;
     balanceService;
-    constructor(adminService, usersService, analyticsService, balanceService) {
+    rpBalanceService;
+    constructor(adminService, usersService, analyticsService, balanceService, rpBalanceService) {
         this.adminService = adminService;
         this.usersService = usersService;
         this.analyticsService = analyticsService;
         this.balanceService = balanceService;
+        this.rpBalanceService = rpBalanceService;
     }
     loginPage(session, query) {
         if (session.admin) {
@@ -267,6 +270,26 @@ let AdminDashboardController = class AdminDashboardController {
             throw new Error(error?.message || 'Error adjusting balance');
         }
     }
+    async adjustRpBalance(id, adjustData, session) {
+        if (!session.admin) {
+            throw new common_1.UnauthorizedException('Not authenticated');
+        }
+        try {
+            const { amount, reason } = adjustData;
+            if (!amount || amount === 0) {
+                throw new Error('Amount must be a non-zero number');
+            }
+            if (!reason) {
+                throw new Error('Reason is required');
+            }
+            const result = await this.rpBalanceService.adminAdjustRpBalance(parseInt(id, 10), amount, reason, session.admin.id);
+            return result;
+        }
+        catch (error) {
+            console.error('Adjust RP balance error:', error);
+            throw new Error(error?.message || 'Error adjusting RP balance');
+        }
+    }
     async createUser(createData, session) {
         if (!session.admin) {
             throw new common_1.UnauthorizedException('Not authenticated');
@@ -462,6 +485,15 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AdminDashboardController.prototype, "adjustBalance", null);
 __decorate([
+    (0, common_1.Post)('api/users/:id/adjust-rp-balance'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Session)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], AdminDashboardController.prototype, "adjustRpBalance", null);
+__decorate([
     (0, common_1.Post)('api/users'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Session)()),
@@ -474,6 +506,7 @@ exports.AdminDashboardController = AdminDashboardController = __decorate([
     __metadata("design:paramtypes", [admin_service_1.AdminService,
         users_service_1.UsersService,
         analytics_service_1.AnalyticsService,
-        balance_service_1.BalanceService])
+        balance_service_1.BalanceService,
+        rp_balance_service_1.RpBalanceService])
 ], AdminDashboardController);
 //# sourceMappingURL=admin-dashboard.controller.js.map

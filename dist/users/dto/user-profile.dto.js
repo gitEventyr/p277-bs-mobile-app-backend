@@ -18,6 +18,7 @@ class UserProfileDto {
     email;
     phone;
     coins_balance;
+    rp_balance;
     level;
     scratch_cards;
     device_udid;
@@ -85,6 +86,13 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], UserProfileDto.prototype, "coins_balance", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'User RP balance',
+        example: 0,
+    }),
+    __metadata("design:type", Number)
+], UserProfileDto.prototype, "rp_balance", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'User level',

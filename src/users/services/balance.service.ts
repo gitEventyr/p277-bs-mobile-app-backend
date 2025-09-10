@@ -22,7 +22,7 @@ export class BalanceService {
   async getBalance(userId: number) {
     const player = await this.playerRepository.findOne({
       where: { id: userId, is_deleted: false },
-      select: ['id', 'coins_balance', 'scratch_cards'],
+      select: ['id', 'coins_balance', 'rp_balance', 'scratch_cards'],
     });
 
     if (!player) {
@@ -31,6 +31,7 @@ export class BalanceService {
 
     return {
       coins_balance: player.coins_balance,
+      rp_balance: player.rp_balance,
       scratch_cards: player.scratch_cards,
     };
   }

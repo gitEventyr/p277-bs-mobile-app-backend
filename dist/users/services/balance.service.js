@@ -30,13 +30,14 @@ let BalanceService = class BalanceService {
     async getBalance(userId) {
         const player = await this.playerRepository.findOne({
             where: { id: userId, is_deleted: false },
-            select: ['id', 'coins_balance', 'scratch_cards'],
+            select: ['id', 'coins_balance', 'rp_balance', 'scratch_cards'],
         });
         if (!player) {
             throw new common_1.NotFoundException('User not found');
         }
         return {
             coins_balance: player.coins_balance,
+            rp_balance: player.rp_balance,
             scratch_cards: player.scratch_cards,
         };
     }

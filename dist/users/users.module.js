@@ -11,8 +11,10 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const player_entity_1 = require("../entities/player.entity");
 const coins_balance_change_entity_1 = require("../entities/coins-balance-change.entity");
+const rp_balance_transaction_entity_1 = require("../entities/rp-balance-transaction.entity");
 const users_service_1 = require("./services/users.service");
 const balance_service_1 = require("./services/balance.service");
+const rp_balance_service_1 = require("./services/rp-balance.service");
 const users_controller_1 = require("./controllers/users.controller");
 const auth_module_1 = require("../auth/auth.module");
 let UsersModule = class UsersModule {
@@ -21,12 +23,12 @@ exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([player_entity_1.Player, coins_balance_change_entity_1.CoinsBalanceChange]),
+            typeorm_1.TypeOrmModule.forFeature([player_entity_1.Player, coins_balance_change_entity_1.CoinsBalanceChange, rp_balance_transaction_entity_1.RpBalanceTransaction]),
             auth_module_1.AuthModule,
         ],
         controllers: [users_controller_1.UsersController],
-        providers: [users_service_1.UsersService, balance_service_1.BalanceService],
-        exports: [users_service_1.UsersService, balance_service_1.BalanceService],
+        providers: [users_service_1.UsersService, balance_service_1.BalanceService, rp_balance_service_1.RpBalanceService],
+        exports: [users_service_1.UsersService, balance_service_1.BalanceService, rp_balance_service_1.RpBalanceService],
     })
 ], UsersModule);
 //# sourceMappingURL=users.module.js.map

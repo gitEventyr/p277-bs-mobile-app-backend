@@ -70,6 +70,7 @@ let UsersService = class UsersService {
             email: player.email,
             phone: player.phone,
             coins_balance: player.coins_balance,
+            rp_balance: player.rp_balance,
             level: player.level,
             scratch_cards: player.scratch_cards,
             device_udid: player.device_udid,
@@ -95,6 +96,21 @@ let UsersService = class UsersService {
             af_sub5: player.af_sub5,
         };
         return profile;
+    }
+    async getMobileProfile(userId) {
+        const fullProfile = await this.getProfile(userId);
+        const mobileProfile = {
+            id: fullProfile.id,
+            visitor_id: fullProfile.visitor_id,
+            name: fullProfile.name,
+            email: fullProfile.email,
+            phone: fullProfile.phone,
+            coins_balance: fullProfile.coins_balance,
+            rp_balance: fullProfile.rp_balance,
+            level: fullProfile.level,
+            scratch_cards: fullProfile.scratch_cards,
+        };
+        return mobileProfile;
     }
     async updateProfile(userId, updateProfileDto) {
         const player = await this.playerRepository.findOne({

@@ -4,6 +4,9 @@ export class BalanceResponseDto {
   @ApiProperty({ example: 1500.75 })
   coins_balance: number;
 
+  @ApiProperty({ example: 0 })
+  rp_balance: number;
+
   @ApiProperty({ example: 5 })
   scratch_cards: number;
 }

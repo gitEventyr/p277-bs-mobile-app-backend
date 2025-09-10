@@ -53,6 +53,7 @@ export declare class AuthController {
         email: string | undefined;
         phone: string | undefined;
         coins_balance: number;
+        rp_balance: number;
         level: number;
         scratch_cards: number;
         avatar: string | undefined;
@@ -97,6 +98,7 @@ export declare class AuthController {
         name?: undefined;
         phone?: undefined;
         coins_balance?: undefined;
+        rp_balance?: undefined;
         level?: undefined;
         scratch_cards?: undefined;
         avatar?: undefined;

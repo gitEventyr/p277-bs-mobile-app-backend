@@ -233,6 +233,7 @@ export class RegisterResponseDto {
       email: 'john.doe@example.com',
       name: 'John Doe',
       coins_balance: 1000,
+      rp_balance: 0,
       level: 1,
       scratch_cards: 0,
       ipaddress: '192.168.1.100',
@@ -245,6 +246,7 @@ export class RegisterResponseDto {
     email?: string;
     name?: string;
     coins_balance: number;
+    rp_balance: number;
     level: number;
     scratch_cards: number;
     ipaddress: string;

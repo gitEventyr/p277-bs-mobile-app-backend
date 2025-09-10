@@ -5,6 +5,7 @@ export declare class UserProfileDto {
     email?: string;
     phone?: string;
     coins_balance: number;
+    rp_balance: number;
     level: number;
     scratch_cards: number;
     device_udid?: string;

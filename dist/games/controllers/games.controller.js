@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const games_service_1 = require("../services/games.service");
 const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../../auth/decorators/current-user.decorator");
+const mobile_exception_filter_1 = require("../../common/filters/mobile-exception.filter");
 const play_session_dto_1 = require("../dto/play-session.dto");
 const game_history_dto_1 = require("../dto/game-history.dto");
 let GamesController = class GamesController {
@@ -173,6 +174,7 @@ exports.GamesController = GamesController = __decorate([
     (0, common_1.Controller)('games'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, common_1.UseFilters)(mobile_exception_filter_1.MobileExceptionFilter),
     __metadata("design:paramtypes", [games_service_1.GamesService])
 ], GamesController);
 //# sourceMappingURL=games.controller.js.map

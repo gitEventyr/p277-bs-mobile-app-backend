@@ -9,6 +9,7 @@ import * as bcrypt from 'bcryptjs';
 import { Player } from '../../entities/player.entity';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
+import { MobileUserProfileDto } from '../dto/mobile-user-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -34,6 +35,7 @@ export class UsersService {
       email: player.email,
       phone: player.phone,
       coins_balance: player.coins_balance,
+      rp_balance: player.rp_balance,
       level: player.level,
       scratch_cards: player.scratch_cards,
       device_udid: player.device_udid,
@@ -61,6 +63,25 @@ export class UsersService {
     };
 
     return profile;
+  }
+
+  async getMobileProfile(userId: number): Promise<MobileUserProfileDto> {
+    const fullProfile = await this.getProfile(userId);
+
+    // Convert full profile to mobile profile (excluding specific fields)
+    const mobileProfile: MobileUserProfileDto = {
+      id: fullProfile.id,
+      visitor_id: fullProfile.visitor_id,
+      name: fullProfile.name,
+      email: fullProfile.email,
+      phone: fullProfile.phone,
+      coins_balance: fullProfile.coins_balance,
+      rp_balance: fullProfile.rp_balance,
+      level: fullProfile.level,
+      scratch_cards: fullProfile.scratch_cards,
+    };
+
+    return mobileProfile;
   }
 
   async updateProfile(

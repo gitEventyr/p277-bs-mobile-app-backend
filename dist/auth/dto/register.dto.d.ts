@@ -36,6 +36,7 @@ export declare class RegisterResponseDto {
         email?: string;
         name?: string;
         coins_balance: number;
+        rp_balance: number;
         level: number;
         scratch_cards: number;
         ipaddress: string;

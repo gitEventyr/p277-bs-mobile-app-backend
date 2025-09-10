@@ -13,6 +13,7 @@ exports.TransactionHistoryResponseDto = exports.TransactionHistoryDto = exports.
 const swagger_1 = require("@nestjs/swagger");
 class BalanceResponseDto {
     coins_balance;
+    rp_balance;
     scratch_cards;
 }
 exports.BalanceResponseDto = BalanceResponseDto;
@@ -20,6 +21,10 @@ __decorate([
     (0, swagger_1.ApiProperty)({ example: 1500.75 }),
     __metadata("design:type", Number)
 ], BalanceResponseDto.prototype, "coins_balance", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 0 }),
+    __metadata("design:type", Number)
+], BalanceResponseDto.prototype, "rp_balance", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 5 }),
     __metadata("design:type", Number)

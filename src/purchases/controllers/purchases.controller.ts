@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UseFilters,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,6 +21,7 @@ import {
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PurchasesService } from '../services/purchases.service';
+import { MobileExceptionFilter } from '../../common/filters/mobile-exception.filter';
 import {
   RecordPurchaseDto,
   PurchaseHistoryQueryDto,
@@ -30,6 +32,7 @@ import {
 @ApiBearerAuth('access-token')
 @Controller('purchases')
 @UseGuards(JwtAuthGuard)
+@UseFilters(MobileExceptionFilter)
 export class PurchasesController {
   constructor(private readonly purchasesService: PurchasesService) {}
 

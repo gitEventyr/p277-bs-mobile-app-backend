@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpStatus,
   SetMetadata,
+  UseFilters,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,6 +22,7 @@ import {
 import { GamesService } from '../services/games.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { MobileExceptionFilter } from '../../common/filters/mobile-exception.filter';
 import {
   PlaySessionDto,
   PlaySessionResponseDto,
@@ -37,6 +39,7 @@ import type { AuthenticatedUser } from '../../common/types/auth.types';
 @Controller('games')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
+@UseFilters(MobileExceptionFilter)
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 

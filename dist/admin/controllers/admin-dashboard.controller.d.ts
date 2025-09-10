@@ -5,6 +5,7 @@ import { AnalyticsService } from '../services/analytics.service';
 import { AdminLoginDto } from '../dto/admin-login.dto';
 import { UsersService } from '../../users/services/users.service';
 import { BalanceService } from '../../users/services/balance.service';
+import { RpBalanceService } from '../../users/services/rp-balance.service';
 interface AdminSession extends session.Session {
     admin?: {
         id: string;
@@ -20,7 +21,8 @@ export declare class AdminDashboardController {
     private readonly usersService;
     private readonly analyticsService;
     private readonly balanceService;
-    constructor(adminService: AdminService, usersService: UsersService, analyticsService: AnalyticsService, balanceService: BalanceService);
+    private readonly rpBalanceService;
+    constructor(adminService: AdminService, usersService: UsersService, analyticsService: AnalyticsService, balanceService: BalanceService, rpBalanceService: RpBalanceService);
     loginPage(session: AdminSession, query: any): {
         redirect: string;
         title?: undefined;
@@ -39,6 +41,16 @@ export declare class AdminDashboardController {
     getUserDetails(id: string, session: AdminSession): Promise<import("../../users/dto/user-profile.dto").UserProfileDto>;
     updateUser(id: string, updateData: Record<string, any>, session: AdminSession): Promise<import("../../users/dto/user-profile.dto").UserProfileDto>;
     adjustBalance(id: string, adjustData: {
+        amount: number;
+        reason: string;
+    }, session: AdminSession): Promise<{
+        balance_before: number;
+        balance_after: number;
+        amount: number;
+        mode: string;
+        transaction_id: number;
+    }>;
+    adjustRpBalance(id: string, adjustData: {
         amount: number;
         reason: string;
     }, session: AdminSession): Promise<{

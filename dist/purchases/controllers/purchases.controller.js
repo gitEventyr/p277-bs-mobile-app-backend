@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../../auth/decorators/current-user.decorator");
 const purchases_service_1 = require("../services/purchases.service");
+const mobile_exception_filter_1 = require("../../common/filters/mobile-exception.filter");
 const purchase_dto_1 = require("../dto/purchase.dto");
 let PurchasesController = class PurchasesController {
     purchasesService;
@@ -218,6 +219,7 @@ exports.PurchasesController = PurchasesController = __decorate([
     (0, swagger_1.ApiBearerAuth)('access-token'),
     (0, common_1.Controller)('purchases'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseFilters)(mobile_exception_filter_1.MobileExceptionFilter),
     __metadata("design:paramtypes", [purchases_service_1.PurchasesService])
 ], PurchasesController);
 //# sourceMappingURL=purchases.controller.js.map

@@ -16,6 +16,7 @@ const player_entity_1 = require("../entities/player.entity");
 const play_history_entity_1 = require("../entities/play-history.entity");
 const in_app_purchase_entity_1 = require("../entities/in-app-purchase.entity");
 const coins_balance_change_entity_1 = require("../entities/coins-balance-change.entity");
+const rp_balance_transaction_entity_1 = require("../entities/rp-balance-transaction.entity");
 const casino_entity_1 = require("../entities/casino.entity");
 const casino_action_entity_1 = require("../entities/casino-action.entity");
 const admin_service_1 = require("./services/admin.service");
@@ -42,6 +43,7 @@ exports.AdminModule = AdminModule = __decorate([
                 play_history_entity_1.PlayHistory,
                 in_app_purchase_entity_1.InAppPurchase,
                 coins_balance_change_entity_1.CoinsBalanceChange,
+                rp_balance_transaction_entity_1.RpBalanceTransaction,
                 casino_entity_1.Casino,
                 casino_action_entity_1.CasinoAction,
             ]),

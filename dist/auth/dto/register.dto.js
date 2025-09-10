@@ -289,6 +289,7 @@ __decorate([
             email: 'john.doe@example.com',
             name: 'John Doe',
             coins_balance: 1000,
+            rp_balance: 0,
             level: 1,
             scratch_cards: 0,
             ipaddress: '192.168.1.100',

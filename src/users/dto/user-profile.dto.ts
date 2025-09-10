@@ -38,6 +38,12 @@ export class UserProfileDto {
   coins_balance: number;
 
   @ApiProperty({
+    description: 'User RP balance',
+    example: 0,
+  })
+  rp_balance: number;
+
+  @ApiProperty({
     description: 'User level',
     example: 1,
   })

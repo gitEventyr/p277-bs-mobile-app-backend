@@ -19,6 +19,7 @@ import { AnalyticsService } from '../services/analytics.service';
 import { AdminLoginDto } from '../dto/admin-login.dto';
 import { UsersService } from '../../users/services/users.service';
 import { BalanceService } from '../../users/services/balance.service';
+import { RpBalanceService } from '../../users/services/rp-balance.service';
 
 interface AdminSession extends session.Session {
   admin?: {
@@ -38,6 +39,7 @@ export class AdminDashboardController {
     private readonly usersService: UsersService,
     private readonly analyticsService: AnalyticsService,
     private readonly balanceService: BalanceService,
+    private readonly rpBalanceService: RpBalanceService,
   ) {}
 
   // Admin Login Page
@@ -347,6 +349,42 @@ export class AdminDashboardController {
     } catch (error: any) {
       console.error('Adjust balance error:', error);
       throw new Error(error?.message || 'Error adjusting balance');
+    }
+  }
+
+  // Adjust User RP Balance (Admin endpoint)
+  @Post('api/users/:id/adjust-rp-balance')
+  async adjustRpBalance(
+    @Param('id') id: string,
+    @Body() adjustData: { amount: number; reason: string },
+    @Session() session: AdminSession,
+  ) {
+    if (!session.admin) {
+      throw new UnauthorizedException('Not authenticated');
+    }
+
+    try {
+      const { amount, reason } = adjustData;
+
+      if (!amount || amount === 0) {
+        throw new Error('Amount must be a non-zero number');
+      }
+
+      if (!reason) {
+        throw new Error('Reason is required');
+      }
+
+      const result = await this.rpBalanceService.adminAdjustRpBalance(
+        parseInt(id, 10),
+        amount,
+        reason,
+        session.admin.id,
+      );
+
+      return result;
+    } catch (error: any) {
+      console.error('Adjust RP balance error:', error);
+      throw new Error(error?.message || 'Error adjusting RP balance');
     }
   }
 

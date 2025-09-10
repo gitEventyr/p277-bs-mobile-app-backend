@@ -9,6 +9,7 @@ export declare class BalanceService {
     constructor(playerRepository: Repository<Player>, balanceChangeRepository: Repository<CoinsBalanceChange>, dataSource: DataSource);
     getBalance(userId: number): Promise<{
         coins_balance: number;
+        rp_balance: number;
         scratch_cards: number;
     }>;
     increaseBalance(userId: number, balanceChangeDto: BalanceChangeDto): Promise<{

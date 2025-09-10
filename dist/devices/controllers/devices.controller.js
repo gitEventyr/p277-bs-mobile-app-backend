@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const devices_service_1 = require("../services/devices.service");
 const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../../auth/decorators/current-user.decorator");
+const mobile_exception_filter_1 = require("../../common/filters/mobile-exception.filter");
 const device_response_dto_1 = require("../dto/device-response.dto");
 let DevicesController = class DevicesController {
     devicesService;
@@ -119,6 +120,7 @@ exports.DevicesController = DevicesController = __decorate([
     (0, common_1.Controller)('devices'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, common_1.UseFilters)(mobile_exception_filter_1.MobileExceptionFilter),
     __metadata("design:paramtypes", [devices_service_1.DevicesService])
 ], DevicesController);
 //# sourceMappingURL=devices.controller.js.map

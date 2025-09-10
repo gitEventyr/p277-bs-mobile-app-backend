@@ -1,5 +1,6 @@
 export declare class BalanceResponseDto {
     coins_balance: number;
+    rp_balance: number;
     scratch_cards: number;
 }
 export declare class BalanceChangeResponseDto {
