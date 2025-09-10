@@ -5,6 +5,7 @@ import { Player } from '../../entities/player.entity';
 import { PlayHistory } from '../../entities/play-history.entity';
 import { InAppPurchase } from '../../entities/in-app-purchase.entity';
 import { CoinsBalanceChange } from '../../entities/coins-balance-change.entity';
+import { RpBalanceTransaction } from '../../entities/rp-balance-transaction.entity';
 
 interface DateRange {
   startDate?: Date;
@@ -22,22 +23,28 @@ export class AnalyticsService {
     private readonly purchaseRepository: Repository<InAppPurchase>,
     @InjectRepository(CoinsBalanceChange)
     private readonly balanceChangeRepository: Repository<CoinsBalanceChange>,
+    @InjectRepository(RpBalanceTransaction)
+    private readonly rpBalanceRepository: Repository<RpBalanceTransaction>,
   ) {}
 
   async getOverviewStats(dateRange?: DateRange) {
     const totalUsers = await this.getTotalUsers();
     const activeUsers = await this.getActiveUsers(dateRange);
     const totalBalance = await this.getTotalBalance();
+    const totalRpBalance = await this.getTotalRpBalance();
     const newRegistrations = await this.getNewRegistrations(dateRange);
     const totalRevenue = await this.getTotalRevenue(dateRange);
     const totalGamesPlayed = await this.getTotalGamesPlayed(dateRange);
     const averageBalance = totalUsers > 0 ? totalBalance / totalUsers : 0;
+    const averageRpBalance = totalUsers > 0 ? totalRpBalance / totalUsers : 0;
 
     return {
       totalUsers,
       activeUsers,
       totalBalance: Math.round(totalBalance * 100) / 100,
+      totalRpBalance: Math.round(totalRpBalance * 100) / 100,
       averageBalance: Math.round(averageBalance * 100) / 100,
+      averageRpBalance: Math.round(averageRpBalance * 100) / 100,
       newRegistrations,
       totalRevenue: Math.round(totalRevenue * 100) / 100,
       totalGamesPlayed,
@@ -111,6 +118,16 @@ export class AnalyticsService {
     const result = await this.playerRepository
       .createQueryBuilder('player')
       .select('SUM(player.coins_balance)', 'total')
+      .where('player.is_deleted = false')
+      .getRawOne();
+
+    return parseFloat(result?.total || '0');
+  }
+
+  private async getTotalRpBalance(): Promise<number> {
+    const result = await this.playerRepository
+      .createQueryBuilder('player')
+      .select('SUM(player.rp_balance)', 'total')
       .where('player.is_deleted = false')
       .getRawOne();
 

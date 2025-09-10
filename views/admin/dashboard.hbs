@@ -83,8 +83,45 @@
   </div>
 </div>
 
-<!-- Additional Overview Statistics -->
+<!-- Second row for additional statistics including RP Balance -->
 <div class="row">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-purple shadow h-100 py-2" style="border-left-color: #6f42c1 !important;">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #6f42c1;">
+              Total RP Balance
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.totalRpBalance}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-gem fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-secondary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+              Average RP Balance
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.averageRpBalance}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-calculator fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
   <div class="col-xl-3 col-md-6 mb-4">
     <div class="card border-left-success shadow h-100 py-2">
       <div class="card-body">
@@ -120,8 +157,6 @@
       </div>
     </div>
   </div>
-
-
 </div>
 
 <!-- Analytics Details -->
