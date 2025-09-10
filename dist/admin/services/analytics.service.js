@@ -20,30 +20,37 @@ const player_entity_1 = require("../../entities/player.entity");
 const play_history_entity_1 = require("../../entities/play-history.entity");
 const in_app_purchase_entity_1 = require("../../entities/in-app-purchase.entity");
 const coins_balance_change_entity_1 = require("../../entities/coins-balance-change.entity");
+const rp_balance_transaction_entity_1 = require("../../entities/rp-balance-transaction.entity");
 let AnalyticsService = class AnalyticsService {
     playerRepository;
     playHistoryRepository;
     purchaseRepository;
     balanceChangeRepository;
-    constructor(playerRepository, playHistoryRepository, purchaseRepository, balanceChangeRepository) {
+    rpBalanceRepository;
+    constructor(playerRepository, playHistoryRepository, purchaseRepository, balanceChangeRepository, rpBalanceRepository) {
         this.playerRepository = playerRepository;
         this.playHistoryRepository = playHistoryRepository;
         this.purchaseRepository = purchaseRepository;
         this.balanceChangeRepository = balanceChangeRepository;
+        this.rpBalanceRepository = rpBalanceRepository;
     }
     async getOverviewStats(dateRange) {
         const totalUsers = await this.getTotalUsers();
         const activeUsers = await this.getActiveUsers(dateRange);
         const totalBalance = await this.getTotalBalance();
+        const totalRpBalance = await this.getTotalRpBalance();
         const newRegistrations = await this.getNewRegistrations(dateRange);
         const totalRevenue = await this.getTotalRevenue(dateRange);
         const totalGamesPlayed = await this.getTotalGamesPlayed(dateRange);
         const averageBalance = totalUsers > 0 ? totalBalance / totalUsers : 0;
+        const averageRpBalance = totalUsers > 0 ? totalRpBalance / totalUsers : 0;
         return {
             totalUsers,
             activeUsers,
             totalBalance: Math.round(totalBalance * 100) / 100,
+            totalRpBalance: Math.round(totalRpBalance * 100) / 100,
             averageBalance: Math.round(averageBalance * 100) / 100,
+            averageRpBalance: Math.round(averageRpBalance * 100) / 100,
             newRegistrations,
             totalRevenue: Math.round(totalRevenue * 100) / 100,
             totalGamesPlayed,
@@ -104,6 +111,14 @@ let AnalyticsService = class AnalyticsService {
         const result = await this.playerRepository
             .createQueryBuilder('player')
             .select('SUM(player.coins_balance)', 'total')
+            .where('player.is_deleted = false')
+            .getRawOne();
+        return parseFloat(result?.total || '0');
+    }
+    async getTotalRpBalance() {
+        const result = await this.playerRepository
+            .createQueryBuilder('player')
+            .select('SUM(player.rp_balance)', 'total')
             .where('player.is_deleted = false')
             .getRawOne();
         return parseFloat(result?.total || '0');
@@ -433,7 +448,9 @@ exports.AnalyticsService = AnalyticsService = __decorate([
     __param(1, (0, typeorm_1.InjectRepository)(play_history_entity_1.PlayHistory)),
     __param(2, (0, typeorm_1.InjectRepository)(in_app_purchase_entity_1.InAppPurchase)),
     __param(3, (0, typeorm_1.InjectRepository)(coins_balance_change_entity_1.CoinsBalanceChange)),
+    __param(4, (0, typeorm_1.InjectRepository)(rp_balance_transaction_entity_1.RpBalanceTransaction)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository])

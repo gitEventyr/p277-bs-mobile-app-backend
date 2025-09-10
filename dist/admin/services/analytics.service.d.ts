@@ -3,6 +3,7 @@ import { Player } from '../../entities/player.entity';
 import { PlayHistory } from '../../entities/play-history.entity';
 import { InAppPurchase } from '../../entities/in-app-purchase.entity';
 import { CoinsBalanceChange } from '../../entities/coins-balance-change.entity';
+import { RpBalanceTransaction } from '../../entities/rp-balance-transaction.entity';
 interface DateRange {
     startDate?: Date;
     endDate?: Date;
@@ -12,12 +13,15 @@ export declare class AnalyticsService {
     private readonly playHistoryRepository;
     private readonly purchaseRepository;
     private readonly balanceChangeRepository;
-    constructor(playerRepository: Repository<Player>, playHistoryRepository: Repository<PlayHistory>, purchaseRepository: Repository<InAppPurchase>, balanceChangeRepository: Repository<CoinsBalanceChange>);
+    private readonly rpBalanceRepository;
+    constructor(playerRepository: Repository<Player>, playHistoryRepository: Repository<PlayHistory>, purchaseRepository: Repository<InAppPurchase>, balanceChangeRepository: Repository<CoinsBalanceChange>, rpBalanceRepository: Repository<RpBalanceTransaction>);
     getOverviewStats(dateRange?: DateRange): Promise<{
         totalUsers: number;
         activeUsers: number;
         totalBalance: number;
+        totalRpBalance: number;
         averageBalance: number;
+        averageRpBalance: number;
         newRegistrations: number;
         totalRevenue: number;
         totalGamesPlayed: number;
@@ -84,6 +88,7 @@ export declare class AnalyticsService {
     private getTotalUsers;
     private getActiveUsers;
     private getTotalBalance;
+    private getTotalRpBalance;
     private getNewRegistrations;
     private getTotalRevenue;
     private getTotalGamesPlayed;
