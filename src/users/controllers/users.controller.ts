@@ -27,10 +27,10 @@ import { UpdateScratchCardsDto } from '../dto/update-scratch-cards.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
 import { MobileUserProfileDto } from '../dto/mobile-user-profile.dto';
 import { BalanceChangeDto, ModifyBalanceDto } from '../dto/balance-change.dto';
-import { 
-  ModifyRpBalanceDto, 
+import {
+  ModifyRpBalanceDto,
   RpBalanceChangeResponseDto,
-  RpBalanceTransactionHistoryResponseDto
+  RpBalanceTransactionHistoryResponseDto,
 } from '../dto/rp-balance.dto';
 import {
   BalanceResponseDto,
@@ -295,7 +295,10 @@ export class UsersController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() modifyRpBalanceDto: ModifyRpBalanceDto,
   ): Promise<RpBalanceChangeResponseDto> {
-    return await this.rpBalanceService.modifyRpBalance(user.id, modifyRpBalanceDto);
+    return await this.rpBalanceService.modifyRpBalance(
+      user.id,
+      modifyRpBalanceDto,
+    );
   }
 
   @ApiTags('📱 Mobile: RP Balance')

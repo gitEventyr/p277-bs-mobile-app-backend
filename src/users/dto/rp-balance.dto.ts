@@ -3,7 +3,8 @@ import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class ModifyRpBalanceDto {
   @ApiProperty({
-    description: 'Amount to modify (positive to increase, negative to decrease)',
+    description:
+      'Amount to modify (positive to increase, negative to decrease)',
     example: 100,
   })
   @IsNumber()

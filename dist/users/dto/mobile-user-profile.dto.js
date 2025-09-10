@@ -21,6 +21,10 @@ class MobileUserProfileDto {
     rp_balance;
     level;
     scratch_cards;
+    email_verified;
+    email_verified_at;
+    phone_verified;
+    phone_verified_at;
 }
 exports.MobileUserProfileDto = MobileUserProfileDto;
 __decorate([
@@ -86,4 +90,32 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], MobileUserProfileDto.prototype, "scratch_cards", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Whether email is verified',
+        example: false,
+    }),
+    __metadata("design:type", Boolean)
+], MobileUserProfileDto.prototype, "email_verified", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Email verification timestamp',
+        example: '2025-01-01T10:00:00Z',
+    }),
+    __metadata("design:type", Date)
+], MobileUserProfileDto.prototype, "email_verified_at", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Whether phone is verified',
+        example: false,
+    }),
+    __metadata("design:type", Boolean)
+], MobileUserProfileDto.prototype, "phone_verified", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Phone verification timestamp',
+        example: '2025-01-01T10:00:00Z',
+    }),
+    __metadata("design:type", Date)
+], MobileUserProfileDto.prototype, "phone_verified_at", void 0);
 //# sourceMappingURL=mobile-user-profile.dto.js.map

@@ -23,7 +23,11 @@ exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([player_entity_1.Player, coins_balance_change_entity_1.CoinsBalanceChange, rp_balance_transaction_entity_1.RpBalanceTransaction]),
+            typeorm_1.TypeOrmModule.forFeature([
+                player_entity_1.Player,
+                coins_balance_change_entity_1.CoinsBalanceChange,
+                rp_balance_transaction_entity_1.RpBalanceTransaction,
+            ]),
             auth_module_1.AuthModule,
         ],
         controllers: [users_controller_1.UsersController],

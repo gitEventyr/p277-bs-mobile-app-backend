@@ -42,6 +42,10 @@ class UserProfileDto {
     af_sub3;
     af_sub4;
     af_sub5;
+    email_verified;
+    email_verified_at;
+    phone_verified;
+    phone_verified_at;
 }
 exports.UserProfileDto = UserProfileDto;
 __decorate([
@@ -254,4 +258,32 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], UserProfileDto.prototype, "af_sub5", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Whether email is verified',
+        example: false,
+    }),
+    __metadata("design:type", Boolean)
+], UserProfileDto.prototype, "email_verified", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Email verification timestamp',
+        example: '2025-01-01T10:00:00Z',
+    }),
+    __metadata("design:type", Date)
+], UserProfileDto.prototype, "email_verified_at", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Whether phone is verified',
+        example: false,
+    }),
+    __metadata("design:type", Boolean)
+], UserProfileDto.prototype, "phone_verified", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Phone verification timestamp',
+        example: '2025-01-01T10:00:00Z',
+    }),
+    __metadata("design:type", Date)
+], UserProfileDto.prototype, "phone_verified_at", void 0);
 //# sourceMappingURL=user-profile.dto.js.map

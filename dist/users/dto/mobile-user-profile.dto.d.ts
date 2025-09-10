@@ -8,4 +8,8 @@ export declare class MobileUserProfileDto {
     rp_balance: number;
     level: number;
     scratch_cards: number;
+    email_verified: boolean;
+    email_verified_at?: Date;
+    phone_verified: boolean;
+    phone_verified_at?: Date;
 }

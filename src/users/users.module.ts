@@ -11,7 +11,11 @@ import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Player, CoinsBalanceChange, RpBalanceTransaction]),
+    TypeOrmModule.forFeature([
+      Player,
+      CoinsBalanceChange,
+      RpBalanceTransaction,
+    ]),
     AuthModule, // Import AuthModule to get access to guards
   ],
   controllers: [UsersController],

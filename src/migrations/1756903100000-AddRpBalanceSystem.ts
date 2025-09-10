@@ -36,7 +36,7 @@ export class AddRpBalanceSystem1756903100000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE INDEX "IDX_rp_balance_transactions_user_id" ON "rp_balance_transactions" ("user_id")
     `);
-    
+
     await queryRunner.query(`
       CREATE INDEX "IDX_rp_balance_transactions_created_at" ON "rp_balance_transactions" ("created_at")
     `);
@@ -44,7 +44,9 @@ export class AddRpBalanceSystem1756903100000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop indexes
-    await queryRunner.query(`DROP INDEX "IDX_rp_balance_transactions_created_at"`);
+    await queryRunner.query(
+      `DROP INDEX "IDX_rp_balance_transactions_created_at"`,
+    );
     await queryRunner.query(`DROP INDEX "IDX_rp_balance_transactions_user_id"`);
 
     // Drop foreign key constraint

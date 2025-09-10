@@ -29,4 +29,8 @@ export declare class UserProfileDto {
     af_sub3?: string;
     af_sub4?: string;
     af_sub5?: string;
+    email_verified: boolean;
+    email_verified_at?: Date;
+    phone_verified: boolean;
+    phone_verified_at?: Date;
 }
