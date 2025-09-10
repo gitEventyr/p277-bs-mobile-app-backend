@@ -20,6 +20,7 @@ const in_app_purchase_entity_1 = require("./entities/in-app-purchase.entity");
 const voucher_entity_1 = require("./entities/voucher.entity");
 const user_voucher_entity_1 = require("./entities/user-voucher.entity");
 const password_reset_token_entity_1 = require("./entities/password-reset-token.entity");
+const rp_balance_transaction_entity_1 = require("./entities/rp-balance-transaction.entity");
 const casino_entity_1 = require("./entities/casino.entity");
 const casino_action_entity_1 = require("./entities/casino-action.entity");
 const app_controller_1 = require("./app.controller");
@@ -50,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
                         admin_user_entity_1.AdminUser,
                         device_entity_1.Device,
                         coins_balance_change_entity_1.CoinsBalanceChange,
+                        rp_balance_transaction_entity_1.RpBalanceTransaction,
                         play_history_entity_1.PlayHistory,
                         in_app_purchase_entity_1.InAppPurchase,
                         voucher_entity_1.Voucher,
