@@ -62,6 +62,7 @@ import { EmailService } from '../email/services/email.service';
 import { DevicesService } from '../devices/services/devices.service';
 import { TwilioService } from '../sms/services/twilio.service';
 import { CasinoApiService } from '../external/casino/casino-api.service';
+import { RpRewardEventService } from '../users/services/rp-reward-event.service';
 import type {
   AuthenticatedUser,
   AuthenticatedAdmin,
@@ -100,6 +101,7 @@ export class AuthController {
     private readonly twilioService: TwilioService,
     private readonly casinoApiService: CasinoApiService,
     private readonly configService: ConfigService,
+    private readonly rpRewardEventService: RpRewardEventService,
   ) {}
 
   private generateVisitorId(): string {
@@ -239,6 +241,16 @@ export class AuthController {
           deviceError.message,
         );
       }
+    }
+
+    // Award registration RP reward
+    try {
+      await this.rpRewardEventService.awardRegistrationReward(savedPlayer.id);
+    } catch (rpError) {
+      this.logger.warn(
+        'Failed to award registration RP reward:',
+        rpError.message,
+      );
     }
 
     // Generate JWT token
@@ -866,6 +878,16 @@ export class AuthController {
       },
     );
 
+    // Award email verification RP reward
+    try {
+      await this.rpRewardEventService.awardEmailVerificationReward(user.id);
+    } catch (rpError) {
+      this.logger.warn(
+        'Failed to award email verification RP reward:',
+        rpError.message,
+      );
+    }
+
     return {
       message: 'Email verified successfully',
       emailVerified: true,
@@ -978,6 +1000,16 @@ export class AuthController {
         phone_verified_at: new Date(),
       },
     );
+
+    // Award phone verification RP reward
+    try {
+      await this.rpRewardEventService.awardPhoneVerificationReward(user.id);
+    } catch (rpError) {
+      this.logger.warn(
+        'Failed to award phone verification RP reward:',
+        rpError.message,
+      );
+    }
 
     return {
       message: 'Phone verified successfully',

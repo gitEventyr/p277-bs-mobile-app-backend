@@ -11,6 +11,7 @@ import { InAppPurchase } from '../../entities/in-app-purchase.entity';
 import { Player } from '../../entities/player.entity';
 import { CoinsBalanceChange } from '../../entities/coins-balance-change.entity';
 import { PaymentValidationService } from '../../external/payments/payment-validation.service';
+import { RpRewardEventService } from '../../users/services/rp-reward-event.service';
 import {
   RecordPurchaseDto,
   PurchaseHistoryQueryDto,
@@ -29,6 +30,7 @@ export class PurchasesService {
     private readonly balanceChangeRepository: Repository<CoinsBalanceChange>,
     private readonly paymentValidationService: PaymentValidationService,
     private readonly dataSource: DataSource,
+    private readonly rpRewardEventService: RpRewardEventService,
   ) {}
 
   async recordPurchase(userId: number, purchaseDto: RecordPurchaseDto) {
@@ -123,6 +125,19 @@ export class PurchasesService {
       this.logger.log(
         `Purchase recorded successfully: ${savedPurchase.id}, balance updated: ${balanceAfter}`,
       );
+
+      // Award RP purchase reward (first or subsequent purchase)
+      try {
+        await this.rpRewardEventService.awardPurchaseReward(
+          userId,
+          purchaseDto.product_id,
+        );
+      } catch (rpError) {
+        this.logger.warn(
+          'Failed to award purchase RP reward:',
+          rpError.message,
+        );
+      }
 
       return {
         purchase: {

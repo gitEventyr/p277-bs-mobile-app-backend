@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PurchasesController } from './controllers/purchases.controller';
 import { PurchasesService } from './services/purchases.service';
 import { PaymentValidationService } from '../external/payments/payment-validation.service';
+import { UsersModule } from '../users/users.module';
 import { InAppPurchase } from '../entities/in-app-purchase.entity';
 import { Player } from '../entities/player.entity';
 import { CoinsBalanceChange } from '../entities/coins-balance-change.entity';
@@ -10,6 +11,7 @@ import { CoinsBalanceChange } from '../entities/coins-balance-change.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([InAppPurchase, Player, CoinsBalanceChange]),
+    UsersModule,
   ],
   controllers: [PurchasesController],
   providers: [PurchasesService, PaymentValidationService],
