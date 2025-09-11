@@ -21,19 +21,22 @@ const in_app_purchase_entity_1 = require("../../entities/in-app-purchase.entity"
 const player_entity_1 = require("../../entities/player.entity");
 const coins_balance_change_entity_1 = require("../../entities/coins-balance-change.entity");
 const payment_validation_service_1 = require("../../external/payments/payment-validation.service");
+const rp_reward_event_service_1 = require("../../users/services/rp-reward-event.service");
 let PurchasesService = PurchasesService_1 = class PurchasesService {
     purchaseRepository;
     playerRepository;
     balanceChangeRepository;
     paymentValidationService;
     dataSource;
+    rpRewardEventService;
     logger = new common_1.Logger(PurchasesService_1.name);
-    constructor(purchaseRepository, playerRepository, balanceChangeRepository, paymentValidationService, dataSource) {
+    constructor(purchaseRepository, playerRepository, balanceChangeRepository, paymentValidationService, dataSource, rpRewardEventService) {
         this.purchaseRepository = purchaseRepository;
         this.playerRepository = playerRepository;
         this.balanceChangeRepository = balanceChangeRepository;
         this.paymentValidationService = paymentValidationService;
         this.dataSource = dataSource;
+        this.rpRewardEventService = rpRewardEventService;
     }
     async recordPurchase(userId, purchaseDto) {
         this.logger.log(`Recording purchase for user ${userId}, transaction: ${purchaseDto.transaction_id}`);
@@ -92,6 +95,12 @@ let PurchasesService = PurchasesService_1 = class PurchasesService {
             const savedBalanceChange = await queryRunner.manager.save(balanceChange);
             await queryRunner.commitTransaction();
             this.logger.log(`Purchase recorded successfully: ${savedPurchase.id}, balance updated: ${balanceAfter}`);
+            try {
+                await this.rpRewardEventService.awardPurchaseReward(userId, purchaseDto.product_id);
+            }
+            catch (rpError) {
+                this.logger.warn('Failed to award purchase RP reward:', rpError.message);
+            }
             return {
                 purchase: {
                     id: savedPurchase.id,
@@ -221,6 +230,7 @@ exports.PurchasesService = PurchasesService = PurchasesService_1 = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         payment_validation_service_1.PaymentValidationService,
-        typeorm_2.DataSource])
+        typeorm_2.DataSource,
+        rp_reward_event_service_1.RpRewardEventService])
 ], PurchasesService);
 //# sourceMappingURL=purchases.service.js.map

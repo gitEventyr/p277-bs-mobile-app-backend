@@ -12,6 +12,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const purchases_controller_1 = require("./controllers/purchases.controller");
 const purchases_service_1 = require("./services/purchases.service");
 const payment_validation_service_1 = require("../external/payments/payment-validation.service");
+const users_module_1 = require("../users/users.module");
 const in_app_purchase_entity_1 = require("../entities/in-app-purchase.entity");
 const player_entity_1 = require("../entities/player.entity");
 const coins_balance_change_entity_1 = require("../entities/coins-balance-change.entity");
@@ -22,6 +23,7 @@ exports.PurchasesModule = PurchasesModule = __decorate([
     (0, common_1.Module)({
         imports: [
             typeorm_1.TypeOrmModule.forFeature([in_app_purchase_entity_1.InAppPurchase, player_entity_1.Player, coins_balance_change_entity_1.CoinsBalanceChange]),
+            users_module_1.UsersModule,
         ],
         controllers: [purchases_controller_1.PurchasesController],
         providers: [purchases_service_1.PurchasesService, payment_validation_service_1.PaymentValidationService],

@@ -44,6 +44,7 @@ const email_service_1 = require("../email/services/email.service");
 const devices_service_1 = require("../devices/services/devices.service");
 const twilio_service_1 = require("../sms/services/twilio.service");
 const casino_api_service_1 = require("../external/casino/casino-api.service");
+const rp_reward_event_service_1 = require("../users/services/rp-reward-event.service");
 class TestTokenDto {
     email;
     type;
@@ -70,8 +71,9 @@ let AuthController = AuthController_1 = class AuthController {
     twilioService;
     casinoApiService;
     configService;
+    rpRewardEventService;
     logger = new common_1.Logger(AuthController_1.name);
-    constructor(authService, playerRepository, passwordResetTokenRepository, emailVerificationTokenRepository, phoneVerificationTokenRepository, emailService, devicesService, twilioService, casinoApiService, configService) {
+    constructor(authService, playerRepository, passwordResetTokenRepository, emailVerificationTokenRepository, phoneVerificationTokenRepository, emailService, devicesService, twilioService, casinoApiService, configService, rpRewardEventService) {
         this.authService = authService;
         this.playerRepository = playerRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
@@ -82,6 +84,7 @@ let AuthController = AuthController_1 = class AuthController {
         this.twilioService = twilioService;
         this.casinoApiService = casinoApiService;
         this.configService = configService;
+        this.rpRewardEventService = rpRewardEventService;
     }
     generateVisitorId() {
         return ('visitor_' +
@@ -170,6 +173,12 @@ let AuthController = AuthController_1 = class AuthController {
             catch (deviceError) {
                 this.logger.warn('Failed to track device during registration:', deviceError.message);
             }
+        }
+        try {
+            await this.rpRewardEventService.awardRegistrationReward(savedPlayer.id);
+        }
+        catch (rpError) {
+            this.logger.warn('Failed to award registration RP reward:', rpError.message);
         }
         const payload = {
             sub: typeof savedPlayer.id === 'string'
@@ -498,6 +507,12 @@ let AuthController = AuthController_1 = class AuthController {
             email_verified: true,
             email_verified_at: new Date(),
         });
+        try {
+            await this.rpRewardEventService.awardEmailVerificationReward(user.id);
+        }
+        catch (rpError) {
+            this.logger.warn('Failed to award email verification RP reward:', rpError.message);
+        }
         return {
             message: 'Email verified successfully',
             emailVerified: true,
@@ -543,6 +558,12 @@ let AuthController = AuthController_1 = class AuthController {
             phone_verified: true,
             phone_verified_at: new Date(),
         });
+        try {
+            await this.rpRewardEventService.awardPhoneVerificationReward(user.id);
+        }
+        catch (rpError) {
+            this.logger.warn('Failed to award phone verification RP reward:', rpError.message);
+        }
         return {
             message: 'Phone verified successfully',
             phoneVerified: true,
@@ -862,6 +883,7 @@ exports.AuthController = AuthController = AuthController_1 = __decorate([
         devices_service_1.DevicesService,
         twilio_service_1.TwilioService,
         casino_api_service_1.CasinoApiService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        rp_reward_event_service_1.RpRewardEventService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

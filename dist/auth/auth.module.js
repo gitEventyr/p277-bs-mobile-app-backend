@@ -26,6 +26,7 @@ const email_module_1 = require("../email/email.module");
 const devices_module_1 = require("../devices/devices.module");
 const sms_module_1 = require("../sms/sms.module");
 const casino_api_module_1 = require("../external/casino/casino-api.module");
+const users_module_1 = require("../users/users.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -55,6 +56,7 @@ exports.AuthModule = AuthModule = __decorate([
             devices_module_1.DevicesModule,
             sms_module_1.SmsModule,
             casino_api_module_1.CasinoApiModule,
+            (0, common_1.forwardRef)(() => users_module_1.UsersModule),
         ],
         controllers: [auth_controller_1.AuthController],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard],

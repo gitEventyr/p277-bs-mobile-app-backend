@@ -3,6 +3,7 @@ import { InAppPurchase } from '../../entities/in-app-purchase.entity';
 import { Player } from '../../entities/player.entity';
 import { CoinsBalanceChange } from '../../entities/coins-balance-change.entity';
 import { PaymentValidationService } from '../../external/payments/payment-validation.service';
+import { RpRewardEventService } from '../../users/services/rp-reward-event.service';
 import { RecordPurchaseDto, PurchaseHistoryQueryDto } from '../dto/purchase.dto';
 export declare class PurchasesService {
     private readonly purchaseRepository;
@@ -10,8 +11,9 @@ export declare class PurchasesService {
     private readonly balanceChangeRepository;
     private readonly paymentValidationService;
     private readonly dataSource;
+    private readonly rpRewardEventService;
     private readonly logger;
-    constructor(purchaseRepository: Repository<InAppPurchase>, playerRepository: Repository<Player>, balanceChangeRepository: Repository<CoinsBalanceChange>, paymentValidationService: PaymentValidationService, dataSource: DataSource);
+    constructor(purchaseRepository: Repository<InAppPurchase>, playerRepository: Repository<Player>, balanceChangeRepository: Repository<CoinsBalanceChange>, paymentValidationService: PaymentValidationService, dataSource: DataSource, rpRewardEventService: RpRewardEventService);
     recordPurchase(userId: number, purchaseDto: RecordPurchaseDto): Promise<{
         purchase: {
             id: number;

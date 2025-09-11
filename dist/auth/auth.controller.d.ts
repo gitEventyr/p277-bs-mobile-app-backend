@@ -19,6 +19,7 @@ import { EmailService } from '../email/services/email.service';
 import { DevicesService } from '../devices/services/devices.service';
 import { TwilioService } from '../sms/services/twilio.service';
 import { CasinoApiService } from '../external/casino/casino-api.service';
+import { RpRewardEventService } from '../users/services/rp-reward-event.service';
 import type { AuthenticatedUser, AuthenticatedAdmin } from '../common/types/auth.types';
 declare class TestTokenDto {
     email: string;
@@ -35,8 +36,9 @@ export declare class AuthController {
     private readonly twilioService;
     private readonly casinoApiService;
     private readonly configService;
+    private readonly rpRewardEventService;
     private readonly logger;
-    constructor(authService: AuthService, playerRepository: Repository<Player>, passwordResetTokenRepository: Repository<PasswordResetToken>, emailVerificationTokenRepository: Repository<EmailVerificationToken>, phoneVerificationTokenRepository: Repository<PhoneVerificationToken>, emailService: EmailService, devicesService: DevicesService, twilioService: TwilioService, casinoApiService: CasinoApiService, configService: ConfigService);
+    constructor(authService: AuthService, playerRepository: Repository<Player>, passwordResetTokenRepository: Repository<PasswordResetToken>, emailVerificationTokenRepository: Repository<EmailVerificationToken>, phoneVerificationTokenRepository: Repository<PhoneVerificationToken>, emailService: EmailService, devicesService: DevicesService, twilioService: TwilioService, casinoApiService: CasinoApiService, configService: ConfigService, rpRewardEventService: RpRewardEventService);
     private generateVisitorId;
     private getClientIp;
     register(registerDto: RegisterDto, req: Request): Promise<RegisterResponseDto>;
