@@ -37,6 +37,23 @@ export interface ExternalCasino {
     id: number;
     admin_name: string;
 }
+export interface CasinoOffersRequest {
+    ipaddress: string;
+    visitor_id: string;
+    exclude_ids: number[] | null;
+}
+export interface CasinoOffer {
+    logo_url: string;
+    id: number;
+    public_name: string;
+    offer_preheading: string;
+    offer_heading: string;
+    offer_subheading: string;
+    terms_and_conditions: string;
+    offer_link: string;
+    is_active: boolean;
+    button_label: string;
+}
 export declare class CasinoApiService {
     private readonly configService;
     private readonly httpService;
@@ -47,5 +64,6 @@ export declare class CasinoApiService {
     constructor(configService: ConfigService, httpService: HttpService);
     registerUser(registerDto: RegisterDto, ipAddress: string): Promise<string>;
     getCasinos(): Promise<ExternalCasino[]>;
+    getOffers(ipAddress: string, visitorId: string, excludeIds?: number[] | null): Promise<CasinoOffer[]>;
     isConfigured(): boolean;
 }

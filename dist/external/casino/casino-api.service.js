@@ -123,6 +123,42 @@ let CasinoApiService = CasinoApiService_1 = class CasinoApiService {
             throw new common_1.BadRequestException('Unable to fetch casinos from external API. Please try again later.');
         }
     }
+    async getOffers(ipAddress, visitorId, excludeIds = null) {
+        if (!this.casinoApiUrl || !this.casinoBearerToken || !this.casinoAppId) {
+            throw new common_1.BadRequestException('Casino API is not configured');
+        }
+        const url = `${this.casinoApiUrl}/api/mobile/v1/${this.casinoAppId}/offers`;
+        const requestBody = {
+            ipaddress: ipAddress,
+            visitor_id: visitorId,
+            exclude_ids: excludeIds,
+        };
+        try {
+            this.logger.debug(`Calling casino API to fetch offers: ${url}`, requestBody);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(url, requestBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${this.casinoBearerToken}`,
+                },
+                timeout: 10000,
+            }));
+            const offers = response.data || [];
+            this.logger.log(`Successfully fetched ${offers.length} offers from external API`);
+            return offers;
+        }
+        catch (error) {
+            this.logger.error('Failed to fetch offers from casino API', {
+                error: error.message,
+                url,
+                requestBody,
+                response: error.response?.data,
+            });
+            if (error.response?.status >= 400 && error.response?.status < 500) {
+                throw new common_1.BadRequestException(`Casino API error: ${error.response?.data?.message || error.message}`);
+            }
+            throw new common_1.BadRequestException('Unable to fetch offers from external API. Please try again later.');
+        }
+    }
     isConfigured() {
         return !!(this.casinoApiUrl && this.casinoBearerToken && this.casinoAppId);
     }

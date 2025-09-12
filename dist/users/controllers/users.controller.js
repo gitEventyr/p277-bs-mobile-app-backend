@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const users_service_1 = require("../services/users.service");
 const balance_service_1 = require("../services/balance.service");
 const rp_balance_service_1 = require("../services/rp-balance.service");
+const casino_offers_service_1 = require("../services/casino-offers.service");
 const update_profile_dto_1 = require("../dto/update-profile.dto");
 const update_level_dto_1 = require("../dto/update-level.dto");
 const update_scratch_cards_dto_1 = require("../dto/update-scratch-cards.dto");
@@ -28,14 +29,17 @@ const balance_response_dto_1 = require("../dto/balance-response.dto");
 const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../../auth/decorators/current-user.decorator");
 const mobile_exception_filter_1 = require("../../common/filters/mobile-exception.filter");
+const casino_offers_dto_1 = require("../dto/casino-offers.dto");
 let UsersController = class UsersController {
     usersService;
     balanceService;
     rpBalanceService;
-    constructor(usersService, balanceService, rpBalanceService) {
+    casinoOffersService;
+    constructor(usersService, balanceService, rpBalanceService, casinoOffersService) {
         this.usersService = usersService;
         this.balanceService = balanceService;
         this.rpBalanceService = rpBalanceService;
+        this.casinoOffersService = casinoOffersService;
     }
     async getProfile(user) {
         return await this.usersService.getMobileProfile(user.id);
@@ -73,6 +77,17 @@ let UsersController = class UsersController {
     }
     async getRpTransactionHistory(user, page = 1, limit = 10) {
         return await this.rpBalanceService.getRpTransactionHistory(user.id, Number(page), Number(limit));
+    }
+    getClientIp(req) {
+        return (req.headers['x-forwarded-for']?.split(',')[0] ||
+            req.headers['x-real-ip'] ||
+            req.connection?.remoteAddress ||
+            req.socket?.remoteAddress ||
+            '127.0.0.1');
+    }
+    async getCasinoOffers(user, req) {
+        const offers = await this.casinoOffersService.getCasinoOffers(user.id, this.getClientIp(req));
+        return { offers };
     }
 };
 exports.UsersController = UsersController;
@@ -328,6 +343,32 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getRpTransactionHistory", null);
+__decorate([
+    (0, swagger_1.ApiTags)('📱 Mobile: Casino Offers'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get casino offers for user',
+        description: 'Get personalized casino offers excluding casinos where user has made deposits',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Casino offers retrieved successfully',
+        type: casino_offers_dto_1.CasinoOffersResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.UNAUTHORIZED,
+        description: 'Authentication required',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'User not found or casino API error',
+    }),
+    (0, common_1.Get)('casino-offers'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getCasinoOffers", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -335,6 +376,7 @@ exports.UsersController = UsersController = __decorate([
     (0, common_1.UseFilters)(mobile_exception_filter_1.MobileExceptionFilter),
     __metadata("design:paramtypes", [users_service_1.UsersService,
         balance_service_1.BalanceService,
-        rp_balance_service_1.RpBalanceService])
+        rp_balance_service_1.RpBalanceService,
+        casino_offers_service_1.CasinoOffersService])
 ], UsersController);
 //# sourceMappingURL=users.controller.js.map

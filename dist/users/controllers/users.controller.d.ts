@@ -1,6 +1,7 @@
 import { UsersService } from '../services/users.service';
 import { BalanceService } from '../services/balance.service';
 import { RpBalanceService } from '../services/rp-balance.service';
+import { CasinoOffersService } from '../services/casino-offers.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UpdateLevelDto } from '../dto/update-level.dto';
 import { UpdateScratchCardsDto } from '../dto/update-scratch-cards.dto';
@@ -8,12 +9,15 @@ import { MobileUserProfileDto } from '../dto/mobile-user-profile.dto';
 import { ModifyBalanceDto } from '../dto/balance-change.dto';
 import { ModifyRpBalanceDto, RpBalanceChangeResponseDto, RpBalanceTransactionHistoryResponseDto } from '../dto/rp-balance.dto';
 import { BalanceResponseDto, BalanceChangeResponseDto, TransactionHistoryResponseDto, TransactionHistoryDto } from '../dto/balance-response.dto';
+import { CasinoOffersResponseDto } from '../dto/casino-offers.dto';
 import type { AuthenticatedUser } from '../../common/types/auth.types';
+import type { Request } from 'express';
 export declare class UsersController {
     private readonly usersService;
     private readonly balanceService;
     private readonly rpBalanceService;
-    constructor(usersService: UsersService, balanceService: BalanceService, rpBalanceService: RpBalanceService);
+    private readonly casinoOffersService;
+    constructor(usersService: UsersService, balanceService: BalanceService, rpBalanceService: RpBalanceService, casinoOffersService: CasinoOffersService);
     getProfile(user: AuthenticatedUser): Promise<MobileUserProfileDto>;
     updateProfile(user: AuthenticatedUser, updateProfileDto: UpdateProfileDto): Promise<MobileUserProfileDto>;
     getBalance(user: AuthenticatedUser): Promise<BalanceResponseDto>;
@@ -24,4 +28,6 @@ export declare class UsersController {
     updateScratchCards(user: AuthenticatedUser, updateScratchCardsDto: UpdateScratchCardsDto): Promise<MobileUserProfileDto>;
     modifyRpBalance(user: AuthenticatedUser, modifyRpBalanceDto: ModifyRpBalanceDto): Promise<RpBalanceChangeResponseDto>;
     getRpTransactionHistory(user: AuthenticatedUser, page?: number, limit?: number): Promise<RpBalanceTransactionHistoryResponseDto>;
+    private getClientIp;
+    getCasinoOffers(user: AuthenticatedUser, req: Request): Promise<CasinoOffersResponseDto>;
 }
