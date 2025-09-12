@@ -10,6 +10,7 @@ import {
   Param,
   ParseIntPipe,
   UseFilters,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,6 +22,7 @@ import {
 import { UsersService } from '../services/users.service';
 import { BalanceService } from '../services/balance.service';
 import { RpBalanceService } from '../services/rp-balance.service';
+import { CasinoOffersService } from '../services/casino-offers.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UpdateLevelDto } from '../dto/update-level.dto';
 import { UpdateScratchCardsDto } from '../dto/update-scratch-cards.dto';
@@ -41,7 +43,9 @@ import {
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { MobileExceptionFilter } from '../../common/filters/mobile-exception.filter';
+import { CasinoOffersResponseDto } from '../dto/casino-offers.dto';
 import type { AuthenticatedUser } from '../../common/types/auth.types';
+import type { Request } from 'express';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -52,6 +56,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly balanceService: BalanceService,
     private readonly rpBalanceService: RpBalanceService,
+    private readonly casinoOffersService: CasinoOffersService,
   ) {}
 
   @ApiTags('📱 Mobile: User Profile')
@@ -325,5 +330,47 @@ export class UsersController {
       Number(page),
       Number(limit),
     );
+  }
+
+  private getClientIp(req: Request): string {
+    return (
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+      (req.headers['x-real-ip'] as string) ||
+      req.connection?.remoteAddress ||
+      req.socket?.remoteAddress ||
+      '127.0.0.1'
+    );
+  }
+
+  @ApiTags('📱 Mobile: Casino Offers')
+  @ApiOperation({
+    summary: 'Get casino offers for user',
+    description:
+      'Get personalized casino offers excluding casinos where user has made deposits',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Casino offers retrieved successfully',
+    type: CasinoOffersResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentication required',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'User not found or casino API error',
+  })
+  @Get('casino-offers')
+  async getCasinoOffers(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ): Promise<CasinoOffersResponseDto> {
+    const offers = await this.casinoOffersService.getCasinoOffers(
+      user.id,
+      this.getClientIp(req),
+    );
+
+    return { offers };
   }
 }
