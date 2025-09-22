@@ -106,26 +106,9 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Check if email is being changed and if it's already taken
-    if (updateProfileDto.email && updateProfileDto.email !== player.email) {
-      const existingPlayer = await this.playerRepository.findOne({
-        where: { email: updateProfileDto.email, is_deleted: false },
-      });
-
-      if (existingPlayer) {
-        throw new BadRequestException('Email is already in use');
-      }
-    }
-
     // Update only the fields that are provided
     if (updateProfileDto.name !== undefined) {
       player.name = updateProfileDto.name;
-    }
-    if (updateProfileDto.email !== undefined) {
-      player.email = updateProfileDto.email;
-    }
-    if (updateProfileDto.phone !== undefined) {
-      player.phone = updateProfileDto.phone;
     }
     if (updateProfileDto.deviceUDID !== undefined) {
       player.device_udid = updateProfileDto.deviceUDID;

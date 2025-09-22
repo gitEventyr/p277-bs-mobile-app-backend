@@ -7,9 +7,9 @@ import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { ForgotPasswordDto, ResetPasswordDto, PasswordRecoveryResponseDto, ResetPasswordResponseDto } from './dto/password-recovery.dto';
 import { DeleteAccountDto, DeleteAccountResponseDto, LogoutResponseDto } from './dto/delete-account.dto';
 import { UploadAvatarDto, UploadAvatarResponseDto } from './dto/avatar-upload.dto';
-import { RequestEmailVerificationResponseDto } from './dto/request-email-verification.dto';
+import { RequestEmailVerificationDto, RequestEmailVerificationResponseDto } from './dto/request-email-verification.dto';
 import { VerifyEmailDto, VerifyEmailResponseDto } from './dto/verify-email.dto';
-import { RequestPhoneVerificationResponseDto } from './dto/request-phone-verification.dto';
+import { RequestPhoneVerificationDto, RequestPhoneVerificationResponseDto } from './dto/request-phone-verification.dto';
 import { VerifyPhoneDto, VerifyPhoneResponseDto } from './dto/verify-phone.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
@@ -150,9 +150,9 @@ export declare class AuthController {
     logout(): Promise<LogoutResponseDto>;
     uploadAvatar(user: AuthenticatedUser, uploadAvatarDto: UploadAvatarDto): Promise<UploadAvatarResponseDto>;
     deleteAccount(user: AuthenticatedUser, deleteAccountDto: DeleteAccountDto): Promise<DeleteAccountResponseDto>;
-    requestEmailVerification(user: AuthenticatedUser): Promise<RequestEmailVerificationResponseDto>;
+    requestEmailVerification(user: AuthenticatedUser, requestDto: RequestEmailVerificationDto): Promise<RequestEmailVerificationResponseDto>;
     verifyEmail(user: AuthenticatedUser, verifyEmailDto: VerifyEmailDto): Promise<VerifyEmailResponseDto>;
-    requestPhoneVerification(user: AuthenticatedUser): Promise<RequestPhoneVerificationResponseDto>;
+    requestPhoneVerification(user: AuthenticatedUser, requestDto: RequestPhoneVerificationDto): Promise<RequestPhoneVerificationResponseDto>;
     verifyPhone(user: AuthenticatedUser, verifyPhoneDto: VerifyPhoneDto): Promise<VerifyPhoneResponseDto>;
     private getBaseUrl;
 }

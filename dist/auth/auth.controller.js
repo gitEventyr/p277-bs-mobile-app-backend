@@ -451,15 +451,28 @@ let AuthController = AuthController_1 = class AuthController {
             message: 'Account successfully deleted. Your data has been removed from our system.',
         };
     }
-    async requestEmailVerification(user) {
+    async requestEmailVerification(user, requestDto) {
         const player = await this.playerRepository.findOne({
             where: { id: user.id },
         });
-        if (!player || !player.email) {
-            throw new common_1.BadRequestException('No email address found for this account');
+        if (!player) {
+            throw new common_1.BadRequestException('User not found');
         }
-        if (player.email_verified) {
+        const emailToVerify = (requestDto.newEmail && requestDto.newEmail.trim()) || player.email;
+        if (!emailToVerify) {
+            throw new common_1.BadRequestException('No email address provided');
+        }
+        const isNewEmail = requestDto.newEmail && requestDto.newEmail.trim();
+        if (!isNewEmail && player.email_verified) {
             throw new common_1.BadRequestException('Email is already verified');
+        }
+        if (isNewEmail) {
+            const existingUser = await this.playerRepository.findOne({
+                where: { email: requestDto.newEmail.trim(), is_deleted: false },
+            });
+            if (existingUser && existingUser.id !== player.id) {
+                throw new common_1.BadRequestException('This email address is already in use');
+            }
         }
         const verificationCode = this.authService.generateResetCode();
         const expiresAt = new Date();
@@ -473,7 +486,7 @@ let AuthController = AuthController_1 = class AuthController {
         });
         await this.emailVerificationTokenRepository.save(emailVerificationToken);
         try {
-            await this.emailService.sendEmailVerification(player.email, {
+            await this.emailService.sendEmailVerification(emailToVerify, {
                 name: player.name,
                 resetCode: verificationCode,
             });
@@ -503,10 +516,14 @@ let AuthController = AuthController_1 = class AuthController {
         }
         verificationToken.used = true;
         await this.emailVerificationTokenRepository.save(verificationToken);
-        await this.playerRepository.update({ id: user.id }, {
+        const updateData = {
             email_verified: true,
             email_verified_at: new Date(),
-        });
+        };
+        if (verifyEmailDto.newEmail && verifyEmailDto.newEmail.trim()) {
+            updateData.email = verifyEmailDto.newEmail.trim();
+        }
+        await this.playerRepository.update({ id: user.id }, updateData);
         try {
             await this.rpRewardEventService.awardEmailVerificationReward(user.id);
         }
@@ -518,18 +535,31 @@ let AuthController = AuthController_1 = class AuthController {
             emailVerified: true,
         };
     }
-    async requestPhoneVerification(user) {
+    async requestPhoneVerification(user, requestDto) {
         const player = await this.playerRepository.findOne({
             where: { id: user.id },
         });
-        if (!player || !player.phone) {
-            throw new common_1.BadRequestException('No phone number found for this account');
+        if (!player) {
+            throw new common_1.BadRequestException('User not found');
         }
-        if (player.phone_verified) {
+        const phoneToVerify = (requestDto.newPhone && requestDto.newPhone.trim()) || player.phone;
+        if (!phoneToVerify) {
+            throw new common_1.BadRequestException('No phone number provided');
+        }
+        const isNewPhone = requestDto.newPhone && requestDto.newPhone.trim();
+        if (!isNewPhone && player.phone_verified) {
             throw new common_1.BadRequestException('Phone is already verified');
         }
+        if (isNewPhone) {
+            const existingUser = await this.playerRepository.findOne({
+                where: { phone: requestDto.newPhone.trim(), is_deleted: false },
+            });
+            if (existingUser && existingUser.id !== player.id) {
+                throw new common_1.BadRequestException('This phone number is already in use');
+            }
+        }
         try {
-            await this.twilioService.sendVerificationCode(player.phone);
+            await this.twilioService.sendVerificationCode(phoneToVerify);
         }
         catch (error) {
             this.logger.error('Failed to send phone verification:', error);
@@ -544,20 +574,30 @@ let AuthController = AuthController_1 = class AuthController {
         const player = await this.playerRepository.findOne({
             where: { id: user.id },
         });
-        if (!player || !player.phone) {
+        if (!player) {
+            throw new common_1.BadRequestException('User not found');
+        }
+        const phoneToVerify = (verifyPhoneDto.newPhone && verifyPhoneDto.newPhone.trim()) ||
+            player.phone;
+        if (!phoneToVerify) {
             throw new common_1.BadRequestException('No phone number found for this account');
         }
-        if (player.phone_verified) {
+        const isNewPhone = verifyPhoneDto.newPhone && verifyPhoneDto.newPhone.trim();
+        if (!isNewPhone && player.phone_verified) {
             throw new common_1.BadRequestException('Phone is already verified');
         }
-        const isValid = await this.twilioService.verifyCode(player.phone, verifyPhoneDto.code);
+        const isValid = await this.twilioService.verifyCode(phoneToVerify, verifyPhoneDto.code);
         if (!isValid) {
             throw new common_1.BadRequestException('Invalid or expired verification code');
         }
-        await this.playerRepository.update({ id: user.id }, {
+        const updateData = {
             phone_verified: true,
             phone_verified_at: new Date(),
-        });
+        };
+        if (verifyPhoneDto.newPhone && verifyPhoneDto.newPhone.trim()) {
+            updateData.phone = verifyPhoneDto.newPhone.trim();
+        }
+        await this.playerRepository.update({ id: user.id }, updateData);
         try {
             await this.rpRewardEventService.awardPhoneVerificationReward(user.id);
         }
@@ -782,8 +822,9 @@ __decorate([
         description: 'Authentication required',
     }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, request_email_verification_dto_1.RequestEmailVerificationDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "requestEmailVerification", null);
 __decorate([
@@ -835,8 +876,9 @@ __decorate([
         description: 'Authentication required',
     }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, request_phone_verification_dto_1.RequestPhoneVerificationDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "requestPhoneVerification", null);
 __decorate([

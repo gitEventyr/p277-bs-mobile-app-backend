@@ -1,12 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  IsEmail,
-  Length,
-  MinLength,
-  IsNumber,
-  Min,
-} from 'class-validator';
+import { IsOptional, IsString, Length, IsNumber, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateProfileDto {
@@ -20,22 +12,6 @@ export class UpdateProfileDto {
   @IsString()
   @Length(2, 100, { message: 'Name must be between 2 and 100 characters' })
   name?: string;
-
-  @ApiPropertyOptional({
-    description: 'User email address',
-    example: 'john.doe@example.com',
-  })
-  @IsOptional()
-  @IsEmail({}, { message: 'Must be a valid email address' })
-  email?: string;
-
-  @ApiPropertyOptional({
-    description: 'User phone number',
-    example: '+1234567890',
-  })
-  @IsOptional()
-  @IsString()
-  phone?: string;
 
   @ApiPropertyOptional({
     description: 'Device UDID',

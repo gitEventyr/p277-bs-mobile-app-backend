@@ -9,8 +9,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RequestPhoneVerificationResponseDto = void 0;
+exports.RequestPhoneVerificationResponseDto = exports.RequestPhoneVerificationDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
+class RequestPhoneVerificationDto {
+    newPhone;
+}
+exports.RequestPhoneVerificationDto = RequestPhoneVerificationDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'New phone number to verify and update to (optional)',
+        example: '+1234567890',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], RequestPhoneVerificationDto.prototype, "newPhone", void 0);
 class RequestPhoneVerificationResponseDto {
     message;
     expiresIn;

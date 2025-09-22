@@ -11,9 +11,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RequestEmailVerificationResponseDto = exports.RequestEmailVerificationDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
 class RequestEmailVerificationDto {
+    newEmail;
 }
 exports.RequestEmailVerificationDto = RequestEmailVerificationDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'New email address to verify and update to (optional)',
+        example: 'newemail@example.com',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEmail)({}, { message: 'Must be a valid email address' }),
+    __metadata("design:type", String)
+], RequestEmailVerificationDto.prototype, "newEmail", void 0);
 class RequestEmailVerificationResponseDto {
     message;
     expiresIn;

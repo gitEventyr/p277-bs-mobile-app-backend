@@ -14,8 +14,6 @@ const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class UpdateProfileDto {
     name;
-    email;
-    phone;
     deviceUDID;
     os;
     device;
@@ -35,24 +33,6 @@ __decorate([
     (0, class_validator_1.Length)(2, 100, { message: 'Name must be between 2 and 100 characters' }),
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "name", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: 'User email address',
-        example: 'john.doe@example.com',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEmail)({}, { message: 'Must be a valid email address' }),
-    __metadata("design:type", String)
-], UpdateProfileDto.prototype, "email", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: 'User phone number',
-        example: '+1234567890',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], UpdateProfileDto.prototype, "phone", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'Device UDID',

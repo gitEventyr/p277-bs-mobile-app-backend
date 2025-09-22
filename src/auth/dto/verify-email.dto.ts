@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Length, Matches } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsString,
+  Length,
+  Matches,
+  IsOptional,
+  IsEmail,
+} from 'class-validator';
 
 export class VerifyEmailDto {
   @ApiProperty({
@@ -15,6 +21,14 @@ export class VerifyEmailDto {
     message: 'Verification code must contain only numbers',
   })
   code: string;
+
+  @ApiPropertyOptional({
+    description: 'New email address to update to (if updating email)',
+    example: 'newemail@example.com',
+  })
+  @IsOptional()
+  @IsEmail({}, { message: 'Must be a valid email address' })
+  newEmail?: string;
 }
 
 export class VerifyEmailResponseDto {

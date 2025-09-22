@@ -127,22 +127,8 @@ let UsersService = class UsersService {
         if (!player) {
             throw new common_1.NotFoundException('User not found');
         }
-        if (updateProfileDto.email && updateProfileDto.email !== player.email) {
-            const existingPlayer = await this.playerRepository.findOne({
-                where: { email: updateProfileDto.email, is_deleted: false },
-            });
-            if (existingPlayer) {
-                throw new common_1.BadRequestException('Email is already in use');
-            }
-        }
         if (updateProfileDto.name !== undefined) {
             player.name = updateProfileDto.name;
-        }
-        if (updateProfileDto.email !== undefined) {
-            player.email = updateProfileDto.email;
-        }
-        if (updateProfileDto.phone !== undefined) {
-            player.phone = updateProfileDto.phone;
         }
         if (updateProfileDto.deviceUDID !== undefined) {
             player.device_udid = updateProfileDto.deviceUDID;

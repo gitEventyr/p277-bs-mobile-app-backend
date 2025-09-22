@@ -52,7 +52,10 @@ import {
   RequestEmailVerificationResponseDto,
 } from './dto/request-email-verification.dto';
 import { VerifyEmailDto, VerifyEmailResponseDto } from './dto/verify-email.dto';
-import { RequestPhoneVerificationResponseDto } from './dto/request-phone-verification.dto';
+import {
+  RequestPhoneVerificationDto,
+  RequestPhoneVerificationResponseDto,
+} from './dto/request-phone-verification.dto';
 import { VerifyPhoneDto, VerifyPhoneResponseDto } from './dto/verify-phone.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
@@ -767,17 +770,40 @@ export class AuthController {
   })
   async requestEmailVerification(
     @CurrentUser() user: AuthenticatedUser,
+    @Body() requestDto: RequestEmailVerificationDto,
   ): Promise<RequestEmailVerificationResponseDto> {
     const player = await this.playerRepository.findOne({
       where: { id: user.id },
     });
 
-    if (!player || !player.email) {
-      throw new BadRequestException('No email address found for this account');
+    if (!player) {
+      throw new BadRequestException('User not found');
     }
 
-    if (player.email_verified) {
+    // Determine which email to use for verification
+    const emailToVerify =
+      (requestDto.newEmail && requestDto.newEmail.trim()) || player.email;
+
+    if (!emailToVerify) {
+      throw new BadRequestException('No email address provided');
+    }
+
+    // Check if this is a new email (not empty/missing) or existing email verification
+    const isNewEmail = requestDto.newEmail && requestDto.newEmail.trim();
+
+    // If verifying current email, check if already verified
+    if (!isNewEmail && player.email_verified) {
       throw new BadRequestException('Email is already verified');
+    }
+
+    // If updating to new email, check if it's already in use by another account
+    if (isNewEmail) {
+      const existingUser = await this.playerRepository.findOne({
+        where: { email: requestDto.newEmail!.trim(), is_deleted: false },
+      });
+      if (existingUser && existingUser.id !== player.id) {
+        throw new BadRequestException('This email address is already in use');
+      }
     }
 
     // Generate 6-digit verification code
@@ -805,7 +831,7 @@ export class AuthController {
 
     // Send verification email with code
     try {
-      await this.emailService.sendEmailVerification(player.email, {
+      await this.emailService.sendEmailVerification(emailToVerify, {
         name: player.name,
         resetCode: verificationCode,
       });
@@ -869,14 +895,18 @@ export class AuthController {
     verificationToken.used = true;
     await this.emailVerificationTokenRepository.save(verificationToken);
 
-    // Update user's email verification status
-    await this.playerRepository.update(
-      { id: user.id },
-      {
-        email_verified: true,
-        email_verified_at: new Date(),
-      },
-    );
+    // Update user's email verification status and email if newEmail is provided
+    const updateData: any = {
+      email_verified: true,
+      email_verified_at: new Date(),
+    };
+
+    // If newEmail is provided and not empty, update the user's email
+    if (verifyEmailDto.newEmail && verifyEmailDto.newEmail.trim()) {
+      updateData.email = verifyEmailDto.newEmail.trim();
+    }
+
+    await this.playerRepository.update({ id: user.id }, updateData);
 
     // Award email verification RP reward
     try {
@@ -918,22 +948,45 @@ export class AuthController {
   })
   async requestPhoneVerification(
     @CurrentUser() user: AuthenticatedUser,
+    @Body() requestDto: RequestPhoneVerificationDto,
   ): Promise<RequestPhoneVerificationResponseDto> {
     const player = await this.playerRepository.findOne({
       where: { id: user.id },
     });
 
-    if (!player || !player.phone) {
-      throw new BadRequestException('No phone number found for this account');
+    if (!player) {
+      throw new BadRequestException('User not found');
     }
 
-    if (player.phone_verified) {
+    // Determine which phone to use for verification
+    const phoneToVerify =
+      (requestDto.newPhone && requestDto.newPhone.trim()) || player.phone;
+
+    if (!phoneToVerify) {
+      throw new BadRequestException('No phone number provided');
+    }
+
+    // Check if this is a new phone (not empty/missing) or existing phone verification
+    const isNewPhone = requestDto.newPhone && requestDto.newPhone.trim();
+
+    // If verifying current phone, check if already verified
+    if (!isNewPhone && player.phone_verified) {
       throw new BadRequestException('Phone is already verified');
+    }
+
+    // If updating to new phone, check if it's already in use by another account
+    if (isNewPhone) {
+      const existingUser = await this.playerRepository.findOne({
+        where: { phone: requestDto.newPhone!.trim(), is_deleted: false },
+      });
+      if (existingUser && existingUser.id !== player.id) {
+        throw new BadRequestException('This phone number is already in use');
+      }
     }
 
     // Send verification code via Twilio Verify
     try {
-      await this.twilioService.sendVerificationCode(player.phone);
+      await this.twilioService.sendVerificationCode(phoneToVerify);
     } catch (error) {
       this.logger.error('Failed to send phone verification:', error);
       throw error; // Twilio service already converts to BadRequestException
@@ -974,17 +1027,31 @@ export class AuthController {
       where: { id: user.id },
     });
 
-    if (!player || !player.phone) {
+    if (!player) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Determine which phone was used for verification
+    const phoneToVerify =
+      (verifyPhoneDto.newPhone && verifyPhoneDto.newPhone.trim()) ||
+      player.phone;
+
+    if (!phoneToVerify) {
       throw new BadRequestException('No phone number found for this account');
     }
 
-    if (player.phone_verified) {
+    // Check if this is a new phone (not empty/missing) or existing phone verification
+    const isNewPhone =
+      verifyPhoneDto.newPhone && verifyPhoneDto.newPhone.trim();
+
+    // If verifying current phone, check if already verified
+    if (!isNewPhone && player.phone_verified) {
       throw new BadRequestException('Phone is already verified');
     }
 
     // Verify code with Twilio Verify
     const isValid = await this.twilioService.verifyCode(
-      player.phone,
+      phoneToVerify,
       verifyPhoneDto.code,
     );
 
@@ -992,14 +1059,18 @@ export class AuthController {
       throw new BadRequestException('Invalid or expired verification code');
     }
 
-    // Update user's phone verification status
-    await this.playerRepository.update(
-      { id: user.id },
-      {
-        phone_verified: true,
-        phone_verified_at: new Date(),
-      },
-    );
+    // Update user's phone verification status and phone if newPhone is provided
+    const updateData: any = {
+      phone_verified: true,
+      phone_verified_at: new Date(),
+    };
+
+    // If newPhone is provided and not empty, update the user's phone
+    if (verifyPhoneDto.newPhone && verifyPhoneDto.newPhone.trim()) {
+      updateData.phone = verifyPhoneDto.newPhone.trim();
+    }
+
+    await this.playerRepository.update({ id: user.id }, updateData);
 
     // Award phone verification RP reward
     try {

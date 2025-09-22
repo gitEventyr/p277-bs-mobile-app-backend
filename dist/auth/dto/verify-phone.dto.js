@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class VerifyPhoneDto {
     code;
+    newPhone;
 }
 exports.VerifyPhoneDto = VerifyPhoneDto;
 __decorate([
@@ -25,6 +26,15 @@ __decorate([
     (0, class_validator_1.Length)(6, 6, { message: 'Code must be exactly 6 digits' }),
     __metadata("design:type", String)
 ], VerifyPhoneDto.prototype, "code", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'New phone number to update to (if updating phone)',
+        example: '+1234567890',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], VerifyPhoneDto.prototype, "newPhone", void 0);
 class VerifyPhoneResponseDto {
     message;
     phoneVerified;

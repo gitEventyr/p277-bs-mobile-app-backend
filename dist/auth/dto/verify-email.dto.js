@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class VerifyEmailDto {
     code;
+    newEmail;
 }
 exports.VerifyEmailDto = VerifyEmailDto;
 __decorate([
@@ -31,6 +32,15 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], VerifyEmailDto.prototype, "code", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'New email address to update to (if updating email)',
+        example: 'newemail@example.com',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEmail)({}, { message: 'Must be a valid email address' }),
+    __metadata("design:type", String)
+], VerifyEmailDto.prototype, "newEmail", void 0);
 class VerifyEmailResponseDto {
     message;
     emailVerified;
