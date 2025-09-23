@@ -11,6 +11,8 @@ import { InAppPurchase } from './entities/in-app-purchase.entity';
 import { Voucher } from './entities/voucher.entity';
 import { UserVoucher } from './entities/user-voucher.entity';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { EmailVerificationToken } from './entities/email-verification-token.entity';
+import { PhoneVerificationToken } from './entities/phone-verification-token.entity';
 import { RpBalanceTransaction } from './entities/rp-balance-transaction.entity';
 import { Casino } from './entities/casino.entity';
 import { CasinoAction } from './entities/casino-action.entity';
@@ -45,6 +47,8 @@ import { PurchasesModule } from './purchases/purchases.module';
           Voucher,
           UserVoucher,
           PasswordResetToken,
+          EmailVerificationToken,
+          PhoneVerificationToken,
           Casino,
           CasinoAction,
         ],
