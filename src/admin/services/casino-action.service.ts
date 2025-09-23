@@ -499,13 +499,35 @@ export class CasinoActionService {
     // Parse and validate date_of_action (mapped from date_casino)
     let dateOfAction: Date;
     try {
-      dateOfAction = new Date(row.date_of_action);
+      const dateStr = row.date_of_action.toString().trim();
+
+      // Check for DD/MM/YY or DD/M/YY format (like "14/9/25")
+      const ddmmyyPattern = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/;
+      const ddmmyyMatch = dateStr.match(ddmmyyPattern);
+
+      if (ddmmyyMatch) {
+        let [, day, month, year] = ddmmyyMatch;
+
+        // Convert 2-digit year to 4-digit (assuming 20xx for years 00-30, 19xx for 31-99)
+        if (year.length === 2) {
+          const yearNum = parseInt(year, 10);
+          year = yearNum <= 30 ? `20${year}` : `19${year}`;
+        }
+
+        // Create date in YYYY-MM-DD format
+        const isoDateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        dateOfAction = new Date(isoDateStr);
+      } else {
+        // Try standard date parsing
+        dateOfAction = new Date(dateStr);
+      }
+
       if (isNaN(dateOfAction.getTime())) {
         throw new Error('Invalid date format');
       }
     } catch (error) {
       throw new Error(
-        'date_casino must be a valid date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)',
+        'date_casino must be a valid date (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or DD/MM/YY)',
       );
     }
 
