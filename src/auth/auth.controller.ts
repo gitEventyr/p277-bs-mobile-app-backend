@@ -269,6 +269,8 @@ export class AuthController {
     const accessToken = await this.authService.generateJwtToken(payload);
 
     // Send welcome email if email is provided
+    // COMMENTED OUT: Welcome email disabled temporarily
+    /*
     if (savedPlayer.email) {
       try {
         await this.emailService.sendWelcomeEmail(savedPlayer.email, {
@@ -282,6 +284,7 @@ export class AuthController {
         console.warn('Failed to send welcome email:', emailError.message);
       }
     }
+    */
 
     return {
       access_token: accessToken,

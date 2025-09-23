@@ -170,14 +170,15 @@ export class CasinoActionService {
       );
     }
 
-    // Parse headers
-    const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));
+    // Parse headers (support both comma and semicolon separators)
+    const separator = lines[0].includes(';') ? ';' : ',';
+    const headers = lines[0].split(separator).map((h) => h.trim().replace(/"/g, ''));
     const expectedHeaders = [
       'casino_name',
-      'visitor_id',
-      'date_of_action',
-      'registration',
-      'deposit',
+      'date_casino',
+      'click_id_casino',
+      'reg_casino',
+      'ftd_casino',
     ];
 
     // Validate headers
@@ -219,21 +220,33 @@ export class CasinoActionService {
     // Process each data row
     for (let i = 1; i < lines.length; i++) {
       try {
-        const rowData = this.parseCSVRow(lines[i]);
+        const rowData = this.parseCSVRow(lines[i], separator);
         if (rowData.length !== headers.length) {
           throw new Error(
             `Row has ${rowData.length} columns but expected ${headers.length}`,
           );
         }
 
-        // Create row object
+        // Create row object with column mapping
         const row: any = {};
         headers.forEach((header, index) => {
           row[header] = rowData[index];
         });
 
+        // Map new column names to internal field names
+        const mappedRow = {
+          casino_name: row.casino_name,
+          date_of_action: row.date_casino,
+          visitor_id: row.click_id_casino,
+          registration: row.reg_casino,
+          deposit: row.ftd_casino,
+        };
+
         // Validate and parse the row data
-        const casinoActionData = await this.validateAndParseCSVRow(row, i + 1);
+        const casinoActionData = await this.validateAndParseCSVRow(
+          mappedRow,
+          i + 1,
+        );
 
         // Enhanced casino lookup: check both by name and casino_id to prevent duplicates
         let existingCasino = await this.casinoRepository.findOne({
@@ -431,7 +444,7 @@ export class CasinoActionService {
     return results;
   }
 
-  private parseCSVRow(line: string): string[] {
+  private parseCSVRow(line: string, separator: string = ','): string[] {
     const result: string[] = [];
     let current = '';
     let inQuotes = false;
@@ -449,7 +462,7 @@ export class CasinoActionService {
           // Toggle quote mode
           inQuotes = !inQuotes;
         }
-      } else if (char === ',' && !inQuotes) {
+      } else if (char === separator && !inQuotes) {
         // End of field
         result.push(current.trim());
         current = '';
@@ -478,12 +491,12 @@ export class CasinoActionService {
       throw new Error('casino_name is required');
     }
 
-    // Validate visitor_id
+    // Validate visitor_id (mapped from click_id_casino)
     if (!row.visitor_id || row.visitor_id.trim() === '') {
-      throw new Error('visitor_id is required');
+      throw new Error('click_id_casino is required');
     }
 
-    // Parse and validate date_of_action
+    // Parse and validate date_of_action (mapped from date_casino)
     let dateOfAction: Date;
     try {
       dateOfAction = new Date(row.date_of_action);
@@ -492,15 +505,15 @@ export class CasinoActionService {
       }
     } catch (error) {
       throw new Error(
-        'date_of_action must be a valid date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)',
+        'date_casino must be a valid date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)',
       );
     }
 
-    // Parse registration boolean
-    const registration = this.parseBoolean(row.registration, 'registration');
+    // Parse registration boolean (mapped from reg_casino)
+    const registration = this.parseBoolean(row.registration, 'reg_casino');
 
-    // Parse deposit boolean
-    const deposit = this.parseBoolean(row.deposit, 'deposit');
+    // Parse deposit boolean (mapped from ftd_casino)
+    const deposit = this.parseBoolean(row.deposit, 'ftd_casino');
 
     return {
       casino_name: row.casino_name.trim(),
