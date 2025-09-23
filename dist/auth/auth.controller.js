@@ -188,19 +188,6 @@ let AuthController = AuthController_1 = class AuthController {
             type: 'user',
         };
         const accessToken = await this.authService.generateJwtToken(payload);
-        if (savedPlayer.email) {
-            try {
-                await this.emailService.sendWelcomeEmail(savedPlayer.email, {
-                    name: savedPlayer.name,
-                    email: savedPlayer.email,
-                    coinsBalance: savedPlayer.coins_balance,
-                    ipAddress: this.getClientIp(req),
-                });
-            }
-            catch (emailError) {
-                console.warn('Failed to send welcome email:', emailError.message);
-            }
-        }
         return {
             access_token: accessToken,
             token_type: 'Bearer',

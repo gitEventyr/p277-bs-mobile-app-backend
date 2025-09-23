@@ -127,13 +127,14 @@ let CasinoActionService = class CasinoActionService {
         if (lines.length < 2) {
             throw new common_1.BadRequestException('CSV file must contain headers and at least one data row');
         }
-        const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));
+        const separator = lines[0].includes(';') ? ';' : ',';
+        const headers = lines[0].split(separator).map((h) => h.trim().replace(/"/g, ''));
         const expectedHeaders = [
             'casino_name',
-            'visitor_id',
-            'date_of_action',
-            'registration',
-            'deposit',
+            'date_casino',
+            'click_id_casino',
+            'reg_casino',
+            'ftd_casino',
         ];
         const missingHeaders = expectedHeaders.filter((h) => !headers.includes(h));
         if (missingHeaders.length > 0) {
@@ -165,7 +166,7 @@ let CasinoActionService = class CasinoActionService {
         };
         for (let i = 1; i < lines.length; i++) {
             try {
-                const rowData = this.parseCSVRow(lines[i]);
+                const rowData = this.parseCSVRow(lines[i], separator);
                 if (rowData.length !== headers.length) {
                     throw new Error(`Row has ${rowData.length} columns but expected ${headers.length}`);
                 }
@@ -173,7 +174,14 @@ let CasinoActionService = class CasinoActionService {
                 headers.forEach((header, index) => {
                     row[header] = rowData[index];
                 });
-                const casinoActionData = await this.validateAndParseCSVRow(row, i + 1);
+                const mappedRow = {
+                    casino_name: row.casino_name,
+                    date_of_action: row.date_casino,
+                    visitor_id: row.click_id_casino,
+                    registration: row.reg_casino,
+                    deposit: row.ftd_casino,
+                };
+                const casinoActionData = await this.validateAndParseCSVRow(mappedRow, i + 1);
                 let existingCasino = await this.casinoRepository.findOne({
                     where: { casino_name: casinoActionData.casino_name },
                 });
@@ -298,7 +306,7 @@ let CasinoActionService = class CasinoActionService {
         }
         return results;
     }
-    parseCSVRow(line) {
+    parseCSVRow(line, separator = ',') {
         const result = [];
         let current = '';
         let inQuotes = false;
@@ -314,7 +322,7 @@ let CasinoActionService = class CasinoActionService {
                     inQuotes = !inQuotes;
                 }
             }
-            else if (char === ',' && !inQuotes) {
+            else if (char === separator && !inQuotes) {
                 result.push(current.trim());
                 current = '';
             }
@@ -330,7 +338,7 @@ let CasinoActionService = class CasinoActionService {
             throw new Error('casino_name is required');
         }
         if (!row.visitor_id || row.visitor_id.trim() === '') {
-            throw new Error('visitor_id is required');
+            throw new Error('click_id_casino is required');
         }
         let dateOfAction;
         try {
@@ -340,10 +348,10 @@ let CasinoActionService = class CasinoActionService {
             }
         }
         catch (error) {
-            throw new Error('date_of_action must be a valid date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)');
+            throw new Error('date_casino must be a valid date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)');
         }
-        const registration = this.parseBoolean(row.registration, 'registration');
-        const deposit = this.parseBoolean(row.deposit, 'deposit');
+        const registration = this.parseBoolean(row.registration, 'reg_casino');
+        const deposit = this.parseBoolean(row.deposit, 'ftd_casino');
         return {
             casino_name: row.casino_name.trim(),
             visitor_id: row.visitor_id.trim(),
