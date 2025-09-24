@@ -246,15 +246,8 @@ export class AuthController {
       }
     }
 
-    // Award registration RP reward
-    try {
-      await this.rpRewardEventService.awardRegistrationReward(savedPlayer.id);
-    } catch (rpError) {
-      this.logger.warn(
-        'Failed to award registration RP reward:',
-        rpError.message,
-      );
-    }
+    // Registration RP rewards are now handled by casino actions
+    // See casino-action.service.ts for RP reward logic
 
     // Generate JWT token
     const payload: JwtPayload = {

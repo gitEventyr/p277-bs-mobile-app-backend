@@ -126,18 +126,8 @@ export class PurchasesService {
         `Purchase recorded successfully: ${savedPurchase.id}, balance updated: ${balanceAfter}`,
       );
 
-      // Award RP purchase reward (first or subsequent purchase)
-      try {
-        await this.rpRewardEventService.awardPurchaseReward(
-          userId,
-          purchaseDto.product_id,
-        );
-      } catch (rpError) {
-        this.logger.warn(
-          'Failed to award purchase RP reward:',
-          rpError.message,
-        );
-      }
+      // Purchase RP rewards are now handled by casino actions with ftd_casino=true
+      // See casino-action.service.ts for RP reward logic
 
       return {
         purchase: {

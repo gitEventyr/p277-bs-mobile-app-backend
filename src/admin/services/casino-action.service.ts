@@ -1,13 +1,16 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { CasinoAction } from '../../entities/casino-action.entity';
 import { Casino } from '../../entities/casino.entity';
 import { Player } from '../../entities/player.entity';
 import { CasinoApiService } from '../../external/casino/casino-api.service';
+import { RpBalanceService } from '../../users/services/rp-balance.service';
 
 @Injectable()
 export class CasinoActionService {
+  private readonly logger = new Logger(CasinoActionService.name);
+
   constructor(
     @InjectRepository(CasinoAction)
     private casinoActionRepository: Repository<CasinoAction>,
@@ -16,6 +19,7 @@ export class CasinoActionService {
     @InjectRepository(Player)
     private playerRepository: Repository<Player>,
     private readonly casinoApiService: CasinoApiService,
+    private readonly rpBalanceService: RpBalanceService,
   ) {}
 
   async findAll(options: {
@@ -113,7 +117,169 @@ export class CasinoActionService {
     deposit: boolean;
   }): Promise<CasinoAction> {
     const casinoAction = this.casinoActionRepository.create(createData);
-    return await this.casinoActionRepository.save(casinoAction);
+    const savedCasinoAction =
+      await this.casinoActionRepository.save(casinoAction);
+
+    // Process RP rewards after saving the casino action
+    await this.processRpRewards(createData);
+
+    return savedCasinoAction;
+  }
+
+  /**
+   * Process RP rewards for casino actions
+   * - Registration: 100 RP per new casino (one-time per user per casino)
+   * - First Deposit: 2000 RP for user's very first deposit across all casinos
+   * - Subsequent Deposits: 1000 RP per casino (one-time per user per casino)
+   */
+  private async processRpRewards(actionData: {
+    casino_name: string;
+    visitor_id: string;
+    registration: boolean;
+    deposit: boolean;
+  }): Promise<void> {
+    try {
+      // Find the user by visitor_id
+      const user = await this.playerRepository.findOne({
+        where: { visitor_id: actionData.visitor_id, is_deleted: false },
+      });
+
+      if (!user) {
+        this.logger.warn(
+          `User not found for visitor_id: ${actionData.visitor_id}`,
+        );
+        return;
+      }
+
+      // Process registration rewards
+      if (actionData.registration) {
+        await this.processRegistrationReward(user.id, actionData.casino_name);
+      }
+
+      // Process deposit rewards
+      if (actionData.deposit) {
+        await this.processDepositReward(user.id, actionData.casino_name);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to process RP rewards for casino action: ${error.message}`,
+        error.stack,
+      );
+      // Don't throw error to prevent casino action creation from failing
+    }
+  }
+
+  /**
+   * Award 100 RP for registration at a new casino (one-time per user per casino)
+   */
+  private async processRegistrationReward(
+    userId: number,
+    casinoName: string,
+  ): Promise<void> {
+    const user = await this.playerRepository.findOne({ where: { id: userId } });
+    if (!user) return;
+
+    // Check if user has already had registration actions for this casino
+    const registrationCount = await this.casinoActionRepository.count({
+      where: {
+        visitor_id: user.visitor_id,
+        casino_name: casinoName,
+        registration: true,
+      },
+    });
+
+    // Only award if this is the first registration action for this user at this casino
+    if (registrationCount > 1) {
+      this.logger.log(
+        `User ${userId} already received registration reward for casino ${casinoName}`,
+      );
+      return;
+    }
+
+    // Award registration RP
+    try {
+      await this.rpBalanceService.modifyRpBalance(userId, {
+        amount: 100,
+        reason: `Registration at ${casinoName} casino`,
+      });
+
+      this.logger.log(
+        `Awarded 100 RP to user ${userId} for registration at ${casinoName}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to award registration RP to user ${userId}: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * Award RP for deposits:
+   * - 2000 RP for user's first deposit across all casinos
+   * - 1000 RP for first deposit at each subsequent casino (one-time per user per casino)
+   */
+  private async processDepositReward(
+    userId: number,
+    casinoName: string,
+  ): Promise<void> {
+    const user = await this.playerRepository.findOne({ where: { id: userId } });
+    if (!user) return;
+
+    // Check if user has had any deposit actions before
+    const totalDepositCount = await this.casinoActionRepository.count({
+      where: {
+        visitor_id: user.visitor_id,
+        deposit: true,
+      },
+    });
+
+    // Check if user has had deposit actions at this specific casino before
+    const casinoDepositCount = await this.casinoActionRepository.count({
+      where: {
+        visitor_id: user.visitor_id,
+        casino_name: casinoName,
+        deposit: true,
+      },
+    });
+
+    // If this is the user's very first deposit across all casinos
+    if (totalDepositCount === 1) {
+      try {
+        await this.rpBalanceService.modifyRpBalance(userId, {
+          amount: 2000,
+          reason: `First deposit reward (${casinoName})`,
+        });
+
+        this.logger.log(
+          `Awarded 2000 RP to user ${userId} for first deposit at ${casinoName}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to award first deposit RP to user ${userId}: ${error.message}`,
+        );
+      }
+    }
+    // If this is the first deposit at this casino (but not user's first deposit overall)
+    else if (casinoDepositCount === 1) {
+      try {
+        await this.rpBalanceService.modifyRpBalance(userId, {
+          amount: 1000,
+          reason: `First deposit at ${casinoName}`,
+        });
+
+        this.logger.log(
+          `Awarded 1000 RP to user ${userId} for first deposit at ${casinoName}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to award casino deposit RP to user ${userId}: ${error.message}`,
+        );
+      }
+    } else {
+      this.logger.log(
+        `User ${userId} already received deposit reward for casino ${casinoName}`,
+      );
+    }
   }
 
   async update(
@@ -172,7 +338,9 @@ export class CasinoActionService {
 
     // Parse headers (support both comma and semicolon separators)
     const separator = lines[0].includes(';') ? ';' : ',';
-    const headers = lines[0].split(separator).map((h) => h.trim().replace(/"/g, ''));
+    const headers = lines[0]
+      .split(separator)
+      .map((h) => h.trim().replace(/"/g, ''));
     const expectedHeaders = [
       'casino_name',
       'date_casino',
@@ -406,10 +574,18 @@ export class CasinoActionService {
         }
 
         // Create the casino action using the consistent casino name from database
-        await this.create({
+        const finalActionData = {
           ...casinoActionData,
           casino_name: existingCasino!.casino_name, // Use the actual casino name from database, not CSV
-        });
+        };
+
+        const createdAction =
+          this.casinoActionRepository.create(finalActionData);
+        await this.casinoActionRepository.save(createdAction);
+
+        // Process RP rewards for the bulk created action
+        await this.processRpRewards(finalActionData);
+
         results.successfulRows++;
       } catch (error) {
         // Check if this is a casino not found error (which should be skipped)
