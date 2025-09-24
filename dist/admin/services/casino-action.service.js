@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var CasinoActionService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CasinoActionService = void 0;
 const common_1 = require("@nestjs/common");
@@ -20,16 +21,20 @@ const casino_action_entity_1 = require("../../entities/casino-action.entity");
 const casino_entity_1 = require("../../entities/casino.entity");
 const player_entity_1 = require("../../entities/player.entity");
 const casino_api_service_1 = require("../../external/casino/casino-api.service");
-let CasinoActionService = class CasinoActionService {
+const rp_balance_service_1 = require("../../users/services/rp-balance.service");
+let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
     casinoActionRepository;
     casinoRepository;
     playerRepository;
     casinoApiService;
-    constructor(casinoActionRepository, casinoRepository, playerRepository, casinoApiService) {
+    rpBalanceService;
+    logger = new common_1.Logger(CasinoActionService_1.name);
+    constructor(casinoActionRepository, casinoRepository, playerRepository, casinoApiService, rpBalanceService) {
         this.casinoActionRepository = casinoActionRepository;
         this.casinoRepository = casinoRepository;
         this.playerRepository = playerRepository;
         this.casinoApiService = casinoApiService;
+        this.rpBalanceService = rpBalanceService;
     }
     async findAll(options) {
         const { page, limit, search, casinoName, registration, deposit, sortBy } = options;
@@ -97,7 +102,100 @@ let CasinoActionService = class CasinoActionService {
     }
     async create(createData) {
         const casinoAction = this.casinoActionRepository.create(createData);
-        return await this.casinoActionRepository.save(casinoAction);
+        const savedCasinoAction = await this.casinoActionRepository.save(casinoAction);
+        await this.processRpRewards(createData);
+        return savedCasinoAction;
+    }
+    async processRpRewards(actionData) {
+        try {
+            const user = await this.playerRepository.findOne({
+                where: { visitor_id: actionData.visitor_id, is_deleted: false },
+            });
+            if (!user) {
+                this.logger.warn(`User not found for visitor_id: ${actionData.visitor_id}`);
+                return;
+            }
+            if (actionData.registration) {
+                await this.processRegistrationReward(user.id, actionData.casino_name);
+            }
+            if (actionData.deposit) {
+                await this.processDepositReward(user.id, actionData.casino_name);
+            }
+        }
+        catch (error) {
+            this.logger.error(`Failed to process RP rewards for casino action: ${error.message}`, error.stack);
+        }
+    }
+    async processRegistrationReward(userId, casinoName) {
+        const user = await this.playerRepository.findOne({ where: { id: userId } });
+        if (!user)
+            return;
+        const registrationCount = await this.casinoActionRepository.count({
+            where: {
+                visitor_id: user.visitor_id,
+                casino_name: casinoName,
+                registration: true,
+            },
+        });
+        if (registrationCount > 1) {
+            this.logger.log(`User ${userId} already received registration reward for casino ${casinoName}`);
+            return;
+        }
+        try {
+            await this.rpBalanceService.modifyRpBalance(userId, {
+                amount: 100,
+                reason: `Registration at ${casinoName} casino`,
+            });
+            this.logger.log(`Awarded 100 RP to user ${userId} for registration at ${casinoName}`);
+        }
+        catch (error) {
+            this.logger.error(`Failed to award registration RP to user ${userId}: ${error.message}`);
+        }
+    }
+    async processDepositReward(userId, casinoName) {
+        const user = await this.playerRepository.findOne({ where: { id: userId } });
+        if (!user)
+            return;
+        const totalDepositCount = await this.casinoActionRepository.count({
+            where: {
+                visitor_id: user.visitor_id,
+                deposit: true,
+            },
+        });
+        const casinoDepositCount = await this.casinoActionRepository.count({
+            where: {
+                visitor_id: user.visitor_id,
+                casino_name: casinoName,
+                deposit: true,
+            },
+        });
+        if (totalDepositCount === 1) {
+            try {
+                await this.rpBalanceService.modifyRpBalance(userId, {
+                    amount: 2000,
+                    reason: `First deposit reward (${casinoName})`,
+                });
+                this.logger.log(`Awarded 2000 RP to user ${userId} for first deposit at ${casinoName}`);
+            }
+            catch (error) {
+                this.logger.error(`Failed to award first deposit RP to user ${userId}: ${error.message}`);
+            }
+        }
+        else if (casinoDepositCount === 1) {
+            try {
+                await this.rpBalanceService.modifyRpBalance(userId, {
+                    amount: 1000,
+                    reason: `First deposit at ${casinoName}`,
+                });
+                this.logger.log(`Awarded 1000 RP to user ${userId} for first deposit at ${casinoName}`);
+            }
+            catch (error) {
+                this.logger.error(`Failed to award casino deposit RP to user ${userId}: ${error.message}`);
+            }
+        }
+        else {
+            this.logger.log(`User ${userId} already received deposit reward for casino ${casinoName}`);
+        }
     }
     async update(id, updateData) {
         await this.casinoActionRepository.update(id, updateData);
@@ -128,7 +226,9 @@ let CasinoActionService = class CasinoActionService {
             throw new common_1.BadRequestException('CSV file must contain headers and at least one data row');
         }
         const separator = lines[0].includes(';') ? ';' : ',';
-        const headers = lines[0].split(separator).map((h) => h.trim().replace(/"/g, ''));
+        const headers = lines[0]
+            .split(separator)
+            .map((h) => h.trim().replace(/"/g, ''));
         const expectedHeaders = [
             'casino_name',
             'date_casino',
@@ -279,10 +379,13 @@ let CasinoActionService = class CasinoActionService {
                 if (!playerExists) {
                     throw new Error(`Player with visitor_id '${casinoActionData.visitor_id}' does not exist`);
                 }
-                await this.create({
+                const finalActionData = {
                     ...casinoActionData,
                     casino_name: existingCasino.casino_name,
-                });
+                };
+                const createdAction = this.casinoActionRepository.create(finalActionData);
+                await this.casinoActionRepository.save(createdAction);
+                await this.processRpRewards(finalActionData);
                 results.successfulRows++;
             }
             catch (error) {
@@ -391,7 +494,7 @@ let CasinoActionService = class CasinoActionService {
     }
 };
 exports.CasinoActionService = CasinoActionService;
-exports.CasinoActionService = CasinoActionService = __decorate([
+exports.CasinoActionService = CasinoActionService = CasinoActionService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(casino_action_entity_1.CasinoAction)),
     __param(1, (0, typeorm_1.InjectRepository)(casino_entity_1.Casino)),
@@ -399,6 +502,7 @@ exports.CasinoActionService = CasinoActionService = __decorate([
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        casino_api_service_1.CasinoApiService])
+        casino_api_service_1.CasinoApiService,
+        rp_balance_service_1.RpBalanceService])
 ], CasinoActionService);
 //# sourceMappingURL=casino-action.service.js.map

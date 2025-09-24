@@ -3,12 +3,15 @@ import { CasinoAction } from '../../entities/casino-action.entity';
 import { Casino } from '../../entities/casino.entity';
 import { Player } from '../../entities/player.entity';
 import { CasinoApiService } from '../../external/casino/casino-api.service';
+import { RpBalanceService } from '../../users/services/rp-balance.service';
 export declare class CasinoActionService {
     private casinoActionRepository;
     private casinoRepository;
     private playerRepository;
     private readonly casinoApiService;
-    constructor(casinoActionRepository: Repository<CasinoAction>, casinoRepository: Repository<Casino>, playerRepository: Repository<Player>, casinoApiService: CasinoApiService);
+    private readonly rpBalanceService;
+    private readonly logger;
+    constructor(casinoActionRepository: Repository<CasinoAction>, casinoRepository: Repository<Casino>, playerRepository: Repository<Player>, casinoApiService: CasinoApiService, rpBalanceService: RpBalanceService);
     findAll(options: {
         page: number;
         limit: number;
@@ -44,6 +47,9 @@ export declare class CasinoActionService {
         registration: boolean;
         deposit: boolean;
     }): Promise<CasinoAction>;
+    private processRpRewards;
+    private processRegistrationReward;
+    private processDepositReward;
     update(id: number, updateData: Partial<{
         casino_name: string;
         date_of_action: Date;

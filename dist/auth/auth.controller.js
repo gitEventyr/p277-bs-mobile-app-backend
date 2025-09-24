@@ -174,12 +174,6 @@ let AuthController = AuthController_1 = class AuthController {
                 this.logger.warn('Failed to track device during registration:', deviceError.message);
             }
         }
-        try {
-            await this.rpRewardEventService.awardRegistrationReward(savedPlayer.id);
-        }
-        catch (rpError) {
-            this.logger.warn('Failed to award registration RP reward:', rpError.message);
-        }
         const payload = {
             sub: typeof savedPlayer.id === 'string'
                 ? parseInt(savedPlayer.id)

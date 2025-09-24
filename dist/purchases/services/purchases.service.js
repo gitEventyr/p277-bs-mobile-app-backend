@@ -95,12 +95,6 @@ let PurchasesService = PurchasesService_1 = class PurchasesService {
             const savedBalanceChange = await queryRunner.manager.save(balanceChange);
             await queryRunner.commitTransaction();
             this.logger.log(`Purchase recorded successfully: ${savedPurchase.id}, balance updated: ${balanceAfter}`);
-            try {
-                await this.rpRewardEventService.awardPurchaseReward(userId, purchaseDto.product_id);
-            }
-            catch (rpError) {
-                this.logger.warn('Failed to award purchase RP reward:', rpError.message);
-            }
             return {
                 purchase: {
                     id: savedPurchase.id,
