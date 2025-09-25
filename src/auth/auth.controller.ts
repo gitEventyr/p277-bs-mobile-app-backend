@@ -199,7 +199,7 @@ export class AuthController {
       name: registerDto.name,
       phone: registerDto.phone,
       password: hashedPassword,
-      coins_balance: 1000, // Starting balance
+      coins_balance: 10000, // Starting balance
       level: 1,
       scratch_cards: 0,
       // New fields
