@@ -63,6 +63,23 @@ export interface CasinoOffer {
   button_label: string;
 }
 
+export interface CasinoDetailsRequest {
+  visitor_id: string;
+  casino_ids: number[];
+}
+
+export interface CasinoDetailsResponse {
+  logo_url: string;
+  id: number;
+  public_name: string;
+  offer_preheading: string;
+  offer_heading: string;
+  offer_subheading: string;
+  terms_and_conditions: string;
+  offer_link: string;
+  is_active: boolean;
+}
+
 @Injectable()
 export class CasinoApiService {
   private readonly logger = new Logger(CasinoApiService.name);
@@ -278,6 +295,63 @@ export class CasinoApiService {
       // For 5xx errors or network issues, throw a generic error
       throw new BadRequestException(
         'Unable to fetch offers from external API. Please try again later.',
+      );
+    }
+  }
+
+  async getCasinoDetails(
+    visitorId: string,
+    casinoIds: number[],
+  ): Promise<CasinoDetailsResponse[]> {
+    if (!this.casinoApiUrl || !this.casinoBearerToken || !this.casinoAppId) {
+      throw new BadRequestException('Casino API is not configured');
+    }
+
+    const url = `${this.casinoApiUrl}/api/mobile/v1/${this.casinoAppId}/casino-details`;
+    const requestBody: CasinoDetailsRequest = {
+      visitor_id: visitorId,
+      casino_ids: casinoIds,
+    };
+
+    try {
+      this.logger.debug(
+        `Calling casino API to fetch casino details: ${url}`,
+        requestBody,
+      );
+
+      const response = await firstValueFrom(
+        this.httpService.post<CasinoDetailsResponse[]>(url, requestBody, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.casinoBearerToken}`,
+          },
+          timeout: 10000, // 10 seconds timeout
+        }),
+      );
+
+      const casinoDetails = response.data || [];
+
+      this.logger.log(
+        `Successfully fetched ${casinoDetails.length} casino details from external API`,
+      );
+      return casinoDetails;
+    } catch (error) {
+      this.logger.error('Failed to fetch casino details from casino API', {
+        error: error.message,
+        url,
+        requestBody,
+        response: error.response?.data,
+      });
+
+      if (error.response?.status >= 400 && error.response?.status < 500) {
+        throw new BadRequestException(
+          `Casino API error: ${error.response?.data?.message || error.message}`,
+        );
+      }
+
+      // For 5xx errors or network issues, throw a generic error
+      throw new BadRequestException(
+        'Unable to fetch casino details from external API. Please try again later.',
       );
     }
   }

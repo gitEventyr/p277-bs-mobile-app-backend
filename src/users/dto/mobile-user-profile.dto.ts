@@ -1,5 +1,82 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export class RegistrationOfferDto {
+  @ApiProperty({
+    description: 'Casino logo URL',
+    example: 'https://example.com/logo.png',
+  })
+  logo_url: string;
+
+  @ApiProperty({
+    description: 'Casino external ID',
+    example: 123,
+  })
+  id: number;
+
+  @ApiProperty({
+    description: 'Casino public name',
+    example: 'Mega Casino',
+  })
+  public_name: string;
+
+  @ApiProperty({
+    description: 'Offer pre-heading text',
+    example: 'Welcome Bonus',
+  })
+  offer_preheading: string;
+
+  @ApiProperty({
+    description: 'Main offer heading',
+    example: 'Get 100% Bonus + 50 Free Spins',
+  })
+  offer_heading: string;
+
+  @ApiProperty({
+    description: 'Offer sub-heading text',
+    example: 'Up to $500 + 50 Free Spins on Book of Dead',
+  })
+  offer_subheading: string;
+
+  @ApiProperty({
+    description: 'Terms and conditions',
+    example: 'Wagering requirements apply. 18+',
+  })
+  terms_and_conditions: string;
+
+  @ApiProperty({
+    description: 'Offer link URL',
+    example: 'https://casino.com/offer',
+  })
+  offer_link: string;
+
+  @ApiProperty({
+    description: 'Whether the offer is active',
+    example: true,
+  })
+  is_active: boolean;
+}
+
+export class DepositConfirmedDto {
+  @ApiProperty({
+    description: 'Casino public name',
+    example: 'Mega Casino',
+  })
+  public_name: string;
+
+  @ApiProperty({
+    description: 'Date of the deposit action',
+    example: '2025-01-01T10:00:00Z',
+  })
+  action_date: Date;
+
+  @ApiProperty({
+    description:
+      'RP value for this deposit (2000 for first deposit, 1000 for others)',
+    example: 2000,
+  })
+  rp_value: number;
+}
+
 export class MobileUserProfileDto {
   @ApiProperty({
     description: 'User ID',
@@ -78,6 +155,20 @@ export class MobileUserProfileDto {
     example: '2025-01-01T10:00:00Z',
   })
   phone_verified_at?: Date;
+
+  @ApiProperty({
+    description:
+      'List of registration offers from casinos where user registered but never deposited',
+    type: [RegistrationOfferDto],
+  })
+  registration_offers: RegistrationOfferDto[];
+
+  @ApiProperty({
+    description:
+      'List of first deposits data for each casino user deposited in',
+    type: [DepositConfirmedDto],
+  })
+  deposit_confirmed: DepositConfirmedDto[];
 
   // Note: Excluding the following fields from mobile responses:
   // - device_udid
