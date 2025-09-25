@@ -54,6 +54,21 @@ export interface CasinoOffer {
     is_active: boolean;
     button_label: string;
 }
+export interface CasinoDetailsRequest {
+    visitor_id: string;
+    casino_ids: number[];
+}
+export interface CasinoDetailsResponse {
+    logo_url: string;
+    id: number;
+    public_name: string;
+    offer_preheading: string;
+    offer_heading: string;
+    offer_subheading: string;
+    terms_and_conditions: string;
+    offer_link: string;
+    is_active: boolean;
+}
 export declare class CasinoApiService {
     private readonly configService;
     private readonly httpService;
@@ -65,5 +80,6 @@ export declare class CasinoApiService {
     registerUser(registerDto: RegisterDto, ipAddress: string): Promise<string>;
     getCasinos(): Promise<ExternalCasino[]>;
     getOffers(ipAddress: string, visitorId: string, excludeIds?: number[] | null): Promise<CasinoOffer[]>;
+    getCasinoDetails(visitorId: string, casinoIds: number[]): Promise<CasinoDetailsResponse[]>;
     isConfigured(): boolean;
 }

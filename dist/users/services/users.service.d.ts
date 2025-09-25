@@ -1,11 +1,17 @@
 import { Repository } from 'typeorm';
 import { Player } from '../../entities/player.entity';
+import { CasinoAction } from '../../entities/casino-action.entity';
+import { Casino } from '../../entities/casino.entity';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
 import { MobileUserProfileDto } from '../dto/mobile-user-profile.dto';
+import { CasinoApiService } from '../../external/casino/casino-api.service';
 export declare class UsersService {
     private readonly playerRepository;
-    constructor(playerRepository: Repository<Player>);
+    private readonly casinoActionRepository;
+    private readonly casinoRepository;
+    private readonly casinoApiService;
+    constructor(playerRepository: Repository<Player>, casinoActionRepository: Repository<CasinoAction>, casinoRepository: Repository<Casino>, casinoApiService: CasinoApiService);
     getProfile(userId: number): Promise<UserProfileDto>;
     getMobileProfile(userId: number): Promise<MobileUserProfileDto>;
     updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<UserProfileDto>;
@@ -33,4 +39,6 @@ export declare class UsersService {
     }): Promise<UserProfileDto>;
     private generateVisitorId;
     private hashPassword;
+    private getRegistrationOffers;
+    private getDepositConfirmed;
 }

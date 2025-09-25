@@ -159,6 +159,41 @@ let CasinoApiService = CasinoApiService_1 = class CasinoApiService {
             throw new common_1.BadRequestException('Unable to fetch offers from external API. Please try again later.');
         }
     }
+    async getCasinoDetails(visitorId, casinoIds) {
+        if (!this.casinoApiUrl || !this.casinoBearerToken || !this.casinoAppId) {
+            throw new common_1.BadRequestException('Casino API is not configured');
+        }
+        const url = `${this.casinoApiUrl}/api/mobile/v1/${this.casinoAppId}/casino-details`;
+        const requestBody = {
+            visitor_id: visitorId,
+            casino_ids: casinoIds,
+        };
+        try {
+            this.logger.debug(`Calling casino API to fetch casino details: ${url}`, requestBody);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(url, requestBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${this.casinoBearerToken}`,
+                },
+                timeout: 10000,
+            }));
+            const casinoDetails = response.data || [];
+            this.logger.log(`Successfully fetched ${casinoDetails.length} casino details from external API`);
+            return casinoDetails;
+        }
+        catch (error) {
+            this.logger.error('Failed to fetch casino details from casino API', {
+                error: error.message,
+                url,
+                requestBody,
+                response: error.response?.data,
+            });
+            if (error.response?.status >= 400 && error.response?.status < 500) {
+                throw new common_1.BadRequestException(`Casino API error: ${error.response?.data?.message || error.message}`);
+            }
+            throw new common_1.BadRequestException('Unable to fetch casino details from external API. Please try again later.');
+        }
+    }
     isConfigured() {
         return !!(this.casinoApiUrl && this.casinoBearerToken && this.casinoAppId);
     }

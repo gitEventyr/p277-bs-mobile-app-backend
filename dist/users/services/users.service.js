@@ -51,10 +51,19 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const bcrypt = __importStar(require("bcryptjs"));
 const player_entity_1 = require("../../entities/player.entity");
+const casino_action_entity_1 = require("../../entities/casino-action.entity");
+const casino_entity_1 = require("../../entities/casino.entity");
+const casino_api_service_1 = require("../../external/casino/casino-api.service");
 let UsersService = class UsersService {
     playerRepository;
-    constructor(playerRepository) {
+    casinoActionRepository;
+    casinoRepository;
+    casinoApiService;
+    constructor(playerRepository, casinoActionRepository, casinoRepository, casinoApiService) {
         this.playerRepository = playerRepository;
+        this.casinoActionRepository = casinoActionRepository;
+        this.casinoRepository = casinoRepository;
+        this.casinoApiService = casinoApiService;
     }
     async getProfile(userId) {
         const player = await this.playerRepository.findOne({
@@ -103,6 +112,8 @@ let UsersService = class UsersService {
     }
     async getMobileProfile(userId) {
         const fullProfile = await this.getProfile(userId);
+        const registrationOffers = await this.getRegistrationOffers(fullProfile.visitor_id);
+        const depositConfirmed = await this.getDepositConfirmed(fullProfile.visitor_id);
         const mobileProfile = {
             id: fullProfile.id,
             visitor_id: fullProfile.visitor_id,
@@ -117,6 +128,8 @@ let UsersService = class UsersService {
             email_verified_at: fullProfile.email_verified_at,
             phone_verified: fullProfile.phone_verified,
             phone_verified_at: fullProfile.phone_verified_at,
+            registration_offers: registrationOffers,
+            deposit_confirmed: depositConfirmed,
         };
         return mobileProfile;
     }
@@ -244,7 +257,8 @@ let UsersService = class UsersService {
             email,
             phone,
             password: hashedPassword,
-            coins_balance: 1000,
+            coins_balance: 10000,
+            rp_balance: 0,
             level: 1,
             scratch_cards: 0,
         });
@@ -260,11 +274,129 @@ let UsersService = class UsersService {
         const saltRounds = 12;
         return await bcrypt.hash(password, saltRounds);
     }
+    async getRegistrationOffers(visitorId) {
+        try {
+            const registeredActions = await this.casinoActionRepository.find({
+                where: {
+                    visitor_id: visitorId,
+                    registration: true,
+                },
+                relations: ['casino'],
+            });
+            const depositActions = await this.casinoActionRepository.find({
+                where: {
+                    visitor_id: visitorId,
+                    deposit: true,
+                },
+                relations: ['casino'],
+            });
+            const depositedCasinoNames = new Set(depositActions.map((action) => action.casino_name));
+            const registeredOnlyCasinos = registeredActions.filter((action) => !depositedCasinoNames.has(action.casino_name));
+            const casinoIds = [];
+            for (const action of registeredOnlyCasinos) {
+                const casino = await this.casinoRepository.findOne({
+                    where: { casino_name: action.casino_name },
+                });
+                if (casino && casino.casino_id) {
+                    const casinoIdNumber = parseInt(casino.casino_id);
+                    if (!isNaN(casinoIdNumber) && !casinoIds.includes(casinoIdNumber)) {
+                        casinoIds.push(casinoIdNumber);
+                    }
+                }
+            }
+            if (casinoIds.length === 0) {
+                return [];
+            }
+            const casinoDetails = await this.casinoApiService.getCasinoDetails(visitorId, casinoIds);
+            const registrationOffers = casinoDetails.map((offer) => ({
+                logo_url: offer.logo_url,
+                id: offer.id,
+                public_name: offer.public_name,
+                offer_preheading: offer.offer_preheading,
+                offer_heading: offer.offer_heading,
+                offer_subheading: offer.offer_subheading,
+                terms_and_conditions: offer.terms_and_conditions,
+                offer_link: offer.offer_link,
+                is_active: offer.is_active,
+            }));
+            return registrationOffers;
+        }
+        catch (error) {
+            console.error('Error fetching registration offers:', error);
+            return [];
+        }
+    }
+    async getDepositConfirmed(visitorId) {
+        try {
+            const depositActions = await this.casinoActionRepository
+                .createQueryBuilder('ca')
+                .where('ca.visitor_id = :visitorId', { visitorId })
+                .andWhere('ca.deposit = true')
+                .orderBy('ca.date_of_action', 'ASC')
+                .getMany();
+            const casinoDepositsMap = new Map();
+            depositActions.forEach((action) => {
+                if (!casinoDepositsMap.has(action.casino_name)) {
+                    casinoDepositsMap.set(action.casino_name, action);
+                }
+                else {
+                    const existing = casinoDepositsMap.get(action.casino_name);
+                    if (action.date_of_action > existing.date_of_action) {
+                        casinoDepositsMap.set(action.casino_name, action);
+                    }
+                }
+            });
+            const casinoIds = [];
+            const casinoIdToNameMap = new Map();
+            for (const [casinoName] of casinoDepositsMap) {
+                const casino = await this.casinoRepository.findOne({
+                    where: { casino_name: casinoName },
+                });
+                if (casino && casino.casino_id) {
+                    const casinoIdNumber = parseInt(casino.casino_id);
+                    if (!isNaN(casinoIdNumber)) {
+                        casinoIds.push(casinoIdNumber);
+                        casinoIdToNameMap.set(casinoIdNumber, casinoName);
+                    }
+                }
+            }
+            if (casinoIds.length === 0) {
+                return [];
+            }
+            const casinoDetails = await this.casinoApiService.getCasinoDetails(visitorId, casinoIds);
+            const firstDepositDate = Math.min(...depositActions.map((action) => action.date_of_action.getTime()));
+            const depositConfirmed = [];
+            for (const offer of casinoDetails) {
+                const casinoName = casinoIdToNameMap.get(offer.id);
+                if (casinoName) {
+                    const depositAction = casinoDepositsMap.get(casinoName);
+                    if (depositAction) {
+                        const isFirstDeposit = depositAction.date_of_action.getTime() === firstDepositDate;
+                        depositConfirmed.push({
+                            public_name: offer.public_name,
+                            action_date: depositAction.date_of_action,
+                            rp_value: isFirstDeposit ? 2000 : 1000,
+                        });
+                    }
+                }
+            }
+            return depositConfirmed;
+        }
+        catch (error) {
+            console.error('Error fetching deposit confirmed data:', error);
+            return [];
+        }
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(player_entity_1.Player)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(casino_action_entity_1.CasinoAction)),
+    __param(2, (0, typeorm_1.InjectRepository)(casino_entity_1.Casino)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        casino_api_service_1.CasinoApiService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map
