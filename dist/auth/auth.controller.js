@@ -140,7 +140,7 @@ let AuthController = AuthController_1 = class AuthController {
             name: registerDto.name,
             phone: registerDto.phone,
             password: hashedPassword,
-            coins_balance: 1000,
+            coins_balance: 10000,
             level: 1,
             scratch_cards: 0,
             device_udid: registerDto.deviceUDID,
