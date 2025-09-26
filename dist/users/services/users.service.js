@@ -143,6 +143,28 @@ let UsersService = class UsersService {
         if (updateProfileDto.name !== undefined) {
             player.name = updateProfileDto.name;
         }
+        if (updateProfileDto.email !== undefined) {
+            if (updateProfileDto.email && updateProfileDto.email.trim()) {
+                const existingUser = await this.playerRepository.findOne({
+                    where: { email: updateProfileDto.email.trim(), is_deleted: false },
+                });
+                if (existingUser && existingUser.id !== userId) {
+                    throw new common_1.BadRequestException('This email address is already in use');
+                }
+            }
+            player.email = updateProfileDto.email;
+        }
+        if (updateProfileDto.phone !== undefined) {
+            if (updateProfileDto.phone && updateProfileDto.phone.trim()) {
+                const existingUser = await this.playerRepository.findOne({
+                    where: { phone: updateProfileDto.phone.trim(), is_deleted: false },
+                });
+                if (existingUser && existingUser.id !== userId) {
+                    throw new common_1.BadRequestException('This phone number is already in use');
+                }
+            }
+            player.phone = updateProfileDto.phone;
+        }
         if (updateProfileDto.deviceUDID !== undefined) {
             player.device_udid = updateProfileDto.deviceUDID;
         }
