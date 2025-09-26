@@ -30,6 +30,7 @@ export declare class CasinoController {
         success: boolean;
         message: string;
         syncedCount: number;
+        addedCount: number;
         totalCasinos: number;
         externalCasinosFound: number;
         results: {

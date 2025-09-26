@@ -336,7 +336,9 @@ let UsersService = class UsersService {
                 return [];
             }
             const casinoDetails = await this.casinoApiService.getCasinoDetails(visitorId, casinoIds);
-            const registrationOffers = casinoDetails.map((offer) => ({
+            const registrationOffers = casinoDetails
+                .filter((offer) => offer.is_active === true)
+                .map((offer) => ({
                 logo_url: offer.logo_url,
                 id: offer.id,
                 public_name: offer.public_name,

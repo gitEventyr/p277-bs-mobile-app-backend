@@ -170,11 +170,13 @@ let CasinoController = class CasinoController {
             const internalCasinos = await this.casinoService.findAllForSync();
             let syncedCount = 0;
             const syncResults = [];
+            const matchedExternalIds = new Set();
             for (const internalCasino of internalCasinos) {
                 const matchingExternal = externalCasinos.find((external) => external.admin_name === internalCasino.casino_name);
                 if (matchingExternal) {
                     await this.casinoService.updateCasinoId(internalCasino.id, matchingExternal.id.toString());
                     syncedCount++;
+                    matchedExternalIds.add(matchingExternal.id);
                     syncResults.push({
                         casinoName: internalCasino.casino_name,
                         matched: true,
@@ -188,10 +190,29 @@ let CasinoController = class CasinoController {
                     });
                 }
             }
+            let addedCount = 0;
+            for (const externalCasino of externalCasinos) {
+                if (!matchedExternalIds.has(externalCasino.id)) {
+                    const existingCasino = await this.casinoService.findByName(externalCasino.admin_name);
+                    if (!existingCasino) {
+                        await this.casinoService.create({
+                            casino_name: externalCasino.admin_name,
+                            casino_id: externalCasino.id.toString(),
+                        });
+                        addedCount++;
+                        syncResults.push({
+                            casinoName: externalCasino.admin_name,
+                            matched: true,
+                            externalId: externalCasino.id,
+                        });
+                    }
+                }
+            }
             return {
                 success: true,
-                message: `Synced ${syncedCount} out of ${internalCasinos.length} casinos`,
+                message: `Synced ${syncedCount} existing casinos and added ${addedCount} new casinos from external API`,
                 syncedCount,
+                addedCount,
                 totalCasinos: internalCasinos.length,
                 externalCasinosFound: externalCasinos.length,
                 results: syncResults,
