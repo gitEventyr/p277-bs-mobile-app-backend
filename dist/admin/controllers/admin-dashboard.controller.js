@@ -247,7 +247,26 @@ let AdminDashboardController = class AdminDashboardController {
         }
         catch (error) {
             console.error('Update user error:', error);
-            throw new Error(error?.message || 'Error updating user');
+            if (error.message && error.message.includes('already in use')) {
+                throw new common_1.BadRequestException(error.message);
+            }
+            if (error.message &&
+                (error.message.includes('validation') ||
+                    error.message.includes('invalid'))) {
+                throw new common_1.BadRequestException(error.message);
+            }
+            if (error.message && error.message.includes('not found')) {
+                throw new common_1.NotFoundException(error.message);
+            }
+            const errorMessage = error?.message || 'Error updating user';
+            console.error('Detailed error:', {
+                message: error.message,
+                stack: error.stack,
+                code: error.code,
+                constraint: error.constraint,
+                detail: error.detail,
+            });
+            throw new common_1.BadRequestException(`Failed to update user: ${errorMessage}`);
         }
     }
     async adjustBalance(id, adjustData, session) {

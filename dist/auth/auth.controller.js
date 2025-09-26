@@ -106,6 +106,12 @@ let AuthController = AuthController_1 = class AuthController {
             if (existingUser) {
                 throw new common_1.ConflictException('This email address is already registered. Please use a different email or try logging in instead.');
             }
+            const softDeletedUser = await this.playerRepository.findOne({
+                where: { email: registerDto.email, is_deleted: true },
+            });
+            if (softDeletedUser) {
+                this.logger.warn(`Found soft-deleted user with same email: ${registerDto.email}. Proceeding with registration.`);
+            }
         }
         let visitorId;
         if (this.casinoApiService.isConfigured()) {
