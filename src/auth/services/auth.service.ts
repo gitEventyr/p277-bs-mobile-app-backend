@@ -147,7 +147,7 @@ export class AuthService {
       // Find the user
       const user = await this.playerRepository.findOne({
         where: { id: userId, is_deleted: false },
-        select: ['id', 'email', 'name', 'phone'],
+        select: ['id', 'email', 'name', 'phone', 'visitor_id'],
       });
 
       if (!user) {
@@ -169,13 +169,15 @@ export class AuthService {
         updated_at: new Date(),
       };
 
-      // Add modified email and phone if they exist
+      // Add modified email, phone, and visitor_id to avoid constraint violations
       if (user.email && emailSuffix) {
         updateData.email = user.email + emailSuffix;
       }
       if (user.phone && phoneSuffix) {
         updateData.phone = user.phone + phoneSuffix;
       }
+      // Always modify visitor_id to avoid conflicts during re-registration
+      updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
 
       // Perform the soft delete using TypeORM
       await this.playerRepository.update({ id: userId }, updateData);
