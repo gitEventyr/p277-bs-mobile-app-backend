@@ -153,28 +153,37 @@ let AuthService = class AuthService {
         };
     }
     async softDeleteAccount(userId) {
-        const user = await this.playerRepository.findOne({
-            where: { id: userId, is_deleted: false },
-            select: ['id', 'email', 'name', 'phone'],
-        });
-        if (!user) {
-            throw new common_1.NotFoundException('User not found or already deleted');
+        try {
+            const user = await this.playerRepository.findOne({
+                where: { id: userId, is_deleted: false },
+                select: ['id', 'email', 'name', 'phone'],
+            });
+            if (!user) {
+                throw new common_1.NotFoundException('User not found or already deleted');
+            }
+            const timestamp = new Date().getTime();
+            const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
+            const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+            const updateData = {
+                is_deleted: true,
+                deleted_at: new Date(),
+                deletion_reason: 'Mobile app account deletion',
+                name: null,
+                password: null,
+                updated_at: new Date(),
+            };
+            if (user.email && emailSuffix) {
+                updateData.email = user.email + emailSuffix;
+            }
+            if (user.phone && phoneSuffix) {
+                updateData.phone = user.phone + phoneSuffix;
+            }
+            await this.playerRepository.update({ id: userId }, updateData);
         }
-        const timestamp = new Date().getTime();
-        const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
-        const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
-        await this.playerRepository.query(`
-      UPDATE players
-      SET is_deleted = true,
-          deleted_at = NOW(),
-          deletion_reason = $1,
-          email = CASE WHEN email IS NOT NULL THEN CONCAT(email, $2) ELSE NULL END,
-          phone = CASE WHEN phone IS NOT NULL THEN CONCAT(phone, $3) ELSE NULL END,
-          name = NULL,
-          password = NULL,
-          updated_at = NOW()
-      WHERE id = $4
-    `, ['Mobile app account deletion', emailSuffix, phoneSuffix, userId]);
+        catch (error) {
+            console.error('Error during soft delete:', error);
+            throw new common_1.BadRequestException('Database operation failed');
+        }
     }
     async logout() {
     }
