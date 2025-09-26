@@ -150,13 +150,22 @@ export class AuthController {
         );
       }
 
-      // Also check for soft-deleted users with the same email that might not have been properly cleared
+      // Check for soft-deleted users with the same email and handle them properly
       const softDeletedUser = await this.playerRepository.findOne({
         where: { email: registerDto.email, is_deleted: true },
       });
       if (softDeletedUser) {
-        this.logger.warn(
-          `Found soft-deleted user with same email: ${registerDto.email}. Proceeding with registration.`,
+        // Clear the soft-deleted user's email to avoid constraint violations
+        const timestamp = new Date().getTime();
+        await this.playerRepository.update(
+          { id: softDeletedUser.id },
+          {
+            email: `${registerDto.email}_deleted_${timestamp}`,
+            updated_at: new Date()
+          }
+        );
+        this.logger.log(
+          `Cleared soft-deleted user email: ${registerDto.email} -> ${registerDto.email}_deleted_${timestamp}`,
         );
       }
     }
