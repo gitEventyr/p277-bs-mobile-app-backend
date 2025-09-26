@@ -149,6 +149,16 @@ export class AuthController {
           'This email address is already registered. Please use a different email or try logging in instead.',
         );
       }
+
+      // Also check for soft-deleted users with the same email that might not have been properly cleared
+      const softDeletedUser = await this.playerRepository.findOne({
+        where: { email: registerDto.email, is_deleted: true },
+      });
+      if (softDeletedUser) {
+        this.logger.warn(
+          `Found soft-deleted user with same email: ${registerDto.email}. Proceeding with registration.`,
+        );
+      }
     }
 
     // Get visitor_id from external casino API or generate locally as fallback

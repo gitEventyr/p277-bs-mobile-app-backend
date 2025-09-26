@@ -146,28 +146,33 @@ export class AuthService {
     // Find the user
     const user = await this.playerRepository.findOne({
       where: { id: userId, is_deleted: false },
-      select: ['id', 'email', 'name'],
+      select: ['id', 'email', 'name', 'phone'],
     });
 
     if (!user) {
       throw new NotFoundException('User not found or already deleted');
     }
 
+    // Create unique suffixes to avoid constraint violations
+    const timestamp = new Date().getTime();
+    const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
+    const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+
     // Soft delete the account and clear sensitive data (mobile API - no password verification needed)
     await this.playerRepository.query(
       `
-      UPDATE players 
-      SET is_deleted = true, 
-          deleted_at = NOW(), 
+      UPDATE players
+      SET is_deleted = true,
+          deleted_at = NOW(),
           deletion_reason = $1,
-          email = NULL,
-          phone = NULL,
+          email = CASE WHEN email IS NOT NULL THEN CONCAT(email, $2) ELSE NULL END,
+          phone = CASE WHEN phone IS NOT NULL THEN CONCAT(phone, $3) ELSE NULL END,
           name = NULL,
           password = NULL,
           updated_at = NOW()
-      WHERE id = $2
+      WHERE id = $4
     `,
-      ['Mobile app account deletion', userId],
+      ['Mobile app account deletion', emailSuffix, phoneSuffix, userId],
     );
   }
 

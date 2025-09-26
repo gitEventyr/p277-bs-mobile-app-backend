@@ -313,7 +313,37 @@ export class AdminDashboardController {
       return updatedUser;
     } catch (error: any) {
       console.error('Update user error:', error);
-      throw new Error(error?.message || 'Error updating user');
+
+      // Handle specific database constraint errors
+      if (error.message && error.message.includes('already in use')) {
+        throw new BadRequestException(error.message);
+      }
+
+      // Handle validation errors
+      if (
+        error.message &&
+        (error.message.includes('validation') ||
+          error.message.includes('invalid'))
+      ) {
+        throw new BadRequestException(error.message);
+      }
+
+      // Handle not found errors
+      if (error.message && error.message.includes('not found')) {
+        throw new NotFoundException(error.message);
+      }
+
+      // For other errors, provide more specific information
+      const errorMessage = error?.message || 'Error updating user';
+      console.error('Detailed error:', {
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        constraint: error.constraint,
+        detail: error.detail,
+      });
+
+      throw new BadRequestException(`Failed to update user: ${errorMessage}`);
     }
   }
 
