@@ -418,9 +418,10 @@ export class UsersService {
         casinoIds,
       );
 
-      // Step 8: Convert to RegistrationOfferDto format
-      const registrationOffers: RegistrationOfferDto[] = casinoDetails.map(
-        (offer) => ({
+      // Step 8: Convert to RegistrationOfferDto format and filter active offers only
+      const registrationOffers: RegistrationOfferDto[] = casinoDetails
+        .filter((offer) => offer.is_active === true)
+        .map((offer) => ({
           logo_url: offer.logo_url,
           id: offer.id,
           public_name: offer.public_name,
@@ -430,8 +431,7 @@ export class UsersService {
           terms_and_conditions: offer.terms_and_conditions,
           offer_link: offer.offer_link,
           is_active: offer.is_active,
-        }),
-      );
+        }));
 
       return registrationOffers;
     } catch (error) {

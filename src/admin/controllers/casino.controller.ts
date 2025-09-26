@@ -286,7 +286,9 @@ export class CasinoController {
         externalId?: number;
       }> = [];
 
-      // Match and update casinos
+      // Match and update existing casinos
+      const matchedExternalIds = new Set<number>();
+
       for (const internalCasino of internalCasinos) {
         const matchingExternal = externalCasinos.find(
           (external) => external.admin_name === internalCasino.casino_name,
@@ -298,6 +300,7 @@ export class CasinoController {
             matchingExternal.id.toString(),
           );
           syncedCount++;
+          matchedExternalIds.add(matchingExternal.id);
           syncResults.push({
             casinoName: internalCasino.casino_name,
             matched: true,
@@ -311,10 +314,33 @@ export class CasinoController {
         }
       }
 
+      // Add missing casinos from external API
+      let addedCount = 0;
+      for (const externalCasino of externalCasinos) {
+        if (!matchedExternalIds.has(externalCasino.id)) {
+          // Check if this casino already exists in our system by name
+          const existingCasino = await this.casinoService.findByName(externalCasino.admin_name);
+
+          if (!existingCasino) {
+            await this.casinoService.create({
+              casino_name: externalCasino.admin_name,
+              casino_id: externalCasino.id.toString(),
+            });
+            addedCount++;
+            syncResults.push({
+              casinoName: externalCasino.admin_name,
+              matched: true,
+              externalId: externalCasino.id,
+            });
+          }
+        }
+      }
+
       return {
         success: true,
-        message: `Synced ${syncedCount} out of ${internalCasinos.length} casinos`,
+        message: `Synced ${syncedCount} existing casinos and added ${addedCount} new casinos from external API`,
         syncedCount,
+        addedCount,
         totalCasinos: internalCasinos.length,
         externalCasinosFound: externalCasinos.length,
         results: syncResults,
