@@ -139,7 +139,7 @@ export class AuthController {
     @Body() registerDto: RegisterDto,
     @Req() req: Request,
   ): Promise<RegisterResponseDto> {
-    // Check if email already exists (if provided)
+    // Check if email already exists among non-deleted users (if provided)
     if (registerDto.email) {
       const existingUser = await this.playerRepository.findOne({
         where: { email: registerDto.email, is_deleted: false },
