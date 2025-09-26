@@ -110,7 +110,12 @@ let AuthController = AuthController_1 = class AuthController {
                 where: { email: registerDto.email, is_deleted: true },
             });
             if (softDeletedUser) {
-                this.logger.warn(`Found soft-deleted user with same email: ${registerDto.email}. Proceeding with registration.`);
+                const timestamp = new Date().getTime();
+                await this.playerRepository.update({ id: softDeletedUser.id }, {
+                    email: `${registerDto.email}_deleted_${timestamp}`,
+                    updated_at: new Date()
+                });
+                this.logger.log(`Cleared soft-deleted user email: ${registerDto.email} -> ${registerDto.email}_deleted_${timestamp}`);
             }
         }
         let visitorId;
