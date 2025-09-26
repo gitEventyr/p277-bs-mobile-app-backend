@@ -138,11 +138,17 @@ export class UsersService {
     if (updateProfileDto.email !== undefined) {
       // Check if new email is already in use by another non-deleted user
       if (updateProfileDto.email && updateProfileDto.email.trim()) {
-        const existingUser = await this.playerRepository.findOne({
-          where: { email: updateProfileDto.email.trim(), is_deleted: false },
-        });
-        if (existingUser && existingUser.id !== userId) {
-          throw new BadRequestException('This email address is already in use');
+        const trimmedEmail = updateProfileDto.email.trim();
+        // Only check for duplicates if the email is actually changing
+        if (trimmedEmail !== player.email) {
+          const existingUser = await this.playerRepository.findOne({
+            where: { email: trimmedEmail, is_deleted: false },
+          });
+          if (existingUser && existingUser.id !== userId) {
+            throw new BadRequestException(
+              'This email address is already in use',
+            );
+          }
         }
       }
       player.email = updateProfileDto.email;
@@ -150,11 +156,17 @@ export class UsersService {
     if (updateProfileDto.phone !== undefined) {
       // Check if new phone is already in use by another non-deleted user
       if (updateProfileDto.phone && updateProfileDto.phone.trim()) {
-        const existingUser = await this.playerRepository.findOne({
-          where: { phone: updateProfileDto.phone.trim(), is_deleted: false },
-        });
-        if (existingUser && existingUser.id !== userId) {
-          throw new BadRequestException('This phone number is already in use');
+        const trimmedPhone = updateProfileDto.phone.trim();
+        // Only check for duplicates if the phone is actually changing
+        if (trimmedPhone !== player.phone) {
+          const existingUser = await this.playerRepository.findOne({
+            where: { phone: trimmedPhone, is_deleted: false },
+          });
+          if (existingUser && existingUser.id !== userId) {
+            throw new BadRequestException(
+              'This phone number is already in use',
+            );
+          }
         }
       }
       player.phone = updateProfileDto.phone;

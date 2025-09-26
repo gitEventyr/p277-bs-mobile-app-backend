@@ -143,37 +143,46 @@ export class AuthService {
   }
 
   async softDeleteAccount(userId: number): Promise<void> {
-    // Find the user
-    const user = await this.playerRepository.findOne({
-      where: { id: userId, is_deleted: false },
-      select: ['id', 'email', 'name', 'phone'],
-    });
+    try {
+      // Find the user
+      const user = await this.playerRepository.findOne({
+        where: { id: userId, is_deleted: false },
+        select: ['id', 'email', 'name', 'phone'],
+      });
 
-    if (!user) {
-      throw new NotFoundException('User not found or already deleted');
+      if (!user) {
+        throw new NotFoundException('User not found or already deleted');
+      }
+
+      // Create unique suffixes to avoid constraint violations
+      const timestamp = new Date().getTime();
+      const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
+      const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+
+      // Prepare update data
+      const updateData: any = {
+        is_deleted: true,
+        deleted_at: new Date(),
+        deletion_reason: 'Mobile app account deletion',
+        name: null,
+        password: null,
+        updated_at: new Date(),
+      };
+
+      // Add modified email and phone if they exist
+      if (user.email && emailSuffix) {
+        updateData.email = user.email + emailSuffix;
+      }
+      if (user.phone && phoneSuffix) {
+        updateData.phone = user.phone + phoneSuffix;
+      }
+
+      // Perform the soft delete using TypeORM
+      await this.playerRepository.update({ id: userId }, updateData);
+    } catch (error) {
+      console.error('Error during soft delete:', error);
+      throw new BadRequestException('Database operation failed');
     }
-
-    // Create unique suffixes to avoid constraint violations
-    const timestamp = new Date().getTime();
-    const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
-    const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
-
-    // Soft delete the account and clear sensitive data (mobile API - no password verification needed)
-    await this.playerRepository.query(
-      `
-      UPDATE players
-      SET is_deleted = true,
-          deleted_at = NOW(),
-          deletion_reason = $1,
-          email = CASE WHEN email IS NOT NULL THEN CONCAT(email, $2) ELSE NULL END,
-          phone = CASE WHEN phone IS NOT NULL THEN CONCAT(phone, $3) ELSE NULL END,
-          name = NULL,
-          password = NULL,
-          updated_at = NOW()
-      WHERE id = $4
-    `,
-      ['Mobile app account deletion', emailSuffix, phoneSuffix, userId],
-    );
   }
 
   // Note: In a real implementation with session management,
