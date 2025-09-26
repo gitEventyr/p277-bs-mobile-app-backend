@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RemoveEmailUniqueConstraint1756905000000 implements MigrationInterface {
+export class RemoveEmailUniqueConstraint1756905000000
+  implements MigrationInterface
+{
   name = 'RemoveEmailUniqueConstraint1756905000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -17,7 +19,7 @@ export class RemoveEmailUniqueConstraint1756905000000 implements MigrationInterf
     if (constraintResult.length > 0) {
       const constraintName = constraintResult[0].constraint_name;
       await queryRunner.query(
-        `ALTER TABLE "players" DROP CONSTRAINT "${constraintName}"`
+        `ALTER TABLE "players" DROP CONSTRAINT "${constraintName}"`,
       );
     }
   }
@@ -25,7 +27,7 @@ export class RemoveEmailUniqueConstraint1756905000000 implements MigrationInterf
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Re-add the unique constraint on email field
     await queryRunner.query(
-      `ALTER TABLE "players" ADD CONSTRAINT "UQ_players_email" UNIQUE ("email")`
+      `ALTER TABLE "players" ADD CONSTRAINT "UQ_players_email" UNIQUE ("email")`,
     );
   }
 }

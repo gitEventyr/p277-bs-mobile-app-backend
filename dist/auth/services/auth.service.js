@@ -156,7 +156,7 @@ let AuthService = class AuthService {
         try {
             const user = await this.playerRepository.findOne({
                 where: { id: userId, is_deleted: false },
-                select: ['id', 'email', 'name', 'phone'],
+                select: ['id', 'email', 'name', 'phone', 'visitor_id'],
             });
             if (!user) {
                 throw new common_1.NotFoundException('User not found or already deleted');
@@ -178,6 +178,7 @@ let AuthService = class AuthService {
             if (user.phone && phoneSuffix) {
                 updateData.phone = user.phone + phoneSuffix;
             }
+            updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
             await this.playerRepository.update({ id: userId }, updateData);
         }
         catch (error) {

@@ -113,7 +113,7 @@ let AuthController = AuthController_1 = class AuthController {
                 const timestamp = new Date().getTime();
                 await this.playerRepository.update({ id: softDeletedUser.id }, {
                     email: `${registerDto.email}_deleted_${timestamp}`,
-                    updated_at: new Date()
+                    updated_at: new Date(),
                 });
                 this.logger.log(`Cleared soft-deleted user email: ${registerDto.email} -> ${registerDto.email}_deleted_${timestamp}`);
             }
