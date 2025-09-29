@@ -1,3 +1,4 @@
+import { VoucherRequest } from './voucher-request.entity';
 export declare class Player {
     id: number;
     visitor_id: string;
@@ -45,6 +46,6 @@ export declare class Player {
     rpBalanceTransactions: any[];
     playHistory: any[];
     purchases: any[];
-    voucherRequests: any[];
+    voucherRequests: VoucherRequest[];
     casinoActions: any[];
 }

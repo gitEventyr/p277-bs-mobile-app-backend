@@ -1,3 +1,4 @@
+import { VoucherRequest } from './voucher-request.entity';
 export declare enum VoucherType {
     AMAZON_GIFT_CARD = "Amazon Gift Card",
     OTHER = "Other"
@@ -10,5 +11,5 @@ export declare class Voucher {
     type: VoucherType;
     created_at: Date;
     updated_at: Date;
-    voucherRequests: any[];
+    voucherRequests: VoucherRequest[];
 }
