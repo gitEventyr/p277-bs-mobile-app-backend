@@ -79,7 +79,7 @@
               Pending Requests
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{#each voucherRequests}}{{#if (eq this.status "requested")}}{{increment @index}}{{/if}}{{/each}}
+              {{countStatus voucherRequests "requested"}}
             </div>
           </div>
           <div class="col-auto">
@@ -99,7 +99,7 @@
               Sent Requests
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{#each voucherRequests}}{{#if (eq this.status "sent")}}{{increment @index}}{{/if}}{{/each}}
+              {{countStatus voucherRequests "sent"}}
             </div>
           </div>
           <div class="col-auto">
@@ -119,7 +119,7 @@
               Canceled Requests
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{#each voucherRequests}}{{#if (eq this.status "canceled")}}{{increment @index}}{{/if}}{{/each}}
+              {{countStatus voucherRequests "canceled"}}
             </div>
           </div>
           <div class="col-auto">
