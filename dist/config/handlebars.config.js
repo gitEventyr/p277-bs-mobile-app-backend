@@ -65,5 +65,10 @@ function configureHandlebars() {
         const userLastUpdate = new Date(updated_at);
         return userLastUpdate >= thirtyDaysAgo;
     });
+    hbs.registerHelper('countStatus', function (items, status) {
+        if (!items || !Array.isArray(items))
+            return 0;
+        return items.filter(item => item.status === status).length;
+    });
 }
 //# sourceMappingURL=handlebars.config.js.map
