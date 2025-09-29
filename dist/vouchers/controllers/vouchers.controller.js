@@ -47,8 +47,14 @@ __decorate([
 __decorate([
     (0, common_1.Post)('request'),
     (0, swagger_1.ApiOperation)({ summary: 'Request a voucher (purchase with RP)' }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: 'Voucher request created successfully' }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: 'Insufficient RP balance or invalid voucher' }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'Voucher request created successfully',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: 'Insufficient RP balance or invalid voucher',
+    }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

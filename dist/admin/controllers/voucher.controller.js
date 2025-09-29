@@ -123,7 +123,10 @@ __decorate([
 __decorate([
     (0, common_1.Patch)('requests/:id'),
     (0, swagger_1.ApiOperation)({ summary: 'Update voucher request status by ID' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Voucher request status updated successfully' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Voucher request status updated successfully',
+    }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Voucher request not found' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Body)()),
@@ -134,7 +137,10 @@ __decorate([
 __decorate([
     (0, common_1.Delete)('requests/:id'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete voucher request by ID' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Voucher request deleted successfully' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Voucher request deleted successfully',
+    }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Voucher request not found' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),

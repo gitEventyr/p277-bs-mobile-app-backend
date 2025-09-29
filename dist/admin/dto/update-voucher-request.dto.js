@@ -18,7 +18,10 @@ class UpdateVoucherRequestDto {
 }
 exports.UpdateVoucherRequestDto = UpdateVoucherRequestDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Status of the voucher request', enum: voucher_request_entity_1.VoucherRequestStatus }),
+    (0, swagger_1.ApiProperty)({
+        description: 'Status of the voucher request',
+        enum: voucher_request_entity_1.VoucherRequestStatus,
+    }),
     (0, class_validator_1.IsEnum)(voucher_request_entity_1.VoucherRequestStatus),
     __metadata("design:type", String)
 ], UpdateVoucherRequestDto.prototype, "status", void 0);

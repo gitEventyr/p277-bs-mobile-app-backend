@@ -21,7 +21,10 @@ class CreateVoucherDto {
 }
 exports.CreateVoucherDto = CreateVoucherDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Voucher name', example: 'Amazon eGift Card $25' }),
+    (0, swagger_1.ApiProperty)({
+        description: 'Voucher name',
+        example: 'Amazon eGift Card $25',
+    }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateVoucherDto.prototype, "name", void 0);
@@ -32,13 +35,20 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateVoucherDto.prototype, "rp_price", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Equivalent value in real money for admin reference', example: 25 }),
+    (0, swagger_1.ApiProperty)({
+        description: 'Equivalent value in real money for admin reference',
+        example: 25,
+    }),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], CreateVoucherDto.prototype, "amazon_vouchers_equivalent", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Type of voucher', enum: voucher_entity_1.VoucherType, example: voucher_entity_1.VoucherType.AMAZON_GIFT_CARD }),
+    (0, swagger_1.ApiProperty)({
+        description: 'Type of voucher',
+        enum: voucher_entity_1.VoucherType,
+        example: voucher_entity_1.VoucherType.AMAZON_GIFT_CARD,
+    }),
     (0, class_validator_1.IsEnum)(voucher_entity_1.VoucherType),
     __metadata("design:type", String)
 ], CreateVoucherDto.prototype, "type", void 0);

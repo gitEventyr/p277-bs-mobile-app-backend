@@ -49,7 +49,11 @@ __decorate([
     __metadata("design:type", Date)
 ], VoucherRequest.prototype, "request_date", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: VoucherRequestStatus, default: VoucherRequestStatus.REQUESTED }),
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: VoucherRequestStatus,
+        default: VoucherRequestStatus.REQUESTED,
+    }),
     (0, class_validator_1.IsEnum)(VoucherRequestStatus),
     __metadata("design:type", String)
 ], VoucherRequest.prototype, "status", void 0);

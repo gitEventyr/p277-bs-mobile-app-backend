@@ -82,7 +82,13 @@ exports.AdminModule = AdminModule = __decorate([
             casino_action_service_1.CasinoActionService,
             voucher_service_1.VoucherService,
         ],
-        exports: [admin_service_1.AdminService, analytics_service_1.AnalyticsService, casino_service_1.CasinoService, casino_action_service_1.CasinoActionService, voucher_service_1.VoucherService],
+        exports: [
+            admin_service_1.AdminService,
+            analytics_service_1.AnalyticsService,
+            casino_service_1.CasinoService,
+            casino_action_service_1.CasinoActionService,
+            voucher_service_1.VoucherService,
+        ],
     })
 ], AdminModule);
 //# sourceMappingURL=admin.module.js.map
