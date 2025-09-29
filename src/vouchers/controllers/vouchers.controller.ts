@@ -21,7 +21,7 @@ import { MobileExceptionFilter } from '../../common/filters/mobile-exception.fil
 import type { AuthenticatedUser } from '../../common/types/auth.types';
 
 @ApiTags('Mobile Vouchers')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @UseFilters(MobileExceptionFilter)
 @Controller('vouchers')
