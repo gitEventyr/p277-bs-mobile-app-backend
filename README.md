@@ -142,6 +142,59 @@ Once running, visit http://localhost:3000/api for comprehensive Swagger document
 
 ## 🔧 Available Scripts
 
+### Development Scripts
+```bash
+yarn start:dev      # Start development server with hot reload
+yarn build          # Build the application
+yarn start:prod     # Start production server
+yarn lint           # Run ESLint with auto-fix
+yarn format         # Format code with Prettier
+```
+
+### Testing Scripts
+```bash
+yarn test           # Run unit tests
+yarn test:watch     # Run tests in watch mode
+yarn test:e2e       # Run end-to-end tests
+yarn test:cov       # Run tests with coverage
+```
+
+### Database Scripts
+```bash
+# Migrations
+yarn migration:generate  # Generate a new migration
+yarn migration:create    # Create an empty migration file
+yarn migration:run       # Run pending migrations
+yarn migration:revert    # Revert the last migration
+yarn migration:show      # Show migration status
+
+# Database Management
+yarn schema:drop         # Drop entire database schema
+yarn db:cleanup          # Clean all data and re-seed admin users
+```
+
+### Database Cleanup Script
+
+The `yarn db:cleanup` command provides a safe way to reset your development database:
+
+- **What it does**: Removes ALL data from all tables while preserving the database structure
+- **Safety**: Uses `TRUNCATE` to clear tables without dropping/recreating them
+- **Auto-seeding**: Automatically re-creates admin users after cleanup
+- **Foreign keys**: Temporarily disables constraints to ensure clean truncation
+
+**Usage:**
+```bash
+yarn db:cleanup
+```
+
+**After running, you'll have:**
+- Empty database with intact structure
+- Fresh admin accounts:
+  - `admin@casino.com` / `admin123`
+  - `test@admin.com` / `test123`
+
+⚠️ **Warning**: This removes ALL data including players, transactions, and game history. Only use in development!
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
