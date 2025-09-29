@@ -52,17 +52,58 @@ export class VoucherService {
 
   // Voucher Request CRUD operations
   async findAllVoucherRequests(): Promise<VoucherRequest[]> {
-    return await this.voucherRequestRepository.find({
-      relations: ['user', 'voucher'],
-      order: { created_at: 'DESC' },
-    });
+    return await this.voucherRequestRepository
+      .createQueryBuilder('voucherRequest')
+      .leftJoinAndSelect('voucherRequest.user', 'user')
+      .leftJoinAndSelect('voucherRequest.voucher', 'voucher')
+      .select([
+        'voucherRequest.id',
+        'voucherRequest.user_id',
+        'voucherRequest.voucher_id',
+        'voucherRequest.request_date',
+        'voucherRequest.status',
+        'voucherRequest.created_at',
+        'voucherRequest.updated_at',
+        'user.id',
+        'user.name',
+        'user.email',
+        'user.visitor_id',
+        'voucher.id',
+        'voucher.name',
+        'voucher.type',
+        'voucher.rp_price',
+        'voucher.amazon_vouchers_equivalent',
+      ])
+      .orderBy('voucherRequest.created_at', 'DESC')
+      .getMany();
   }
 
   async findVoucherRequestById(id: number): Promise<VoucherRequest> {
-    const voucherRequest = await this.voucherRequestRepository.findOne({
-      where: { id },
-      relations: ['user', 'voucher'],
-    });
+    const voucherRequest = await this.voucherRequestRepository
+      .createQueryBuilder('voucherRequest')
+      .leftJoinAndSelect('voucherRequest.user', 'user')
+      .leftJoinAndSelect('voucherRequest.voucher', 'voucher')
+      .select([
+        'voucherRequest.id',
+        'voucherRequest.user_id',
+        'voucherRequest.voucher_id',
+        'voucherRequest.request_date',
+        'voucherRequest.status',
+        'voucherRequest.created_at',
+        'voucherRequest.updated_at',
+        'user.id',
+        'user.name',
+        'user.email',
+        'user.visitor_id',
+        'voucher.id',
+        'voucher.name',
+        'voucher.type',
+        'voucher.rp_price',
+        'voucher.amazon_vouchers_equivalent',
+      ])
+      .where('voucherRequest.id = :id', { id })
+      .getOne();
+
     if (!voucherRequest) {
       throw new NotFoundException(`Voucher request with ID ${id} not found`);
     }

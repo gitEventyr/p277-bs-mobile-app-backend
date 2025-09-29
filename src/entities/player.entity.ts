@@ -14,6 +14,7 @@ import {
   IsBoolean,
   Min,
 } from 'class-validator';
+import { VoucherRequest } from './voucher-request.entity';
 
 @Entity('players')
 export class Player {
@@ -229,8 +230,8 @@ export class Player {
   @OneToMany('InAppPurchase', (purchase: any) => purchase.user)
   purchases: any[];
 
-  @OneToMany('VoucherRequest', (voucherRequest: any) => voucherRequest.user)
-  voucherRequests: any[];
+  @OneToMany(() => VoucherRequest, (voucherRequest) => voucherRequest.user)
+  voucherRequests: VoucherRequest[];
 
   @OneToMany('CasinoAction', (casinoAction: any) => casinoAction.player)
   casinoActions: any[];

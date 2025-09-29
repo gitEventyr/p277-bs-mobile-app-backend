@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { IsString, IsNumber, Min, IsEnum } from 'class-validator';
+import { VoucherRequest } from './voucher-request.entity';
 
 export enum VoucherType {
   AMAZON_GIFT_CARD = 'Amazon Gift Card',
@@ -43,6 +44,6 @@ export class Voucher {
   updated_at: Date;
 
   // Relationships
-  @OneToMany('VoucherRequest', (voucherRequest: any) => voucherRequest.voucher)
-  voucherRequests: any[];
+  @OneToMany(() => VoucherRequest, (voucherRequest) => voucherRequest.voucher)
+  voucherRequests: VoucherRequest[];
 }
