@@ -16,6 +16,7 @@ exports.AdminDashboardController = void 0;
 const common_1 = require("@nestjs/common");
 const admin_service_1 = require("../services/admin.service");
 const analytics_service_1 = require("../services/analytics.service");
+const voucher_service_1 = require("../services/voucher.service");
 const admin_login_dto_1 = require("../dto/admin-login.dto");
 const users_service_1 = require("../../users/services/users.service");
 const balance_service_1 = require("../../users/services/balance.service");
@@ -26,12 +27,14 @@ let AdminDashboardController = class AdminDashboardController {
     analyticsService;
     balanceService;
     rpBalanceService;
-    constructor(adminService, usersService, analyticsService, balanceService, rpBalanceService) {
+    voucherService;
+    constructor(adminService, usersService, analyticsService, balanceService, rpBalanceService, voucherService) {
         this.adminService = adminService;
         this.usersService = usersService;
         this.analyticsService = analyticsService;
         this.balanceService = balanceService;
         this.rpBalanceService = rpBalanceService;
+        this.voucherService = voucherService;
     }
     loginPage(session, query) {
         if (session.admin) {
@@ -432,6 +435,72 @@ let AdminDashboardController = class AdminDashboardController {
         });
         return params.toString();
     }
+    async vouchers(session, res) {
+        if (!session.admin) {
+            return res.redirect('/admin/login');
+        }
+        try {
+            const vouchers = await this.voucherService.findAllVouchers();
+            const flashMessage = session.flashMessage;
+            const flashType = session.flashType;
+            delete session.flashMessage;
+            delete session.flashType;
+            return res.render('admin/vouchers', {
+                title: 'Voucher Management',
+                isAuthenticated: true,
+                isVouchers: true,
+                admin: session.admin,
+                vouchers,
+                flashMessage,
+                flashType,
+            });
+        }
+        catch (error) {
+            console.error('Vouchers page error:', error);
+            return res.render('admin/vouchers', {
+                title: 'Voucher Management',
+                isAuthenticated: true,
+                isVouchers: true,
+                admin: session.admin,
+                vouchers: [],
+                flashMessage: 'Error loading vouchers data',
+                flashType: 'error',
+            });
+        }
+    }
+    async voucherRequests(session, res) {
+        if (!session.admin) {
+            return res.redirect('/admin/login');
+        }
+        try {
+            const voucherRequests = await this.voucherService.findAllVoucherRequests();
+            const flashMessage = session.flashMessage;
+            const flashType = session.flashType;
+            delete session.flashMessage;
+            delete session.flashType;
+            return res.render('admin/voucher-requests', {
+                title: 'Voucher Requests Management',
+                isAuthenticated: true,
+                isVoucherRequests: true,
+                admin: session.admin,
+                voucherRequests,
+                flashMessage,
+                flashType,
+            });
+        }
+        catch (error) {
+            console.error('Voucher requests page error:', error);
+            return res.render('admin/voucher-requests', {
+                title: 'Voucher Requests Management',
+                isAuthenticated: true,
+                isVoucherRequests: true,
+                admin: session.admin,
+                voucherRequests: [],
+                flashMessage: 'Error loading voucher requests data',
+                flashType: 'error',
+            });
+        }
+    }
 };
 exports.AdminDashboardController = AdminDashboardController;
 __decorate([
@@ -520,12 +589,29 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AdminDashboardController.prototype, "createUser", null);
+__decorate([
+    (0, common_1.Get)('vouchers'),
+    __param(0, (0, common_1.Session)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AdminDashboardController.prototype, "vouchers", null);
+__decorate([
+    (0, common_1.Get)('voucher-requests'),
+    __param(0, (0, common_1.Session)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AdminDashboardController.prototype, "voucherRequests", null);
 exports.AdminDashboardController = AdminDashboardController = __decorate([
     (0, common_1.Controller)('admin'),
     __metadata("design:paramtypes", [admin_service_1.AdminService,
         users_service_1.UsersService,
         analytics_service_1.AnalyticsService,
         balance_service_1.BalanceService,
-        rp_balance_service_1.RpBalanceService])
+        rp_balance_service_1.RpBalanceService,
+        voucher_service_1.VoucherService])
 ], AdminDashboardController);
 //# sourceMappingURL=admin-dashboard.controller.js.map

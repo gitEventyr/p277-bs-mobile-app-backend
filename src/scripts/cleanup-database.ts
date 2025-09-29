@@ -8,7 +8,7 @@ import { CoinsBalanceChange } from '../entities/coins-balance-change.entity';
 import { PlayHistory } from '../entities/play-history.entity';
 import { InAppPurchase } from '../entities/in-app-purchase.entity';
 import { Voucher } from '../entities/voucher.entity';
-import { UserVoucher } from '../entities/user-voucher.entity';
+import { VoucherRequest } from '../entities/voucher-request.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { PhoneVerificationToken } from '../entities/phone-verification-token.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
@@ -19,7 +19,9 @@ import * as bcryptjs from 'bcryptjs';
 
 async function cleanupDatabase() {
   console.log('🧹 Starting database cleanup...');
-  console.log('⚠️  This will remove ALL data from all tables while preserving structure.');
+  console.log(
+    '⚠️  This will remove ALL data from all tables while preserving structure.',
+  );
   console.log('');
 
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -29,7 +31,7 @@ async function cleanupDatabase() {
     // Get all entity metadata
     const entities = [
       // Order matters for foreign key constraints - delete in reverse dependency order
-      UserVoucher,
+      VoucherRequest,
       Voucher,
       InAppPurchase,
       PlayHistory,
@@ -55,10 +57,14 @@ async function cleanupDatabase() {
       const tableName = repository.metadata.tableName;
 
       try {
-        await dataSource.query(`TRUNCATE TABLE "${tableName}" RESTART IDENTITY CASCADE;`);
+        await dataSource.query(
+          `TRUNCATE TABLE "${tableName}" RESTART IDENTITY CASCADE;`,
+        );
         console.log(`   ✅ Cleared ${tableName}`);
       } catch (error) {
-        console.log(`   ⚠️  Warning: Could not truncate ${tableName} - ${error.message}`);
+        console.log(
+          `   ⚠️  Warning: Could not truncate ${tableName} - ${error.message}`,
+        );
       }
     }
 
@@ -72,7 +78,6 @@ async function cleanupDatabase() {
     // Now seed admin users
     console.log('🌱 Re-seeding admin users...');
     await seedAdminUsers(dataSource);
-
   } catch (error) {
     console.error('❌ Database cleanup failed:', error);
     throw error;

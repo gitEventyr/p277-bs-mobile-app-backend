@@ -229,8 +229,8 @@ export class Player {
   @OneToMany('InAppPurchase', (purchase: any) => purchase.user)
   purchases: any[];
 
-  @OneToMany('UserVoucher', (userVoucher: any) => userVoucher.user)
-  userVouchers: any[];
+  @OneToMany('VoucherRequest', (voucherRequest: any) => voucherRequest.user)
+  voucherRequests: any[];
 
   @OneToMany('CasinoAction', (casinoAction: any) => casinoAction.player)
   casinoActions: any[];

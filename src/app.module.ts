@@ -9,7 +9,7 @@ import { CoinsBalanceChange } from './entities/coins-balance-change.entity';
 import { PlayHistory } from './entities/play-history.entity';
 import { InAppPurchase } from './entities/in-app-purchase.entity';
 import { Voucher } from './entities/voucher.entity';
-import { UserVoucher } from './entities/user-voucher.entity';
+import { VoucherRequest } from './entities/voucher-request.entity';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { EmailVerificationToken } from './entities/email-verification-token.entity';
 import { PhoneVerificationToken } from './entities/phone-verification-token.entity';
@@ -26,6 +26,7 @@ import { UsersModule } from './users/users.module';
 import { DevicesModule } from './devices/devices.module';
 import { GamesModule } from './games/games.module';
 import { PurchasesModule } from './purchases/purchases.module';
+import { VouchersModule } from './vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -45,7 +46,7 @@ import { PurchasesModule } from './purchases/purchases.module';
           PlayHistory,
           InAppPurchase,
           Voucher,
-          UserVoucher,
+          VoucherRequest,
           PasswordResetToken,
           EmailVerificationToken,
           PhoneVerificationToken,
@@ -62,6 +63,7 @@ import { PurchasesModule } from './purchases/purchases.module';
     DevicesModule,
     GamesModule,
     PurchasesModule,
+    VouchersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

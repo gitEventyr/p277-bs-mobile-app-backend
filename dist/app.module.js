@@ -18,7 +18,7 @@ const coins_balance_change_entity_1 = require("./entities/coins-balance-change.e
 const play_history_entity_1 = require("./entities/play-history.entity");
 const in_app_purchase_entity_1 = require("./entities/in-app-purchase.entity");
 const voucher_entity_1 = require("./entities/voucher.entity");
-const user_voucher_entity_1 = require("./entities/user-voucher.entity");
+const voucher_request_entity_1 = require("./entities/voucher-request.entity");
 const password_reset_token_entity_1 = require("./entities/password-reset-token.entity");
 const email_verification_token_entity_1 = require("./entities/email-verification-token.entity");
 const phone_verification_token_entity_1 = require("./entities/phone-verification-token.entity");
@@ -35,6 +35,7 @@ const users_module_1 = require("./users/users.module");
 const devices_module_1 = require("./devices/devices.module");
 const games_module_1 = require("./games/games.module");
 const purchases_module_1 = require("./purchases/purchases.module");
+const vouchers_module_1 = require("./vouchers/vouchers.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -57,7 +58,7 @@ exports.AppModule = AppModule = __decorate([
                         play_history_entity_1.PlayHistory,
                         in_app_purchase_entity_1.InAppPurchase,
                         voucher_entity_1.Voucher,
-                        user_voucher_entity_1.UserVoucher,
+                        voucher_request_entity_1.VoucherRequest,
                         password_reset_token_entity_1.PasswordResetToken,
                         email_verification_token_entity_1.EmailVerificationToken,
                         phone_verification_token_entity_1.PhoneVerificationToken,
@@ -74,6 +75,7 @@ exports.AppModule = AppModule = __decorate([
             devices_module_1.DevicesModule,
             games_module_1.GamesModule,
             purchases_module_1.PurchasesModule,
+            vouchers_module_1.VouchersModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

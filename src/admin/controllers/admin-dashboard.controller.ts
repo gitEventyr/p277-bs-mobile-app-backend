@@ -16,6 +16,7 @@ import type { Response } from 'express';
 import * as session from 'express-session';
 import { AdminService } from '../services/admin.service';
 import { AnalyticsService } from '../services/analytics.service';
+import { VoucherService } from '../services/voucher.service';
 import { AdminLoginDto } from '../dto/admin-login.dto';
 import { UsersService } from '../../users/services/users.service';
 import { BalanceService } from '../../users/services/balance.service';
@@ -40,6 +41,7 @@ export class AdminDashboardController {
     private readonly analyticsService: AnalyticsService,
     private readonly balanceService: BalanceService,
     private readonly rpBalanceService: RpBalanceService,
+    private readonly voucherService: VoucherService,
   ) {}
 
   // Admin Login Page
@@ -577,5 +579,85 @@ export class AdminDashboardController {
       }
     });
     return params.toString();
+  }
+
+  // Voucher Management Page
+  @Get('vouchers')
+  async vouchers(@Session() session: AdminSession, @Res() res: Response) {
+    if (!session.admin) {
+      return res.redirect('/admin/login');
+    }
+
+    try {
+      const vouchers = await this.voucherService.findAllVouchers();
+
+      const flashMessage = session.flashMessage;
+      const flashType = session.flashType;
+      delete session.flashMessage;
+      delete session.flashType;
+
+      return res.render('admin/vouchers', {
+        title: 'Voucher Management',
+        isAuthenticated: true,
+        isVouchers: true,
+        admin: session.admin,
+        vouchers,
+        flashMessage,
+        flashType,
+      });
+    } catch (error) {
+      console.error('Vouchers page error:', error);
+      return res.render('admin/vouchers', {
+        title: 'Voucher Management',
+        isAuthenticated: true,
+        isVouchers: true,
+        admin: session.admin,
+        vouchers: [],
+        flashMessage: 'Error loading vouchers data',
+        flashType: 'error',
+      });
+    }
+  }
+
+  // Voucher Requests Management Page
+  @Get('voucher-requests')
+  async voucherRequests(
+    @Session() session: AdminSession,
+    @Res() res: Response,
+  ) {
+    if (!session.admin) {
+      return res.redirect('/admin/login');
+    }
+
+    try {
+      const voucherRequests =
+        await this.voucherService.findAllVoucherRequests();
+
+      const flashMessage = session.flashMessage;
+      const flashType = session.flashType;
+      delete session.flashMessage;
+      delete session.flashType;
+
+      return res.render('admin/voucher-requests', {
+        title: 'Voucher Requests Management',
+        isAuthenticated: true,
+        isVoucherRequests: true,
+        admin: session.admin,
+        voucherRequests,
+        flashMessage,
+        flashType,
+      });
+    } catch (error) {
+      console.error('Voucher requests page error:', error);
+      return res.render('admin/voucher-requests', {
+        title: 'Voucher Requests Management',
+        isAuthenticated: true,
+        isVoucherRequests: true,
+        admin: session.admin,
+        voucherRequests: [],
+        flashMessage: 'Error loading voucher requests data',
+        flashType: 'error',
+      });
+    }
   }
 }

@@ -59,7 +59,7 @@ let Player = class Player {
     rpBalanceTransactions;
     playHistory;
     purchases;
-    userVouchers;
+    voucherRequests;
     casinoActions;
 };
 exports.Player = Player;
@@ -316,9 +316,9 @@ __decorate([
     __metadata("design:type", Array)
 ], Player.prototype, "purchases", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)('UserVoucher', (userVoucher) => userVoucher.user),
+    (0, typeorm_1.OneToMany)('VoucherRequest', (voucherRequest) => voucherRequest.user),
     __metadata("design:type", Array)
-], Player.prototype, "userVouchers", void 0);
+], Player.prototype, "voucherRequests", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)('CasinoAction', (casinoAction) => casinoAction.player),
     __metadata("design:type", Array)

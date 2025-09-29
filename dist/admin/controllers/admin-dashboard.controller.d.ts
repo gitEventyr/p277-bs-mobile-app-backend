@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import * as session from 'express-session';
 import { AdminService } from '../services/admin.service';
 import { AnalyticsService } from '../services/analytics.service';
+import { VoucherService } from '../services/voucher.service';
 import { AdminLoginDto } from '../dto/admin-login.dto';
 import { UsersService } from '../../users/services/users.service';
 import { BalanceService } from '../../users/services/balance.service';
@@ -22,7 +23,8 @@ export declare class AdminDashboardController {
     private readonly analyticsService;
     private readonly balanceService;
     private readonly rpBalanceService;
-    constructor(adminService: AdminService, usersService: UsersService, analyticsService: AnalyticsService, balanceService: BalanceService, rpBalanceService: RpBalanceService);
+    private readonly voucherService;
+    constructor(adminService: AdminService, usersService: UsersService, analyticsService: AnalyticsService, balanceService: BalanceService, rpBalanceService: RpBalanceService, voucherService: VoucherService);
     loginPage(session: AdminSession, query: any): {
         redirect: string;
         title?: undefined;
@@ -71,5 +73,7 @@ export declare class AdminDashboardController {
     private getUsersList;
     private buildPagination;
     private buildQueryString;
+    vouchers(session: AdminSession, res: Response): Promise<void>;
+    voucherRequests(session: AdminSession, res: Response): Promise<void>;
 }
 export {};

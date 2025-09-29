@@ -19,15 +19,19 @@ const coins_balance_change_entity_1 = require("../entities/coins-balance-change.
 const rp_balance_transaction_entity_1 = require("../entities/rp-balance-transaction.entity");
 const casino_entity_1 = require("../entities/casino.entity");
 const casino_action_entity_1 = require("../entities/casino-action.entity");
+const voucher_entity_1 = require("../entities/voucher.entity");
+const voucher_request_entity_1 = require("../entities/voucher-request.entity");
 const admin_service_1 = require("./services/admin.service");
 const analytics_service_1 = require("./services/analytics.service");
 const casino_service_1 = require("./services/casino.service");
 const casino_action_service_1 = require("./services/casino-action.service");
+const voucher_service_1 = require("./services/voucher.service");
 const admin_controller_1 = require("./controllers/admin.controller");
 const admin_dashboard_controller_1 = require("./controllers/admin-dashboard.controller");
 const analytics_controller_1 = require("./controllers/analytics.controller");
 const casino_controller_1 = require("./controllers/casino.controller");
 const casino_action_controller_1 = require("./controllers/casino-action.controller");
+const voucher_controller_1 = require("./controllers/voucher.controller");
 const auth_module_1 = require("../auth/auth.module");
 const users_module_1 = require("../users/users.module");
 const casino_api_module_1 = require("../external/casino/casino-api.module");
@@ -46,6 +50,8 @@ exports.AdminModule = AdminModule = __decorate([
                 rp_balance_transaction_entity_1.RpBalanceTransaction,
                 casino_entity_1.Casino,
                 casino_action_entity_1.CasinoAction,
+                voucher_entity_1.Voucher,
+                voucher_request_entity_1.VoucherRequest,
             ]),
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
@@ -67,14 +73,16 @@ exports.AdminModule = AdminModule = __decorate([
             analytics_controller_1.AnalyticsController,
             casino_controller_1.CasinoController,
             casino_action_controller_1.CasinoActionController,
+            voucher_controller_1.VoucherController,
         ],
         providers: [
             admin_service_1.AdminService,
             analytics_service_1.AnalyticsService,
             casino_service_1.CasinoService,
             casino_action_service_1.CasinoActionService,
+            voucher_service_1.VoucherService,
         ],
-        exports: [admin_service_1.AdminService, analytics_service_1.AnalyticsService, casino_service_1.CasinoService, casino_action_service_1.CasinoActionService],
+        exports: [admin_service_1.AdminService, analytics_service_1.AnalyticsService, casino_service_1.CasinoService, casino_action_service_1.CasinoActionService, voucher_service_1.VoucherService],
     })
 ], AdminModule);
 //# sourceMappingURL=admin.module.js.map

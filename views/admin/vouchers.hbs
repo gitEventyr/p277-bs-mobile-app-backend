@@ -1,0 +1,259 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="bi bi-gift"></i>
+    Voucher Management
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal">
+      <i class="bi bi-plus"></i>
+      Add Voucher
+    </button>
+  </div>
+</div>
+
+<!-- Vouchers Table -->
+<div class="card shadow">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Vouchers List</h6>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>RP Price</th>
+            <th>Real Value</th>
+            <th>Type</th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each vouchers}}
+          <tr>
+            <td>{{this.id}}</td>
+            <td>{{this.name}}</td>
+            <td><span class="badge bg-info">{{this.rp_price}} RP</span></td>
+            <td><span class="badge bg-success">${{this.amazon_vouchers_equivalent}}</span></td>
+            <td>
+              {{#if (eq this.type "Amazon Gift Card")}}
+                <span class="badge bg-warning">Amazon Gift Card</span>
+              {{else}}
+                <span class="badge bg-secondary">{{this.type}}</span>
+              {{/if}}
+            </td>
+            <td>{{formatDate this.created_at}}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary" onclick="editVoucher({{this.id}}, '{{this.name}}', {{this.rp_price}}, {{this.amazon_vouchers_equivalent}}, '{{this.type}}')">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteVoucher({{this.id}}, '{{this.name}}')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {{/each}}
+          {{#unless vouchers.length}}
+          <tr>
+            <td colspan="7" class="text-center text-muted">No vouchers found</td>
+          </tr>
+          {{/unless}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Voucher Modal -->
+<div class="modal fade" id="addVoucherModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Voucher</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="addVoucherForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label">Voucher Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="rp_price" class="form-label">RP Price</label>
+            <input type="number" class="form-control" id="rp_price" name="rp_price" min="0" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="amazon_vouchers_equivalent" class="form-label">Real Value ($)</label>
+            <input type="number" class="form-control" id="amazon_vouchers_equivalent" name="amazon_vouchers_equivalent" min="0" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="type" class="form-label">Type</label>
+            <select class="form-select" id="type" name="type" required>
+              <option value="Amazon Gift Card">Amazon Gift Card</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Voucher</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Voucher Modal -->
+<div class="modal fade" id="editVoucherModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Voucher</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editVoucherForm">
+        <input type="hidden" id="edit_voucher_id" name="id">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="edit_name" class="form-label">Voucher Name</label>
+            <input type="text" class="form-control" id="edit_name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit_rp_price" class="form-label">RP Price</label>
+            <input type="number" class="form-control" id="edit_rp_price" name="rp_price" min="0" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit_amazon_vouchers_equivalent" class="form-label">Real Value ($)</label>
+            <input type="number" class="form-control" id="edit_amazon_vouchers_equivalent" name="amazon_vouchers_equivalent" min="0" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit_type" class="form-label">Type</label>
+            <select class="form-select" id="edit_type" name="type" required>
+              <option value="Amazon Gift Card">Amazon Gift Card</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Voucher</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Add Voucher
+document.getElementById('addVoucherForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData);
+
+  // Convert numeric fields
+  data.rp_price = parseFloat(data.rp_price);
+  data.amazon_vouchers_equivalent = parseFloat(data.amazon_vouchers_equivalent);
+
+  try {
+    const response = await fetch('/admin/vouchers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer {{admin.token}}`
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      location.reload();
+    } else {
+      const error = await response.text();
+      alert('Error adding voucher: ' + error);
+    }
+  } catch (error) {
+    alert('Error adding voucher: ' + error.message);
+  }
+});
+
+// Edit Voucher
+function editVoucher(id, name, rpPrice, realValue, type) {
+  document.getElementById('edit_voucher_id').value = id;
+  document.getElementById('edit_name').value = name;
+  document.getElementById('edit_rp_price').value = rpPrice;
+  document.getElementById('edit_amazon_vouchers_equivalent').value = realValue;
+  document.getElementById('edit_type').value = type;
+
+  new bootstrap.Modal(document.getElementById('editVoucherModal')).show();
+}
+
+document.getElementById('editVoucherForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData);
+  const id = data.id;
+  delete data.id;
+
+  // Convert numeric fields
+  data.rp_price = parseFloat(data.rp_price);
+  data.amazon_vouchers_equivalent = parseFloat(data.amazon_vouchers_equivalent);
+
+  try {
+    const response = await fetch(`/admin/vouchers/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer {{admin.token}}`
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      location.reload();
+    } else {
+      const error = await response.text();
+      alert('Error updating voucher: ' + error);
+    }
+  } catch (error) {
+    alert('Error updating voucher: ' + error.message);
+  }
+});
+
+// Delete Voucher
+function deleteVoucher(id, name) {
+  if (confirm(`Are you sure you want to delete voucher "${name}"?`)) {
+    fetch(`/admin/vouchers/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer {{admin.token}}`
+      }
+    }).then(response => {
+      if (response.ok) {
+        location.reload();
+      } else {
+        alert('Error deleting voucher');
+      }
+    }).catch(error => {
+      alert('Error deleting voucher: ' + error.message);
+    });
+  }
+}
+</script>
+
+<style>
+.border-left-primary {
+  border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+  border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+  border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+  border-left: 0.25rem solid #f6c23e !important;
+}
+</style>

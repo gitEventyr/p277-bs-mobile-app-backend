@@ -6,25 +6,35 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { IsString, IsNumber, Min } from 'class-validator';
+import { IsString, IsNumber, Min, IsEnum } from 'class-validator';
+
+export enum VoucherType {
+  AMAZON_GIFT_CARD = 'Amazon Gift Card',
+  OTHER = 'Other',
+}
 
 @Entity('vouchers')
 export class Voucher {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id: number;
 
+  @Column({ type: 'varchar' })
+  @IsString()
+  name: string;
+
   @Column({ type: 'double precision' })
   @IsNumber()
   @Min(0)
-  cost: number;
+  rp_price: number;
 
-  @Column({ type: 'varchar' })
-  @IsString()
-  provider: string;
+  @Column({ type: 'double precision' })
+  @IsNumber()
+  @Min(0)
+  amazon_vouchers_equivalent: number;
 
-  @Column({ type: 'varchar' })
-  @IsString()
-  img_url: string;
+  @Column({ type: 'enum', enum: VoucherType })
+  @IsEnum(VoucherType)
+  type: VoucherType;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   created_at: Date;
@@ -33,6 +43,6 @@ export class Voucher {
   updated_at: Date;
 
   // Relationships
-  @OneToMany('UserVoucher', (userVoucher: any) => userVoucher.voucher)
-  userVouchers: any[];
+  @OneToMany('VoucherRequest', (voucherRequest: any) => voucherRequest.voucher)
+  voucherRequests: any[];
 }

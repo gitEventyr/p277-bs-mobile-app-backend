@@ -1,0 +1,169 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="bi bi-clipboard-check"></i>
+    Voucher Requests Management
+  </h1>
+</div>
+
+<!-- Voucher Requests Table -->
+<div class="card shadow">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Voucher Requests List</h6>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Request Date</th>
+            <th>Voucher Name</th>
+            <th>RP Value</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each voucherRequests}}
+          <tr>
+            <td>{{this.id}}</td>
+            <td>{{this.user.name}}</td>
+            <td>{{this.user.email}}</td>
+            <td>{{formatDate this.request_date}}</td>
+            <td>{{this.voucher.name}}</td>
+            <td><span class="badge bg-info">{{this.voucher.rp_price}} RP</span></td>
+            <td>
+              {{#if (eq this.status "requested")}}
+                <span class="badge bg-warning">Requested</span>
+              {{else if (eq this.status "sent")}}
+                <span class="badge bg-success">Sent</span>
+              {{else if (eq this.status "canceled")}}
+                <span class="badge bg-danger">Canceled</span>
+              {{/if}}
+            </td>
+            <td>
+              {{#if (eq this.status "requested")}}
+                <button class="btn btn-sm btn-success" onclick="updateVoucherRequestStatus({{this.id}}, 'sent')">
+                  <i class="bi bi-check"></i> Mark as Sent
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="updateVoucherRequestStatus({{this.id}}, 'canceled')">
+                  <i class="bi bi-x"></i> Cancel
+                </button>
+              {{else}}
+                <span class="text-muted">No actions available</span>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+          {{#unless voucherRequests.length}}
+          <tr>
+            <td colspan="8" class="text-center text-muted">No voucher requests found</td>
+          </tr>
+          {{/unless}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Status Statistics -->
+<div class="row mt-4">
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Pending Requests
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              {{#each voucherRequests}}{{#if (eq this.status "requested")}}{{increment @index}}{{/if}}{{/each}}
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-clock fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Sent Requests
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              {{#each voucherRequests}}{{#if (eq this.status "sent")}}{{increment @index}}{{/if}}{{/each}}
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-danger shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+              Canceled Requests
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              {{#each voucherRequests}}{{#if (eq this.status "canceled")}}{{increment @index}}{{/if}}{{/each}}
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-x-circle fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Update Voucher Request Status
+function updateVoucherRequestStatus(id, status) {
+  const actionText = status === 'sent' ? 'mark as sent' : 'cancel';
+  if (confirm(`Are you sure you want to ${actionText} this voucher request?`)) {
+    fetch(`/admin/vouchers/requests/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer {{admin.token}}`
+      },
+      body: JSON.stringify({ status })
+    }).then(response => {
+      if (response.ok) {
+        location.reload();
+      } else {
+        alert('Error updating voucher request status');
+      }
+    }).catch(error => {
+      alert('Error updating voucher request status: ' + error.message);
+    });
+  }
+}
+</script>
+
+<style>
+.border-left-warning {
+  border-left: 0.25rem solid #f6c23e !important;
+}
+.border-left-success {
+  border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-danger {
+  border-left: 0.25rem solid #e74a3b !important;
+}
+</style>

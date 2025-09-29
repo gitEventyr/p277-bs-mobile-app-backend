@@ -45,6 +45,6 @@ export declare class Player {
     rpBalanceTransactions: any[];
     playHistory: any[];
     purchases: any[];
-    userVouchers: any[];
+    voucherRequests: any[];
     casinoActions: any[];
 }

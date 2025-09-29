@@ -9,17 +9,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Voucher = void 0;
+exports.Voucher = exports.VoucherType = void 0;
 const typeorm_1 = require("typeorm");
 const class_validator_1 = require("class-validator");
+var VoucherType;
+(function (VoucherType) {
+    VoucherType["AMAZON_GIFT_CARD"] = "Amazon Gift Card";
+    VoucherType["OTHER"] = "Other";
+})(VoucherType || (exports.VoucherType = VoucherType = {}));
 let Voucher = class Voucher {
     id;
-    cost;
-    provider;
-    img_url;
+    name;
+    rp_price;
+    amazon_vouchers_equivalent;
+    type;
     created_at;
     updated_at;
-    userVouchers;
+    voucherRequests;
 };
 exports.Voucher = Voucher;
 __decorate([
@@ -27,21 +33,27 @@ __decorate([
     __metadata("design:type", Number)
 ], Voucher.prototype, "id", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'varchar' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], Voucher.prototype, "name", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: 'double precision' }),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
-], Voucher.prototype, "cost", void 0);
+], Voucher.prototype, "rp_price", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar' }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], Voucher.prototype, "provider", void 0);
+    (0, typeorm_1.Column)({ type: 'double precision' }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], Voucher.prototype, "amazon_vouchers_equivalent", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar' }),
-    (0, class_validator_1.IsString)(),
+    (0, typeorm_1.Column)({ type: 'enum', enum: VoucherType }),
+    (0, class_validator_1.IsEnum)(VoucherType),
     __metadata("design:type", String)
-], Voucher.prototype, "img_url", void 0);
+], Voucher.prototype, "type", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ type: 'timestamp with time zone' }),
     __metadata("design:type", Date)
@@ -51,9 +63,9 @@ __decorate([
     __metadata("design:type", Date)
 ], Voucher.prototype, "updated_at", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)('UserVoucher', (userVoucher) => userVoucher.voucher),
+    (0, typeorm_1.OneToMany)('VoucherRequest', (voucherRequest) => voucherRequest.voucher),
     __metadata("design:type", Array)
-], Voucher.prototype, "userVouchers", void 0);
+], Voucher.prototype, "voucherRequests", void 0);
 exports.Voucher = Voucher = __decorate([
     (0, typeorm_1.Entity)('vouchers')
 ], Voucher);

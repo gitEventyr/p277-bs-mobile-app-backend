@@ -43,7 +43,7 @@ const coins_balance_change_entity_1 = require("../entities/coins-balance-change.
 const play_history_entity_1 = require("../entities/play-history.entity");
 const in_app_purchase_entity_1 = require("../entities/in-app-purchase.entity");
 const voucher_entity_1 = require("../entities/voucher.entity");
-const user_voucher_entity_1 = require("../entities/user-voucher.entity");
+const voucher_request_entity_1 = require("../entities/voucher-request.entity");
 const password_reset_token_entity_1 = require("../entities/password-reset-token.entity");
 const phone_verification_token_entity_1 = require("../entities/phone-verification-token.entity");
 const email_verification_token_entity_1 = require("../entities/email-verification-token.entity");
@@ -59,7 +59,7 @@ async function cleanupDatabase() {
     const dataSource = app.get(typeorm_1.DataSource);
     try {
         const entities = [
-            user_voucher_entity_1.UserVoucher,
+            voucher_request_entity_1.VoucherRequest,
             voucher_entity_1.Voucher,
             in_app_purchase_entity_1.InAppPurchase,
             play_history_entity_1.PlayHistory,

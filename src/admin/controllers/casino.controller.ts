@@ -319,7 +319,9 @@ export class CasinoController {
       for (const externalCasino of externalCasinos) {
         if (!matchedExternalIds.has(externalCasino.id)) {
           // Check if this casino already exists in our system by name
-          const existingCasino = await this.casinoService.findByName(externalCasino.admin_name);
+          const existingCasino = await this.casinoService.findByName(
+            externalCasino.admin_name,
+          );
 
           if (!existingCasino) {
             await this.casinoService.create({
