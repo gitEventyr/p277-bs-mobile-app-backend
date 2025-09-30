@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { Repository, DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Player } from '../../entities/player.entity';
 import { AdminUser } from '../../entities/admin-user.entity';
 import { CasinoAction } from '../../entities/casino-action.entity';
@@ -9,8 +9,7 @@ export declare class AuthService {
     private readonly adminRepository;
     private readonly casinoActionRepository;
     private readonly jwtService;
-    private readonly dataSource;
-    constructor(playerRepository: Repository<Player>, adminRepository: Repository<AdminUser>, casinoActionRepository: Repository<CasinoAction>, jwtService: JwtService, dataSource: DataSource);
+    constructor(playerRepository: Repository<Player>, adminRepository: Repository<AdminUser>, casinoActionRepository: Repository<CasinoAction>, jwtService: JwtService);
     generateJwtToken(payload: JwtPayload): Promise<string>;
     verifyJwtToken(token: string): Promise<JwtPayload>;
     hashPassword(password: string): Promise<string>;

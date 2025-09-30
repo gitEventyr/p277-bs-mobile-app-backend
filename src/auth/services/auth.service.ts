@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { Player } from '../../entities/player.entity';
@@ -29,7 +29,6 @@ export class AuthService {
     @InjectRepository(CasinoAction)
     private readonly casinoActionRepository: Repository<CasinoAction>,
     private readonly jwtService: JwtService,
-    private readonly dataSource: DataSource,
   ) {}
 
   async generateJwtToken(payload: JwtPayload): Promise<string> {
@@ -147,78 +146,52 @@ export class AuthService {
   }
 
   async softDeleteAccount(userId: number): Promise<void> {
-    // Find the user
-    const user = await this.playerRepository.findOne({
-      where: { id: userId, is_deleted: false },
-      select: ['id', 'email', 'name', 'phone', 'visitor_id'],
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found or already deleted');
-    }
-
-    // Create unique suffixes to avoid constraint violations
-    const timestamp = new Date().getTime();
-    const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
-    const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
-    const newVisitorId = `${user.visitor_id}_deleted_${timestamp}`;
-
-    // Use a transaction to handle foreign key updates atomically
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     try {
-      // Temporarily drop the foreign key constraint
-      await queryRunner.query(
-        `ALTER TABLE casino_actions DROP CONSTRAINT "FK_609382032637fbe3cd5d96757bd"`,
-      );
+      // Find the user
+      const user = await this.playerRepository.findOne({
+        where: { id: userId, is_deleted: false },
+        select: ['id', 'email', 'name', 'phone', 'visitor_id'],
+      });
 
-      // Update the player record with new visitor_id
-      const newEmail = user.email && emailSuffix ? user.email + emailSuffix : user.email;
-      const newPhone = user.phone && phoneSuffix ? user.phone + phoneSuffix : user.phone;
+      if (!user) {
+        throw new NotFoundException('User not found or already deleted');
+      }
 
-      await queryRunner.query(
-        `UPDATE players
-         SET is_deleted = true,
-             deleted_at = NOW(),
-             deletion_reason = 'Mobile app account deletion',
-             name = NULL,
-             password = NULL,
-             updated_at = NOW(),
-             email = $1,
-             phone = $2,
-             visitor_id = $3
-         WHERE id = $4`,
-        [newEmail, newPhone, newVisitorId, userId],
-      );
+      // Delete all related casino actions to avoid foreign key constraint issues
+      await this.casinoActionRepository.delete({
+        visitor_id: user.visitor_id,
+      });
 
-      // Update all related casino actions to use the new visitor_id
-      await queryRunner.query(
-        `UPDATE casino_actions
-         SET visitor_id = $1,
-             updated_at = NOW()
-         WHERE visitor_id = $2`,
-        [newVisitorId, user.visitor_id],
-      );
+      // Create unique suffixes to avoid constraint violations during re-registration
+      const timestamp = new Date().getTime();
+      const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
+      const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
 
-      // Recreate the foreign key constraint
-      await queryRunner.query(
-        `ALTER TABLE casino_actions
-         ADD CONSTRAINT "FK_609382032637fbe3cd5d96757bd"
-         FOREIGN KEY (visitor_id) REFERENCES players(visitor_id)`,
-      );
+      // Prepare update data for soft delete
+      const updateData: any = {
+        is_deleted: true,
+        deleted_at: new Date(),
+        deletion_reason: 'Mobile app account deletion',
+        name: null,
+        password: null,
+        updated_at: new Date(),
+      };
 
-      // Commit the transaction
-      await queryRunner.commitTransaction();
+      // Add modified email, phone, and visitor_id to avoid constraint violations
+      if (user.email && emailSuffix) {
+        updateData.email = user.email + emailSuffix;
+      }
+      if (user.phone && phoneSuffix) {
+        updateData.phone = user.phone + phoneSuffix;
+      }
+      // Always modify visitor_id to avoid conflicts during re-registration
+      updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
+
+      // Perform the soft delete
+      await this.playerRepository.update({ id: userId }, updateData);
     } catch (error) {
-      // Rollback on error
-      await queryRunner.rollbackTransaction();
       console.error('Error during soft delete:', error);
       throw new BadRequestException('Database operation failed');
-    } finally {
-      // Release the query runner
-      await queryRunner.release();
     }
   }
 
