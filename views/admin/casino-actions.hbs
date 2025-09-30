@@ -116,14 +116,14 @@
         </thead>
         <tbody>
           {{#each casinoActions}}
-          <tr>
+          <tr {{#if this.is_user_deleted}}style="background-color: #ffe6e6;"{{/if}}>
             <td>
               <span class="badge bg-info">{{this.id}}</span>
             </td>
             <td>
               <div class="d-flex align-items-center">
                 <div class="avatar-sm me-2">
-                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                  <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
                        style="width: 30px; height: 30px; font-size: 12px;">
                     <i class="bi bi-building"></i>
                   </div>
@@ -138,8 +138,12 @@
             </td>
             <td>
               {{#if this.player}}
+              {{#if this.is_user_deleted}}
+              <div><span class="badge bg-danger">DELETED</span></div>
+              {{else}}
               <div>{{this.player.name}}</div>
               <small class="text-muted">{{this.player.email}}</small>
+              {{/if}}
               {{else}}
               <span class="text-muted">Unknown Player</span>
               {{/if}}
@@ -166,15 +170,15 @@
             </td>
             <td>
               <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn btn-outline-primary" 
+                <button type="button" class="btn btn-outline-primary"
                         onclick="viewCasinoAction('{{this.id}}')" title="View Details">
                   <i class="bi bi-eye"></i>
                 </button>
-                <button type="button" class="btn btn-outline-secondary" 
+                <button type="button" class="btn btn-outline-secondary"
                         onclick="editCasinoAction('{{this.id}}')" title="Edit Action">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button type="button" class="btn btn-outline-danger" 
+                <button type="button" class="btn btn-outline-danger"
                         onclick="deleteCasinoAction('{{this.id}}')" title="Delete Action">
                   <i class="bi bi-trash"></i>
                 </button>
@@ -467,14 +471,17 @@ async function viewCasinoAction(actionId) {
     const response_data = await response.json();
     const action = response_data.data || response_data;
     
+    const playerName = action.is_user_deleted ? '<span class="badge bg-danger">DELETED</span>' : (action.player?.name || 'Unknown');
+    const playerEmail = action.is_user_deleted ? 'N/A' : (action.player?.email || 'N/A');
+
     document.getElementById('casinoActionModalBody').innerHTML = `
       <div class="row">
         <div class="col-md-6">
           <p><strong>ID:</strong> ${action.id}</p>
           <p><strong>Casino:</strong> ${action.casino_name || 'Unknown'}</p>
           <p><strong>Visitor ID:</strong> <code>${action.visitor_id}</code></p>
-          <p><strong>Player:</strong> ${action.player?.name || 'Unknown'}</p>
-          <p><strong>Player Email:</strong> ${action.player?.email || 'N/A'}</p>
+          <p><strong>Player:</strong> ${playerName}</p>
+          <p><strong>Player Email:</strong> ${playerEmail}</p>
         </div>
         <div class="col-md-6">
           <p><strong>Action Date:</strong> ${new Date(action.date_of_action).toLocaleString()}</p>

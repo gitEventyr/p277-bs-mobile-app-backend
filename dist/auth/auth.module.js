@@ -19,6 +19,7 @@ const admin_guard_1 = require("./guards/admin.guard");
 const auth_controller_1 = require("./auth.controller");
 const player_entity_1 = require("../entities/player.entity");
 const admin_user_entity_1 = require("../entities/admin-user.entity");
+const casino_action_entity_1 = require("../entities/casino-action.entity");
 const password_reset_token_entity_1 = require("../entities/password-reset-token.entity");
 const email_verification_token_entity_1 = require("../entities/email-verification-token.entity");
 const phone_verification_token_entity_1 = require("../entities/phone-verification-token.entity");
@@ -48,6 +49,7 @@ exports.AuthModule = AuthModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([
                 player_entity_1.Player,
                 admin_user_entity_1.AdminUser,
+                casino_action_entity_1.CasinoAction,
                 password_reset_token_entity_1.PasswordResetToken,
                 email_verification_token_entity_1.EmailVerificationToken,
                 phone_verification_token_entity_1.PhoneVerificationToken,

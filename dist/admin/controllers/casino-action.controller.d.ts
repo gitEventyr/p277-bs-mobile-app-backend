@@ -19,7 +19,7 @@ export declare class CasinoActionController {
     private readonly casinoApiService;
     constructor(casinoActionService: CasinoActionService, casinoService: CasinoService, casinoApiService: CasinoApiService);
     casinoActions(session: AdminSession, query: any, res: Response): Promise<void>;
-    getCasinoActionDetails(id: string, session: AdminSession): Promise<import("../../entities/casino-action.entity").CasinoAction>;
+    getCasinoActionDetails(id: string, session: AdminSession): Promise<any>;
     createCasinoAction(createData: {
         casino_name: string;
         date_of_action: string;

@@ -11,6 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { Player } from '../../entities/player.entity';
 import { AdminUser } from '../../entities/admin-user.entity';
+import { CasinoAction } from '../../entities/casino-action.entity';
 import {
   JwtPayload,
   AuthenticatedUser,
@@ -25,6 +26,8 @@ export class AuthService {
     private readonly playerRepository: Repository<Player>,
     @InjectRepository(AdminUser)
     private readonly adminRepository: Repository<AdminUser>,
+    @InjectRepository(CasinoAction)
+    private readonly casinoActionRepository: Repository<CasinoAction>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -158,6 +161,14 @@ export class AuthService {
       const timestamp = new Date().getTime();
       const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
       const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+      const newVisitorId = `${user.visitor_id}_deleted_${timestamp}`;
+
+      // Update all related casino actions to use the new visitor_id
+      // This must be done BEFORE updating the player record
+      await this.casinoActionRepository.update(
+        { visitor_id: user.visitor_id },
+        { visitor_id: newVisitorId },
+      );
 
       // Prepare update data
       const updateData: any = {
@@ -177,7 +188,7 @@ export class AuthService {
         updateData.phone = user.phone + phoneSuffix;
       }
       // Always modify visitor_id to avoid conflicts during re-registration
-      updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
+      updateData.visitor_id = newVisitorId;
 
       // Perform the soft delete using TypeORM
       await this.playerRepository.update({ id: userId }, updateData);

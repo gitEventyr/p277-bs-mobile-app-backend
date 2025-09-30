@@ -10,6 +10,7 @@ import { AdminGuard } from './guards/admin.guard';
 import { AuthController } from './auth.controller';
 import { Player } from '../entities/player.entity';
 import { AdminUser } from '../entities/admin-user.entity';
+import { CasinoAction } from '../entities/casino-action.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
 import { PhoneVerificationToken } from '../entities/phone-verification-token.entity';
@@ -36,6 +37,7 @@ import { UsersModule } from '../users/users.module';
     TypeOrmModule.forFeature([
       Player,
       AdminUser,
+      CasinoAction,
       PasswordResetToken,
       EmailVerificationToken,
       PhoneVerificationToken,

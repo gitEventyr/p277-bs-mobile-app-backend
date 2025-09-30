@@ -21,7 +21,19 @@ export declare class CasinoActionService {
         deposit?: string;
         sortBy: string;
     }): Promise<{
-        data: CasinoAction[];
+        data: {
+            visitor_id: string;
+            player: any;
+            is_user_deleted: boolean;
+            id: number;
+            casino_name: string;
+            date_of_action: Date;
+            registration: boolean;
+            deposit: boolean;
+            created_at: Date;
+            updated_at: Date;
+            casino?: any;
+        }[];
         pagination: {
             total: number;
             from: number;
@@ -39,7 +51,7 @@ export declare class CasinoActionService {
             }[];
         };
     }>;
-    findById(id: number): Promise<CasinoAction | null>;
+    findById(id: number): Promise<any>;
     create(createData: {
         casino_name: string;
         date_of_action: Date;

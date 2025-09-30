@@ -54,13 +54,16 @@ const bcrypt = __importStar(require("bcryptjs"));
 const crypto_1 = require("crypto");
 const player_entity_1 = require("../../entities/player.entity");
 const admin_user_entity_1 = require("../../entities/admin-user.entity");
+const casino_action_entity_1 = require("../../entities/casino-action.entity");
 let AuthService = class AuthService {
     playerRepository;
     adminRepository;
+    casinoActionRepository;
     jwtService;
-    constructor(playerRepository, adminRepository, jwtService) {
+    constructor(playerRepository, adminRepository, casinoActionRepository, jwtService) {
         this.playerRepository = playerRepository;
         this.adminRepository = adminRepository;
+        this.casinoActionRepository = casinoActionRepository;
         this.jwtService = jwtService;
     }
     async generateJwtToken(payload) {
@@ -164,6 +167,8 @@ let AuthService = class AuthService {
             const timestamp = new Date().getTime();
             const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
             const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+            const newVisitorId = `${user.visitor_id}_deleted_${timestamp}`;
+            await this.casinoActionRepository.update({ visitor_id: user.visitor_id }, { visitor_id: newVisitorId });
             const updateData = {
                 is_deleted: true,
                 deleted_at: new Date(),
@@ -178,7 +183,7 @@ let AuthService = class AuthService {
             if (user.phone && phoneSuffix) {
                 updateData.phone = user.phone + phoneSuffix;
             }
-            updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
+            updateData.visitor_id = newVisitorId;
             await this.playerRepository.update({ id: userId }, updateData);
         }
         catch (error) {
@@ -194,7 +199,9 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(player_entity_1.Player)),
     __param(1, (0, typeorm_1.InjectRepository)(admin_user_entity_1.AdminUser)),
+    __param(2, (0, typeorm_1.InjectRepository)(casino_action_entity_1.CasinoAction)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         jwt_1.JwtService])
 ], AuthService);

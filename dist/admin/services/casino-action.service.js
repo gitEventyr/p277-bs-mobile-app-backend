@@ -67,6 +67,23 @@ let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
             take: limit,
             relations: ['casino', 'player'],
         });
+        const transformedData = data.map((action) => {
+            const isDeleted = action.visitor_id.includes('_deleted_');
+            const originalVisitorId = isDeleted
+                ? action.visitor_id.replace(/_deleted_\d+$/, '')
+                : action.visitor_id;
+            return {
+                ...action,
+                visitor_id: originalVisitorId,
+                player: action.player
+                    ? {
+                        ...action.player,
+                        name: isDeleted ? 'DELETED' : action.player.name,
+                    }
+                    : null,
+                is_user_deleted: isDeleted,
+            };
+        });
         const totalPages = Math.ceil(total / limit);
         const from = (page - 1) * limit + 1;
         const to = Math.min(page * limit, total);
@@ -78,7 +95,7 @@ let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
             });
         }
         return {
-            data,
+            data: transformedData,
             pagination: {
                 total,
                 from,
@@ -95,10 +112,28 @@ let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
         };
     }
     async findById(id) {
-        return await this.casinoActionRepository.findOne({
+        const action = await this.casinoActionRepository.findOne({
             where: { id },
             relations: ['casino', 'player'],
         });
+        if (!action) {
+            return null;
+        }
+        const isDeleted = action.visitor_id.includes('_deleted_');
+        const originalVisitorId = isDeleted
+            ? action.visitor_id.replace(/_deleted_\d+$/, '')
+            : action.visitor_id;
+        return {
+            ...action,
+            visitor_id: originalVisitorId,
+            player: action.player
+                ? {
+                    ...action.player,
+                    name: isDeleted ? 'DELETED' : action.player.name,
+                }
+                : null,
+            is_user_deleted: isDeleted,
+        };
     }
     async create(createData) {
         const casinoAction = this.casinoActionRepository.create(createData);
