@@ -60,11 +60,13 @@ let AuthService = class AuthService {
     adminRepository;
     casinoActionRepository;
     jwtService;
-    constructor(playerRepository, adminRepository, casinoActionRepository, jwtService) {
+    dataSource;
+    constructor(playerRepository, adminRepository, casinoActionRepository, jwtService, dataSource) {
         this.playerRepository = playerRepository;
         this.adminRepository = adminRepository;
         this.casinoActionRepository = casinoActionRepository;
         this.jwtService = jwtService;
+        this.dataSource = dataSource;
     }
     async generateJwtToken(payload) {
         return this.jwtService.sign(payload);
@@ -156,39 +158,51 @@ let AuthService = class AuthService {
         };
     }
     async softDeleteAccount(userId) {
+        const user = await this.playerRepository.findOne({
+            where: { id: userId, is_deleted: false },
+            select: ['id', 'email', 'name', 'phone', 'visitor_id'],
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('User not found or already deleted');
+        }
+        const timestamp = new Date().getTime();
+        const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
+        const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+        const newVisitorId = `${user.visitor_id}_deleted_${timestamp}`;
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
         try {
-            const user = await this.playerRepository.findOne({
-                where: { id: userId, is_deleted: false },
-                select: ['id', 'email', 'name', 'phone', 'visitor_id'],
-            });
-            if (!user) {
-                throw new common_1.NotFoundException('User not found or already deleted');
-            }
-            const timestamp = new Date().getTime();
-            const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
-            const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
-            const newVisitorId = `${user.visitor_id}_deleted_${timestamp}`;
-            await this.casinoActionRepository.update({ visitor_id: user.visitor_id }, { visitor_id: newVisitorId });
-            const updateData = {
-                is_deleted: true,
-                deleted_at: new Date(),
-                deletion_reason: 'Mobile app account deletion',
-                name: null,
-                password: null,
-                updated_at: new Date(),
-            };
-            if (user.email && emailSuffix) {
-                updateData.email = user.email + emailSuffix;
-            }
-            if (user.phone && phoneSuffix) {
-                updateData.phone = user.phone + phoneSuffix;
-            }
-            updateData.visitor_id = newVisitorId;
-            await this.playerRepository.update({ id: userId }, updateData);
+            await queryRunner.query(`ALTER TABLE casino_actions DROP CONSTRAINT "FK_609382032637fbe3cd5d96757bd"`);
+            const newEmail = user.email && emailSuffix ? user.email + emailSuffix : user.email;
+            const newPhone = user.phone && phoneSuffix ? user.phone + phoneSuffix : user.phone;
+            await queryRunner.query(`UPDATE players
+         SET is_deleted = true,
+             deleted_at = NOW(),
+             deletion_reason = 'Mobile app account deletion',
+             name = NULL,
+             password = NULL,
+             updated_at = NOW(),
+             email = $1,
+             phone = $2,
+             visitor_id = $3
+         WHERE id = $4`, [newEmail, newPhone, newVisitorId, userId]);
+            await queryRunner.query(`UPDATE casino_actions
+         SET visitor_id = $1,
+             updated_at = NOW()
+         WHERE visitor_id = $2`, [newVisitorId, user.visitor_id]);
+            await queryRunner.query(`ALTER TABLE casino_actions
+         ADD CONSTRAINT "FK_609382032637fbe3cd5d96757bd"
+         FOREIGN KEY (visitor_id) REFERENCES players(visitor_id)`);
+            await queryRunner.commitTransaction();
         }
         catch (error) {
+            await queryRunner.rollbackTransaction();
             console.error('Error during soft delete:', error);
             throw new common_1.BadRequestException('Database operation failed');
+        }
+        finally {
+            await queryRunner.release();
         }
     }
     async logout() {
@@ -203,6 +217,7 @@ exports.AuthService = AuthService = __decorate([
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        typeorm_2.DataSource])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map
