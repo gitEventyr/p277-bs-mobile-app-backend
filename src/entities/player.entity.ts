@@ -13,6 +13,7 @@ import {
   IsString,
   IsBoolean,
   Min,
+  Max,
 } from 'class-validator';
 import { VoucherRequest } from './voucher-request.entity';
 
@@ -150,6 +151,33 @@ export class Player {
   @IsNumber()
   @Min(0)
   scratch_cards: number;
+
+  // Daily spin wheel fields
+  @Column({ type: 'integer', default: 0 })
+  @IsNumber()
+  @Min(0)
+  daily_spin_wheel_day_count: number;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @IsOptional()
+  daily_spin_wheel_last_spin?: Date;
+
+  // Lucky wheel fields
+  @Column({ type: 'integer', default: 0 })
+  @IsNumber()
+  @Min(0)
+  lucky_wheel_count: number;
+
+  // Daily coins fields
+  @Column({ type: 'integer', default: 0 })
+  @IsNumber()
+  @Min(0)
+  @Max(7)
+  daily_coins_days_count: number;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @IsOptional()
+  daily_coins_last_reward?: Date;
 
   // Device and agreement fields
   @Column({ type: 'text', nullable: true })

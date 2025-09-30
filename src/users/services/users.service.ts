@@ -246,8 +246,10 @@ export class UsersService {
     search: string;
     status: string;
     sortBy: string;
+    email_verified?: string;
+    phone_verified?: string;
   }): Promise<{ data: Player[]; total: number }> {
-    const { page, limit, search, status, sortBy } = options;
+    const { page, limit, search, status, sortBy, email_verified, phone_verified } = options;
     const skip = (page - 1) * limit;
 
     let query = this.playerRepository
@@ -275,6 +277,20 @@ export class UsersService {
       query = query.andWhere('player.updated_at < :thirtyDaysAgo', {
         thirtyDaysAgo,
       });
+    }
+
+    // Email verification filter
+    if (email_verified === 'true') {
+      query = query.andWhere('player.email_verified = true');
+    } else if (email_verified === 'false') {
+      query = query.andWhere('player.email_verified = false');
+    }
+
+    // Phone verification filter
+    if (phone_verified === 'true') {
+      query = query.andWhere('player.phone_verified = true');
+    } else if (phone_verified === 'false') {
+      query = query.andWhere('player.phone_verified = false');
     }
 
     // Sorting

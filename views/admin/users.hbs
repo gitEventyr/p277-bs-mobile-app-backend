@@ -49,6 +49,24 @@
           </select>
         </div>
       </div>
+      <div class="row g-3 mt-2">
+        <div class="col-md-3">
+          <label for="emailVerified" class="form-label">Email Verification</label>
+          <select class="form-select" id="emailVerified">
+            <option value="">All</option>
+            <option value="true" {{#if (eq emailVerifiedFilter 'true')}}selected{{/if}}>Verified</option>
+            <option value="false" {{#if (eq emailVerifiedFilter 'false')}}selected{{/if}}>Not Verified</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="phoneVerified" class="form-label">Phone Verification</label>
+          <select class="form-select" id="phoneVerified">
+            <option value="">All</option>
+            <option value="true" {{#if (eq phoneVerifiedFilter 'true')}}selected{{/if}}>Verified</option>
+            <option value="false" {{#if (eq phoneVerifiedFilter 'false')}}selected{{/if}}>Not Verified</option>
+          </select>
+        </div>
+      </div>
       <div class="row mt-3">
         <div class="col-12">
           <button type="submit" class="btn btn-primary">
@@ -84,7 +102,8 @@
             <th>User</th>
             <th>Contact</th>
             <th>Balance</th>
-            <th>Status</th>
+            <th>Email Verified</th>
+            <th>Phone Verified</th>
             <th>Registered</th>
             <th>Actions</th>
           </tr>
@@ -121,10 +140,17 @@
               </div>
             </td>
             <td>
-              {{#if (isRecentlyActive this.updated_at)}}
-              <span class="badge bg-success">Active</span>
+              {{#if this.email_verified}}
+              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
               {{else}}
-              <span class="badge bg-secondary">Inactive</span>
+              <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Not Verified</span>
+              {{/if}}
+            </td>
+            <td>
+              {{#if this.phone_verified}}
+              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
+              {{else}}
+              <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Not Verified</span>
               {{/if}}
             </td>
             <td>

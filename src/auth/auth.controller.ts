@@ -57,6 +57,18 @@ import {
   RequestPhoneVerificationResponseDto,
 } from './dto/request-phone-verification.dto';
 import { VerifyPhoneDto, VerifyPhoneResponseDto } from './dto/verify-phone.dto';
+import {
+  UpdateDailySpinDto,
+  UpdateDailySpinResponseDto,
+} from './dto/update-daily-spin.dto';
+import {
+  UpdateLuckyWheelDto,
+  UpdateLuckyWheelResponseDto,
+} from './dto/update-lucky-wheel.dto';
+import {
+  UpdateDailyCoinsDto,
+  UpdateDailyCoinsResponseDto,
+} from './dto/update-daily-coins.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
@@ -313,6 +325,13 @@ export class AuthController {
         rp_balance: savedPlayer.rp_balance,
         ipaddress: this.getClientIp(req),
         avatar: savedPlayer.avatar,
+        email_verified: savedPlayer.email_verified,
+        phone_verified: savedPlayer.phone_verified,
+        daily_spin_wheel_day_count: savedPlayer.daily_spin_wheel_day_count,
+        daily_spin_wheel_last_spin: savedPlayer.daily_spin_wheel_last_spin,
+        lucky_wheel_count: savedPlayer.lucky_wheel_count,
+        daily_coins_days_count: savedPlayer.daily_coins_days_count,
+        daily_coins_last_reward: savedPlayer.daily_coins_last_reward,
       },
     };
   }
@@ -344,6 +363,8 @@ export class AuthController {
         'level',
         'scratch_cards',
         'avatar',
+        'daily_spin_wheel_last_spin',
+        'daily_spin_wheel_day_count',
       ],
     });
 
@@ -359,6 +380,26 @@ export class AuthController {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Check if daily spin needs to be reset (if 2+ days passed since last spin)
+    if (player.daily_spin_wheel_last_spin) {
+      const now = new Date();
+      const lastSpin = new Date(player.daily_spin_wheel_last_spin);
+      const daysDifference = Math.floor(
+        (now.getTime() - lastSpin.getTime()) / (1000 * 60 * 60 * 24),
+      );
+
+      // Reset if 2 or more days have passed
+      if (daysDifference >= 2) {
+        await this.playerRepository.update(
+          { id: player.id },
+          {
+            daily_spin_wheel_last_spin: null,
+            daily_spin_wheel_day_count: 0,
+          },
+        );
+      }
     }
 
     // Track device on login
@@ -378,10 +419,18 @@ export class AuthController {
       }
     }
 
+    // Fetch updated player data to get all fields
+    const updatedPlayer = await this.playerRepository.findOne({
+      where: { id: player.id, is_deleted: false },
+    });
+
     // Generate JWT token
     const payload: JwtPayload = {
-      sub: typeof player.id === 'string' ? parseInt(player.id) : player.id,
-      email: player.email || '',
+      sub:
+        typeof updatedPlayer.id === 'string'
+          ? parseInt(updatedPlayer.id)
+          : updatedPlayer.id,
+      email: updatedPlayer.email || '',
       type: 'user',
     };
 
@@ -392,16 +441,23 @@ export class AuthController {
       token_type: 'Bearer',
       expires_in: '30d',
       user: {
-        id: player.id,
-        visitor_id: player.visitor_id,
-        email: player.email,
-        name: player.name,
-        coins_balance: player.coins_balance,
-        level: player.level,
-        scratch_cards: player.scratch_cards,
-        rp_balance: player.rp_balance,
+        id: updatedPlayer.id,
+        visitor_id: updatedPlayer.visitor_id,
+        email: updatedPlayer.email,
+        name: updatedPlayer.name,
+        coins_balance: updatedPlayer.coins_balance,
+        level: updatedPlayer.level,
+        scratch_cards: updatedPlayer.scratch_cards,
+        rp_balance: updatedPlayer.rp_balance,
         ipaddress: this.getClientIp(req),
-        avatar: player.avatar,
+        avatar: updatedPlayer.avatar,
+        email_verified: updatedPlayer.email_verified,
+        phone_verified: updatedPlayer.phone_verified,
+        daily_spin_wheel_day_count: updatedPlayer.daily_spin_wheel_day_count,
+        daily_spin_wheel_last_spin: updatedPlayer.daily_spin_wheel_last_spin,
+        lucky_wheel_count: updatedPlayer.lucky_wheel_count,
+        daily_coins_days_count: updatedPlayer.daily_coins_days_count,
+        daily_coins_last_reward: updatedPlayer.daily_coins_last_reward,
       },
     };
   }
@@ -488,6 +544,11 @@ export class AuthController {
         email_verified_at: fullUser.email_verified_at,
         phone_verified: fullUser.phone_verified,
         phone_verified_at: fullUser.phone_verified_at,
+        daily_spin_wheel_day_count: fullUser.daily_spin_wheel_day_count,
+        daily_spin_wheel_last_spin: fullUser.daily_spin_wheel_last_spin,
+        lucky_wheel_count: fullUser.lucky_wheel_count,
+        daily_coins_days_count: fullUser.daily_coins_days_count,
+        daily_coins_last_reward: fullUser.daily_coins_last_reward,
         type: 'user',
         ipaddress: this.getClientIp(req),
       };
@@ -1100,6 +1161,115 @@ export class AuthController {
     return {
       message: 'Phone verified successfully',
       phoneVerified: true,
+    };
+  }
+
+  @Post('update-daily-spin')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Update daily spin wheel count',
+    description:
+      'Updates the daily spin wheel day count and sets the last spin timestamp to current time',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Daily spin updated successfully',
+    type: UpdateDailySpinResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async updateDailySpin(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateDailySpinDto: UpdateDailySpinDto,
+  ): Promise<UpdateDailySpinResponseDto> {
+    const now = new Date();
+
+    await this.playerRepository.update(
+      { id: user.id },
+      {
+        daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
+        daily_spin_wheel_last_spin: now,
+      },
+    );
+
+    return {
+      message: 'Daily spin updated successfully',
+      daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
+      daily_spin_wheel_last_spin: now,
+    };
+  }
+
+  @Post('update-lucky-wheel')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Update lucky wheel count',
+    description: 'Updates the lucky wheel count for the authenticated user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lucky wheel count updated successfully',
+    type: UpdateLuckyWheelResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async updateLuckyWheel(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateLuckyWheelDto: UpdateLuckyWheelDto,
+  ): Promise<UpdateLuckyWheelResponseDto> {
+    await this.playerRepository.update(
+      { id: user.id },
+      {
+        lucky_wheel_count: updateLuckyWheelDto.lucky_wheel_count,
+      },
+    );
+
+    return {
+      message: 'Lucky wheel count updated successfully',
+      lucky_wheel_count: updateLuckyWheelDto.lucky_wheel_count,
+    };
+  }
+
+  @Post('update-daily-coins')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Update daily coins days count',
+    description:
+      'Updates the daily coins days count and sets the last reward timestamp to current time',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Daily coins updated successfully',
+    type: UpdateDailyCoinsResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  async updateDailyCoins(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateDailyCoinsDto: UpdateDailyCoinsDto,
+  ): Promise<UpdateDailyCoinsResponseDto> {
+    const now = new Date();
+
+    await this.playerRepository.update(
+      { id: user.id },
+      {
+        daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
+        daily_coins_last_reward: now,
+      },
+    );
+
+    return {
+      message: 'Daily coins updated successfully',
+      daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
+      daily_coins_last_reward: now,
     };
   }
 

@@ -211,6 +211,8 @@ export class AdminDashboardController {
       const search = query.search || '';
       const status = query.status || '';
       const sortBy = query.sortBy || 'created_at';
+      const email_verified = query.email_verified || '';
+      const phone_verified = query.phone_verified || '';
 
       const users = await this.getUsersList({
         page,
@@ -218,6 +220,8 @@ export class AdminDashboardController {
         search,
         status,
         sortBy,
+        email_verified,
+        phone_verified,
       });
 
       const flashMessage = session.flashMessage;
@@ -235,6 +239,8 @@ export class AdminDashboardController {
         searchQuery: search,
         statusFilter: status,
         sortBy,
+        emailVerifiedFilter: email_verified,
+        phoneVerifiedFilter: phone_verified,
         queryString: this.buildQueryString(query),
         flashMessage,
         flashType,
@@ -523,6 +529,8 @@ export class AdminDashboardController {
     search: string;
     status: string;
     sortBy: string;
+    email_verified?: string;
+    phone_verified?: string;
   }) {
     try {
       const users = await this.usersService.findUsersForAdmin(options);

@@ -39,16 +39,20 @@ document.addEventListener('DOMContentLoaded', function() {
   if (searchForm) {
     searchForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      
+
       const search = document.getElementById('search').value;
       const status = document.getElementById('status').value;
       const sortBy = document.getElementById('sortBy').value;
-      
+      const emailVerified = document.getElementById('emailVerified').value;
+      const phoneVerified = document.getElementById('phoneVerified').value;
+
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (status) params.append('status', status);
       if (sortBy) params.append('sortBy', sortBy);
-      
+      if (emailVerified) params.append('email_verified', emailVerified);
+      if (phoneVerified) params.append('phone_verified', phoneVerified);
+
       window.location.href = '/admin/users?' + params.toString();
     });
   }
