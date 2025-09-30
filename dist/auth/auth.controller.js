@@ -36,6 +36,9 @@ const request_email_verification_dto_1 = require("./dto/request-email-verificati
 const verify_email_dto_1 = require("./dto/verify-email.dto");
 const request_phone_verification_dto_1 = require("./dto/request-phone-verification.dto");
 const verify_phone_dto_1 = require("./dto/verify-phone.dto");
+const update_daily_spin_dto_1 = require("./dto/update-daily-spin.dto");
+const update_lucky_wheel_dto_1 = require("./dto/update-lucky-wheel.dto");
+const update_daily_coins_dto_1 = require("./dto/update-daily-coins.dto");
 const player_entity_1 = require("../entities/player.entity");
 const password_reset_token_entity_1 = require("../entities/password-reset-token.entity");
 const email_verification_token_entity_1 = require("../entities/email-verification-token.entity");
@@ -208,6 +211,13 @@ let AuthController = AuthController_1 = class AuthController {
                 rp_balance: savedPlayer.rp_balance,
                 ipaddress: this.getClientIp(req),
                 avatar: savedPlayer.avatar,
+                email_verified: savedPlayer.email_verified,
+                phone_verified: savedPlayer.phone_verified,
+                daily_spin_wheel_day_count: savedPlayer.daily_spin_wheel_day_count,
+                daily_spin_wheel_last_spin: savedPlayer.daily_spin_wheel_last_spin,
+                lucky_wheel_count: savedPlayer.lucky_wheel_count,
+                daily_coins_days_count: savedPlayer.daily_coins_days_count,
+                daily_coins_last_reward: savedPlayer.daily_coins_last_reward,
             },
         };
     }
@@ -225,6 +235,8 @@ let AuthController = AuthController_1 = class AuthController {
                 'level',
                 'scratch_cards',
                 'avatar',
+                'daily_spin_wheel_last_spin',
+                'daily_spin_wheel_day_count',
             ],
         });
         if (!player || !player.password) {
@@ -234,6 +246,17 @@ let AuthController = AuthController_1 = class AuthController {
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException('Invalid email or password');
         }
+        if (player.daily_spin_wheel_last_spin) {
+            const now = new Date();
+            const lastSpin = new Date(player.daily_spin_wheel_last_spin);
+            const daysDifference = Math.floor((now.getTime() - lastSpin.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysDifference >= 2) {
+                await this.playerRepository.update({ id: player.id }, {
+                    daily_spin_wheel_last_spin: () => 'NULL',
+                    daily_spin_wheel_day_count: 0,
+                });
+            }
+        }
         if (loginDto.deviceUDID) {
             try {
                 await this.devicesService.createOrUpdateDevice(player.id, loginDto.deviceUDID, req.headers['user-agent'] || '', this.getClientIp(req));
@@ -242,9 +265,17 @@ let AuthController = AuthController_1 = class AuthController {
                 this.logger.warn('Failed to track device during login:', deviceError.message);
             }
         }
+        const updatedPlayer = await this.playerRepository.findOne({
+            where: { id: player.id, is_deleted: false },
+        });
+        if (!updatedPlayer) {
+            throw new common_1.UnauthorizedException('Player not found');
+        }
         const payload = {
-            sub: typeof player.id === 'string' ? parseInt(player.id) : player.id,
-            email: player.email || '',
+            sub: typeof updatedPlayer.id === 'string'
+                ? parseInt(updatedPlayer.id)
+                : updatedPlayer.id,
+            email: updatedPlayer.email || '',
             type: 'user',
         };
         const accessToken = await this.authService.generateJwtToken(payload);
@@ -253,16 +284,23 @@ let AuthController = AuthController_1 = class AuthController {
             token_type: 'Bearer',
             expires_in: '30d',
             user: {
-                id: player.id,
-                visitor_id: player.visitor_id,
-                email: player.email,
-                name: player.name,
-                coins_balance: player.coins_balance,
-                level: player.level,
-                scratch_cards: player.scratch_cards,
-                rp_balance: player.rp_balance,
+                id: updatedPlayer.id,
+                visitor_id: updatedPlayer.visitor_id,
+                email: updatedPlayer.email,
+                name: updatedPlayer.name,
+                coins_balance: updatedPlayer.coins_balance,
+                level: updatedPlayer.level,
+                scratch_cards: updatedPlayer.scratch_cards,
+                rp_balance: updatedPlayer.rp_balance,
                 ipaddress: this.getClientIp(req),
-                avatar: player.avatar,
+                avatar: updatedPlayer.avatar,
+                email_verified: updatedPlayer.email_verified,
+                phone_verified: updatedPlayer.phone_verified,
+                daily_spin_wheel_day_count: updatedPlayer.daily_spin_wheel_day_count,
+                daily_spin_wheel_last_spin: updatedPlayer.daily_spin_wheel_last_spin,
+                lucky_wheel_count: updatedPlayer.lucky_wheel_count,
+                daily_coins_days_count: updatedPlayer.daily_coins_days_count,
+                daily_coins_last_reward: updatedPlayer.daily_coins_last_reward,
             },
         };
     }
@@ -327,6 +365,11 @@ let AuthController = AuthController_1 = class AuthController {
                 email_verified_at: fullUser.email_verified_at,
                 phone_verified: fullUser.phone_verified,
                 phone_verified_at: fullUser.phone_verified_at,
+                daily_spin_wheel_day_count: fullUser.daily_spin_wheel_day_count,
+                daily_spin_wheel_last_spin: fullUser.daily_spin_wheel_last_spin,
+                lucky_wheel_count: fullUser.lucky_wheel_count,
+                daily_coins_days_count: fullUser.daily_coins_days_count,
+                daily_coins_last_reward: fullUser.daily_coins_last_reward,
                 type: 'user',
                 ipaddress: this.getClientIp(req),
             };
@@ -599,6 +642,39 @@ let AuthController = AuthController_1 = class AuthController {
         return {
             message: 'Phone verified successfully',
             phoneVerified: true,
+        };
+    }
+    async updateDailySpin(user, updateDailySpinDto) {
+        const now = new Date();
+        await this.playerRepository.update({ id: user.id }, {
+            daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
+            daily_spin_wheel_last_spin: now,
+        });
+        return {
+            message: 'Daily spin updated successfully',
+            daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
+            daily_spin_wheel_last_spin: now,
+        };
+    }
+    async updateLuckyWheel(user, updateLuckyWheelDto) {
+        await this.playerRepository.update({ id: user.id }, {
+            lucky_wheel_count: updateLuckyWheelDto.lucky_wheel_count,
+        });
+        return {
+            message: 'Lucky wheel count updated successfully',
+            lucky_wheel_count: updateLuckyWheelDto.lucky_wheel_count,
+        };
+    }
+    async updateDailyCoins(user, updateDailyCoinsDto) {
+        const now = new Date();
+        await this.playerRepository.update({ id: user.id }, {
+            daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
+            daily_coins_last_reward: now,
+        });
+        return {
+            message: 'Daily coins updated successfully',
+            daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
+            daily_coins_last_reward: now,
         };
     }
     getBaseUrl() {
@@ -900,6 +976,75 @@ __decorate([
     __metadata("design:paramtypes", [Object, verify_phone_dto_1.VerifyPhoneDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "verifyPhone", null);
+__decorate([
+    (0, common_1.Post)('update-daily-spin'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update daily spin wheel count',
+        description: 'Updates the daily spin wheel day count and sets the last spin timestamp to current time',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Daily spin updated successfully',
+        type: update_daily_spin_dto_1.UpdateDailySpinResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Authentication required',
+    }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_daily_spin_dto_1.UpdateDailySpinDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "updateDailySpin", null);
+__decorate([
+    (0, common_1.Post)('update-lucky-wheel'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update lucky wheel count',
+        description: 'Updates the lucky wheel count for the authenticated user',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Lucky wheel count updated successfully',
+        type: update_lucky_wheel_dto_1.UpdateLuckyWheelResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Authentication required',
+    }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_lucky_wheel_dto_1.UpdateLuckyWheelDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "updateLuckyWheel", null);
+__decorate([
+    (0, common_1.Post)('update-daily-coins'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update daily coins days count',
+        description: 'Updates the daily coins days count and sets the last reward timestamp to current time',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Daily coins updated successfully',
+        type: update_daily_coins_dto_1.UpdateDailyCoinsResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Authentication required',
+    }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_daily_coins_dto_1.UpdateDailyCoinsDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "updateDailyCoins", null);
 exports.AuthController = AuthController = AuthController_1 = __decorate([
     (0, swagger_1.ApiTags)('📱 Mobile: Authentication'),
     (0, common_1.Controller)('auth'),

@@ -28,6 +28,11 @@ export declare class Player {
     auth_user_id?: string;
     age_checkbox?: boolean;
     scratch_cards: number;
+    daily_spin_wheel_day_count: number;
+    daily_spin_wheel_last_spin?: Date;
+    lucky_wheel_count: number;
+    daily_coins_days_count: number;
+    daily_coins_last_reward?: Date;
     device_udid?: string;
     subscription_agreement?: boolean;
     tnc_agreement?: boolean;

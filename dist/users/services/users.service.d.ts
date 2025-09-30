@@ -26,6 +26,8 @@ export declare class UsersService {
         search: string;
         status: string;
         sortBy: string;
+        email_verified?: string;
+        phone_verified?: string;
     }): Promise<{
         data: Player[];
         total: number;

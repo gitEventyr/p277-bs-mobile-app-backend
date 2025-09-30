@@ -66,5 +66,12 @@ export class LoginResponseDto {
     scratch_cards: number;
     ipaddress: string;
     avatar?: string;
+    email_verified: boolean;
+    phone_verified: boolean;
+    daily_spin_wheel_day_count: number;
+    daily_spin_wheel_last_spin?: Date;
+    lucky_wheel_count: number;
+    daily_coins_days_count: number;
+    daily_coins_last_reward?: Date;
   };
 }

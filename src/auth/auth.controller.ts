@@ -395,7 +395,7 @@ export class AuthController {
         await this.playerRepository.update(
           { id: player.id },
           {
-            daily_spin_wheel_last_spin: null,
+            daily_spin_wheel_last_spin: () => 'NULL',
             daily_spin_wheel_day_count: 0,
           },
         );
@@ -423,6 +423,10 @@ export class AuthController {
     const updatedPlayer = await this.playerRepository.findOne({
       where: { id: player.id, is_deleted: false },
     });
+
+    if (!updatedPlayer) {
+      throw new UnauthorizedException('Player not found');
+    }
 
     // Generate JWT token
     const payload: JwtPayload = {

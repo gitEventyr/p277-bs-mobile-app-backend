@@ -11,6 +11,9 @@ import { RequestEmailVerificationDto, RequestEmailVerificationResponseDto } from
 import { VerifyEmailDto, VerifyEmailResponseDto } from './dto/verify-email.dto';
 import { RequestPhoneVerificationDto, RequestPhoneVerificationResponseDto } from './dto/request-phone-verification.dto';
 import { VerifyPhoneDto, VerifyPhoneResponseDto } from './dto/verify-phone.dto';
+import { UpdateDailySpinDto, UpdateDailySpinResponseDto } from './dto/update-daily-spin.dto';
+import { UpdateLuckyWheelDto, UpdateLuckyWheelResponseDto } from './dto/update-lucky-wheel.dto';
+import { UpdateDailyCoinsDto, UpdateDailyCoinsResponseDto } from './dto/update-daily-coins.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
@@ -86,6 +89,11 @@ export declare class AuthController {
         email_verified_at: Date | undefined;
         phone_verified: boolean;
         phone_verified_at: Date | undefined;
+        daily_spin_wheel_day_count: number;
+        daily_spin_wheel_last_spin: Date | undefined;
+        lucky_wheel_count: number;
+        daily_coins_days_count: number;
+        daily_coins_last_reward: Date | undefined;
         type: string;
         ipaddress: string;
         display_name?: undefined;
@@ -131,6 +139,11 @@ export declare class AuthController {
         email_verified_at?: undefined;
         phone_verified?: undefined;
         phone_verified_at?: undefined;
+        daily_spin_wheel_day_count?: undefined;
+        daily_spin_wheel_last_spin?: undefined;
+        lucky_wheel_count?: undefined;
+        daily_coins_days_count?: undefined;
+        daily_coins_last_reward?: undefined;
         ipaddress?: undefined;
     }>;
     getAdminData(admin: AuthenticatedAdmin): Promise<{
@@ -154,6 +167,9 @@ export declare class AuthController {
     verifyEmail(user: AuthenticatedUser, verifyEmailDto: VerifyEmailDto): Promise<VerifyEmailResponseDto>;
     requestPhoneVerification(user: AuthenticatedUser, requestDto: RequestPhoneVerificationDto): Promise<RequestPhoneVerificationResponseDto>;
     verifyPhone(user: AuthenticatedUser, verifyPhoneDto: VerifyPhoneDto): Promise<VerifyPhoneResponseDto>;
+    updateDailySpin(user: AuthenticatedUser, updateDailySpinDto: UpdateDailySpinDto): Promise<UpdateDailySpinResponseDto>;
+    updateLuckyWheel(user: AuthenticatedUser, updateLuckyWheelDto: UpdateLuckyWheelDto): Promise<UpdateLuckyWheelResponseDto>;
+    updateDailyCoins(user: AuthenticatedUser, updateDailyCoinsDto: UpdateDailyCoinsDto): Promise<UpdateDailyCoinsResponseDto>;
     private getBaseUrl;
 }
 export {};

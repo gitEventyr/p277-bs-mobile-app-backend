@@ -169,12 +169,16 @@ let AdminDashboardController = class AdminDashboardController {
             const search = query.search || '';
             const status = query.status || '';
             const sortBy = query.sortBy || 'created_at';
+            const email_verified = query.email_verified || '';
+            const phone_verified = query.phone_verified || '';
             const users = await this.getUsersList({
                 page,
                 limit,
                 search,
                 status,
                 sortBy,
+                email_verified,
+                phone_verified,
             });
             const flashMessage = session.flashMessage;
             const flashType = session.flashType;
@@ -190,6 +194,8 @@ let AdminDashboardController = class AdminDashboardController {
                 searchQuery: search,
                 statusFilter: status,
                 sortBy,
+                emailVerifiedFilter: email_verified,
+                phoneVerifiedFilter: phone_verified,
                 queryString: this.buildQueryString(query),
                 flashMessage,
                 flashType,

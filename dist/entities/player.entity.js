@@ -42,6 +42,11 @@ let Player = class Player {
     auth_user_id;
     age_checkbox;
     scratch_cards;
+    daily_spin_wheel_day_count;
+    daily_spin_wheel_last_spin;
+    lucky_wheel_count;
+    daily_coins_days_count;
+    daily_coins_last_reward;
     device_udid;
     subscription_agreement;
     tnc_agreement;
@@ -224,6 +229,35 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], Player.prototype, "scratch_cards", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'integer', default: 0 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], Player.prototype, "daily_spin_wheel_day_count", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Date)
+], Player.prototype, "daily_spin_wheel_last_spin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'integer', default: 0 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], Player.prototype, "lucky_wheel_count", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'integer', default: 0 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.Max)(7),
+    __metadata("design:type", Number)
+], Player.prototype, "daily_coins_days_count", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Date)
+], Player.prototype, "daily_coins_last_reward", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     (0, class_validator_1.IsOptional)(),
