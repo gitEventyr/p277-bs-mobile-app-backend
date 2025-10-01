@@ -36,7 +36,7 @@
             <td>{{this.id}}</td>
             <td>{{this.name}}</td>
             <td><span class="badge bg-info">{{this.rp_price}} RP</span></td>
-            <td><span class="badge bg-success">${{this.amazon_vouchers_equivalent}}</span></td>
+            <td><span class="badge bg-success">£{{this.amazon_vouchers_equivalent}}</span></td>
             <td>
               {{#if (eq this.type "Amazon Gift Card")}}
                 <span class="badge bg-warning">Amazon Gift Card</span>
@@ -85,7 +85,7 @@
             <input type="number" class="form-control" id="rp_price" name="rp_price" min="0" step="0.01" required>
           </div>
           <div class="mb-3">
-            <label for="amazon_vouchers_equivalent" class="form-label">Real Value ($)</label>
+            <label for="amazon_vouchers_equivalent" class="form-label">Real Value (£)</label>
             <input type="number" class="form-control" id="amazon_vouchers_equivalent" name="amazon_vouchers_equivalent" min="0" step="0.01" required>
           </div>
           <div class="mb-3">
@@ -125,7 +125,7 @@
             <input type="number" class="form-control" id="edit_rp_price" name="rp_price" min="0" step="0.01" required>
           </div>
           <div class="mb-3">
-            <label for="edit_amazon_vouchers_equivalent" class="form-label">Real Value ($)</label>
+            <label for="edit_amazon_vouchers_equivalent" class="form-label">Real Value (£)</label>
             <input type="number" class="form-control" id="edit_amazon_vouchers_equivalent" name="amazon_vouchers_equivalent" min="0" step="0.01" required>
           </div>
           <div class="mb-3">
