@@ -26,7 +26,7 @@ body {
 /* Main Content Area */
 main {
   background-color: var(--light-gray);
-  min-height: calc(100vh - 56px);
+  min-height: calc(100vh - 72px);
 }
 
 /* Login Page Styles */
@@ -83,7 +83,7 @@ main {
 /* Sidebar Styles */
 .sidebar {
   position: fixed;
-  top: 56px;
+  top: 72px;
   bottom: 0;
   left: 0;
   z-index: 100;
@@ -418,6 +418,10 @@ main {
 .navbar {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #E3E6F0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--white);
 }
 
 .navbar-brand {
