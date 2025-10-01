@@ -32,12 +32,12 @@
       <div class="row g-3">
         <div class="col-md-4">
           <label for="search" class="form-label">Search</label>
-          <input type="text" class="form-control" id="search" placeholder="Visitor ID..." 
+          <input type="text" class="form-control" id="search" name="search" placeholder="Visitor ID..."
                  value="{{searchQuery}}">
         </div>
         <div class="col-md-2">
           <label for="casinoName" class="form-label">Casino</label>
-          <select class="form-select" id="casinoName">
+          <select class="form-select" id="casinoName" name="casinoName">
             <option value="">All Casinos</option>
             {{#each casinos}}
             <option value="{{this.casino_name}}" {{#if (eq ../selectedCasinoName this.casino_name)}}selected{{/if}}>
@@ -48,7 +48,7 @@
         </div>
         <div class="col-md-2">
           <label for="registration" class="form-label">Registration</label>
-          <select class="form-select" id="registration">
+          <select class="form-select" id="registration" name="registration">
             <option value="">Any</option>
             <option value="true" {{#if (eq registrationFilter 'true')}}selected{{/if}}>Yes</option>
             <option value="false" {{#if (eq registrationFilter 'false')}}selected{{/if}}>No</option>
@@ -56,7 +56,7 @@
         </div>
         <div class="col-md-2">
           <label for="deposit" class="form-label">Deposit</label>
-          <select class="form-select" id="deposit">
+          <select class="form-select" id="deposit" name="deposit">
             <option value="">Any</option>
             <option value="true" {{#if (eq depositFilter 'true')}}selected{{/if}}>Yes</option>
             <option value="false" {{#if (eq depositFilter 'false')}}selected{{/if}}>No</option>
@@ -64,7 +64,7 @@
         </div>
         <div class="col-md-2">
           <label for="sortBy" class="form-label">Sort By</label>
-          <select class="form-select" id="sortBy">
+          <select class="form-select" id="sortBy" name="sortBy">
             <option value="date_of_action" {{#if (eq sortBy 'date_of_action')}}selected{{/if}}>Action Date</option>
             <option value="created_at" {{#if (eq sortBy 'created_at')}}selected{{/if}}>Created Date</option>
             <option value="visitor_id" {{#if (eq sortBy 'visitor_id')}}selected{{/if}}>Visitor ID</option>
