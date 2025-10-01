@@ -53,35 +53,38 @@ export class CasinoService {
       }
     }
 
-    // Sorting
-    let sortByActionsCount = false;
+    // Sorting - use default sorting first, then sort in memory for actions count
+    const sortByActionsCount = sortBy === 'actions_count_desc' || sortBy === 'actions_count_asc';
+
     if (sortBy === 'casino_name') {
       query = query.orderBy('casino.casino_name', 'ASC');
-    } else if (sortBy === 'actions_count_desc') {
-      sortByActionsCount = true;
-      query = query
-        .loadRelationCountAndMap('casino.actionsCount', 'casino.actions')
-        .orderBy(
-          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)',
-          'DESC',
-        );
-    } else if (sortBy === 'actions_count_asc') {
-      sortByActionsCount = true;
-      query = query
-        .loadRelationCountAndMap('casino.actionsCount', 'casino.actions')
-        .orderBy(
-          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)',
-          'ASC',
-        );
     } else {
+      // For actions count sorting, use creation date as base sort, then sort in memory
       query = query.orderBy('casino.created_at', 'DESC');
     }
 
     // Get total count
     const total = await query.getCount();
 
-    // Apply pagination
-    const data = await query.skip(skip).take(limit).getMany();
+    // For actions count sorting, we need to get all matching records, sort them, then paginate
+    let data: Casino[];
+    if (sortByActionsCount) {
+      // Get all matching casinos
+      const allData = await query.getMany();
+
+      // Sort by actions count in memory
+      allData.sort((a, b) => {
+        const countA = a.actions?.length || 0;
+        const countB = b.actions?.length || 0;
+        return sortBy === 'actions_count_desc' ? countB - countA : countA - countB;
+      });
+
+      // Apply pagination manually
+      data = allData.slice(skip, skip + limit);
+    } else {
+      // Normal pagination for other sorts
+      data = await query.skip(skip).take(limit).getMany();
+    }
 
     const totalPages = Math.ceil(total / limit);
     const from = (page - 1) * limit + 1;

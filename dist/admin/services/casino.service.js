@@ -45,27 +45,27 @@ let CasinoService = class CasinoService {
                 query = query.andWhere('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) > 50');
             }
         }
-        let sortByActionsCount = false;
+        const sortByActionsCount = sortBy === 'actions_count_desc' || sortBy === 'actions_count_asc';
         if (sortBy === 'casino_name') {
             query = query.orderBy('casino.casino_name', 'ASC');
-        }
-        else if (sortBy === 'actions_count_desc') {
-            sortByActionsCount = true;
-            query = query
-                .loadRelationCountAndMap('casino.actionsCount', 'casino.actions')
-                .orderBy('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'DESC');
-        }
-        else if (sortBy === 'actions_count_asc') {
-            sortByActionsCount = true;
-            query = query
-                .loadRelationCountAndMap('casino.actionsCount', 'casino.actions')
-                .orderBy('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'ASC');
         }
         else {
             query = query.orderBy('casino.created_at', 'DESC');
         }
         const total = await query.getCount();
-        const data = await query.skip(skip).take(limit).getMany();
+        let data;
+        if (sortByActionsCount) {
+            const allData = await query.getMany();
+            allData.sort((a, b) => {
+                const countA = a.actions?.length || 0;
+                const countB = b.actions?.length || 0;
+                return sortBy === 'actions_count_desc' ? countB - countA : countA - countB;
+            });
+            data = allData.slice(skip, skip + limit);
+        }
+        else {
+            data = await query.skip(skip).take(limit).getMany();
+        }
         const totalPages = Math.ceil(total / limit);
         const from = (page - 1) * limit + 1;
         const to = Math.min(page * limit, total);
