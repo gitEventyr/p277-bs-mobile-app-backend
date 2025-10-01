@@ -45,18 +45,21 @@ let CasinoService = class CasinoService {
                 query = query.andWhere('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) > 50');
             }
         }
+        let sortByActionsCount = false;
         if (sortBy === 'casino_name') {
             query = query.orderBy('casino.casino_name', 'ASC');
         }
         else if (sortBy === 'actions_count_desc') {
+            sortByActionsCount = true;
             query = query
-                .addSelect('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'actions_count')
-                .orderBy('actions_count', 'DESC');
+                .loadRelationCountAndMap('casino.actionsCount', 'casino.actions')
+                .orderBy('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'DESC');
         }
         else if (sortBy === 'actions_count_asc') {
+            sortByActionsCount = true;
             query = query
-                .addSelect('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'actions_count')
-                .orderBy('actions_count', 'ASC');
+                .loadRelationCountAndMap('casino.actionsCount', 'casino.actions')
+                .orderBy('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'ASC');
         }
         else {
             query = query.orderBy('casino.created_at', 'DESC');

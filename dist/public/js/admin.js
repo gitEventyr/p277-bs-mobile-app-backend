@@ -261,12 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Clear Search Function
-function clearSearch() {
-  document.getElementById('search').value = '';
-  document.getElementById('sortBy').value = 'created_at';
-  window.location.href = '/admin/users';
-}
+// Clear Search Function - removed as each page has its own implementation
 
 // Show Create User Modal
 function showCreateUserModal() {
