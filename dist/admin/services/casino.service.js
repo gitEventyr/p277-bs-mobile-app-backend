@@ -48,6 +48,16 @@ let CasinoService = class CasinoService {
         if (sortBy === 'casino_name') {
             query = query.orderBy('casino.casino_name', 'ASC');
         }
+        else if (sortBy === 'actions_count_desc') {
+            query = query
+                .addSelect('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'actions_count')
+                .orderBy('actions_count', 'DESC');
+        }
+        else if (sortBy === 'actions_count_asc') {
+            query = query
+                .addSelect('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id)', 'actions_count')
+                .orderBy('actions_count', 'ASC');
+        }
         else {
             query = query.orderBy('casino.created_at', 'DESC');
         }

@@ -50,6 +50,8 @@
           <select class="form-select" id="sortBy" name="sortBy">
             <option value="created_at" {{#if (eq sortBy 'created_at')}}selected{{/if}}>Creation Date</option>
             <option value="casino_name" {{#if (eq sortBy 'casino_name')}}selected{{/if}}>Casino Name</option>
+            <option value="actions_count_desc" {{#if (eq sortBy 'actions_count_desc')}}selected{{/if}}>Actions Count (High to Low)</option>
+            <option value="actions_count_asc" {{#if (eq sortBy 'actions_count_asc')}}selected{{/if}}>Actions Count (Low to High)</option>
           </select>
         </div>
       </div>
