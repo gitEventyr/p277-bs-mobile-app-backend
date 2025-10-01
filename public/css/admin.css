@@ -424,6 +424,9 @@ main {
   font-weight: 700;
   font-size: 1.25rem;
   color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .navbar-brand:hover {
@@ -434,6 +437,7 @@ main {
   margin-right: 0.75rem;
   color: var(--primary-color);
   font-size: 1.3rem;
+  flex-shrink: 0;
 }
 
 .navbar-nav .nav-link {
