@@ -21,15 +21,15 @@
   </div>
   <div class="card-body">
     <form id="userSearchForm">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="search" class="form-label">Search</label>
-          <input type="text" class="form-control" id="search" placeholder="Name, email, phone, visitor ID..."
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label for="search" class="form-label form-label-sm">Search</label>
+          <input type="text" class="form-control form-control-sm" id="search" placeholder="Name, email, phone, visitor ID..."
                  value="{{searchQuery}}">
         </div>
-        <div class="col-md-3">
-          <label for="sortBy" class="form-label">Sort By</label>
-          <select class="form-select" id="sortBy">
+        <div class="col-md-2">
+          <label for="sortBy" class="form-label form-label-sm">Sort By</label>
+          <select class="form-select form-select-sm" id="sortBy">
             <option value="created_at" {{#if (eq sortBy 'created_at')}}selected{{/if}}>Registration Date</option>
             <option value="name" {{#if (eq sortBy 'name')}}selected{{/if}}>Name</option>
             <option value="email" {{#if (eq sortBy 'email')}}selected{{/if}}>Email</option>
@@ -37,34 +37,34 @@
             <option value="rp_balance" {{#if (eq sortBy 'rp_balance')}}selected{{/if}}>RP Balance</option>
           </select>
         </div>
-      </div>
-      <div class="row g-3 mt-2">
-        <div class="col-md-3">
-          <label for="emailVerified" class="form-label">Email Verification</label>
-          <select class="form-select" id="emailVerified">
+        <div class="col-md-2">
+          <label for="emailVerified" class="form-label form-label-sm">Email</label>
+          <select class="form-select form-select-sm" id="emailVerified">
             <option value="">All</option>
             <option value="true" {{#if (eq emailVerifiedFilter 'true')}}selected{{/if}}>Verified</option>
             <option value="false" {{#if (eq emailVerifiedFilter 'false')}}selected{{/if}}>Not Verified</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label for="phoneVerified" class="form-label">Phone Verification</label>
-          <select class="form-select" id="phoneVerified">
+        <div class="col-md-2">
+          <label for="phoneVerified" class="form-label form-label-sm">Phone</label>
+          <select class="form-select form-select-sm" id="phoneVerified">
             <option value="">All</option>
             <option value="true" {{#if (eq phoneVerifiedFilter 'true')}}selected{{/if}}>Verified</option>
             <option value="false" {{#if (eq phoneVerifiedFilter 'false')}}selected{{/if}}>Not Verified</option>
           </select>
         </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary">
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
             <i class="bi bi-search"></i>
             Search
           </button>
-          <button type="button" class="btn btn-secondary ms-2" onclick="clearSearch()">
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="clearSearch()">
             <i class="bi bi-x-circle"></i>
-            Clear
+            Clear Filters
           </button>
         </div>
       </div>

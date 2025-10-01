@@ -168,6 +168,28 @@
   </div>
 </div>
 
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle"></i>
+          Confirm Action
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmationMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // Clear Filter
 function clearFilter() {
@@ -177,7 +199,27 @@ function clearFilter() {
 // Update Voucher Request Status
 function updateVoucherRequestStatus(id, status) {
   const actionText = status === 'sent' ? 'mark as sent' : 'cancel';
-  if (confirm(`Are you sure you want to ${actionText} this voucher request?`)) {
+  const message = `Are you sure you want to ${actionText} this voucher request?`;
+
+  // Set up confirmation modal
+  document.getElementById('confirmationMessage').textContent = message;
+  const confirmBtn = document.getElementById('confirmActionBtn');
+
+  // Update button style based on action
+  confirmBtn.className = status === 'sent' ? 'btn btn-success' : 'btn btn-danger';
+  confirmBtn.textContent = status === 'sent' ? 'Mark as Sent' : 'Cancel Request';
+
+  // Remove existing event listeners
+  const newConfirmBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+  // Add new event listener
+  newConfirmBtn.addEventListener('click', function() {
+    // Hide modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+    modal.hide();
+
+    // Make API call
     fetch(`/admin/vouchers/requests/${id}`, {
       method: 'PATCH',
       headers: {
@@ -194,7 +236,11 @@ function updateVoucherRequestStatus(id, status) {
     }).catch(error => {
       alert('Error updating voucher request status: ' + error.message);
     });
-  }
+  });
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+  modal.show();
 }
 </script>
 
