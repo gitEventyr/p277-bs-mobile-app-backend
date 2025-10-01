@@ -41,14 +41,12 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
 
       const search = document.getElementById('search').value;
-      const status = document.getElementById('status').value;
       const sortBy = document.getElementById('sortBy').value;
       const emailVerified = document.getElementById('emailVerified').value;
       const phoneVerified = document.getElementById('phoneVerified').value;
 
       const params = new URLSearchParams();
       if (search) params.append('search', search);
-      if (status) params.append('status', status);
       if (sortBy) params.append('sortBy', sortBy);
       if (emailVerified) params.append('email_verified', emailVerified);
       if (phoneVerified) params.append('phone_verified', phoneVerified);
@@ -266,7 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Clear Search Function
 function clearSearch() {
   document.getElementById('search').value = '';
-  document.getElementById('status').value = '';
   document.getElementById('sortBy').value = 'created_at';
   window.location.href = '/admin/users';
 }
@@ -374,42 +371,48 @@ async function viewUser(userId) {
       
       modalBody.innerHTML = `
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-6 mb-3">
             <h6 class="fw-bold">Basic Information</h6>
-            <table class="table table-sm">
-              <tr><td><strong>Name:</strong></td><td>${user.name && user.name.trim() !== '' ? user.name : 'N/A'}</td></tr>
-              <tr><td><strong>Email:</strong></td><td>${user.email && user.email.trim() !== '' ? user.email : 'N/A'}</td></tr>
-              <tr><td><strong>Phone:</strong></td><td>${user.phone && user.phone.trim() !== '' ? user.phone : 'N/A'}</td></tr>
-              <tr><td><strong>Visitor ID:</strong></td><td>${user.visitor_id && user.visitor_id.trim() !== '' ? user.visitor_id : 'N/A'}</td></tr>
-              <tr><td><strong>Coin Balance:</strong></td><td><span class="badge bg-success">${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins</span></td></tr>
-              <tr><td><strong>RP Balance:</strong></td><td><span class="badge bg-info">${user.rp_balance !== undefined && user.rp_balance !== null ? user.rp_balance : 0} RP</span></td></tr>
-              <tr><td><strong>Level:</strong></td><td>${user.level !== undefined && user.level !== null ? user.level : 1}</td></tr>
-              <tr><td><strong>Scratch Cards:</strong></td><td>${user.scratch_cards !== undefined && user.scratch_cards !== null ? user.scratch_cards : 0}</td></tr>
+            <table class="table table-sm table-responsive-sm">
+              <tbody>
+                <tr><td style="width: 40%;"><strong>Name:</strong></td><td style="word-break: break-word;">${user.name && user.name.trim() !== '' ? user.name : 'N/A'}</td></tr>
+                <tr><td><strong>Email:</strong></td><td style="word-break: break-word;">${user.email && user.email.trim() !== '' ? user.email : 'N/A'}</td></tr>
+                <tr><td><strong>Phone:</strong></td><td style="word-break: break-word;">${user.phone && user.phone.trim() !== '' ? user.phone : 'N/A'}</td></tr>
+                <tr><td><strong>Visitor ID:</strong></td><td style="word-break: break-all; font-size: 0.85rem;">${user.visitor_id && user.visitor_id.trim() !== '' ? user.visitor_id : 'N/A'}</td></tr>
+                <tr><td><strong>Coin Balance:</strong></td><td><span class="badge bg-success">${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins</span></td></tr>
+                <tr><td><strong>RP Balance:</strong></td><td><span class="badge bg-info">${user.rp_balance !== undefined && user.rp_balance !== null ? user.rp_balance : 0} RP</span></td></tr>
+                <tr><td><strong>Level:</strong></td><td>${user.level !== undefined && user.level !== null ? user.level : 1}</td></tr>
+                <tr><td><strong>Scratch Cards:</strong></td><td>${user.scratch_cards !== undefined && user.scratch_cards !== null ? user.scratch_cards : 0}</td></tr>
+              </tbody>
             </table>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6 mb-3">
             <h6 class="fw-bold">Device Information</h6>
-            <table class="table table-sm">
-              <tr><td><strong>Device UDID:</strong></td><td>${user.device_udid && user.device_udid.trim() !== '' ? user.device_udid : 'N/A'}</td></tr>
-              <tr><td><strong>OS:</strong></td><td>${user.os && user.os.trim() !== '' ? user.os : 'N/A'}</td></tr>
-              <tr><td><strong>Device:</strong></td><td>${user.device && user.device.trim() !== '' ? user.device : 'N/A'}</td></tr>
-              <tr><td><strong>Registered:</strong></td><td>${formatDate(user.created_at)}</td></tr>
-              <tr><td><strong>Last Updated:</strong></td><td>${formatDate(user.updated_at)}</td></tr>
+            <table class="table table-sm table-responsive-sm">
+              <tbody>
+                <tr><td style="width: 40%;"><strong>Device UDID:</strong></td><td style="word-break: break-all; font-size: 0.85rem;">${user.device_udid && user.device_udid.trim() !== '' ? user.device_udid : 'N/A'}</td></tr>
+                <tr><td><strong>OS:</strong></td><td style="word-break: break-word;">${user.os && user.os.trim() !== '' ? user.os : 'N/A'}</td></tr>
+                <tr><td><strong>Device:</strong></td><td style="word-break: break-word;">${user.device && user.device.trim() !== '' ? user.device : 'N/A'}</td></tr>
+                <tr><td><strong>Registered:</strong></td><td style="word-break: break-word;">${formatDate(user.created_at)}</td></tr>
+                <tr><td><strong>Last Updated:</strong></td><td style="word-break: break-word;">${formatDate(user.updated_at)}</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
-        
+
         ${user.pid ? `
-        <div class="row mt-4">
+        <div class="row mt-2">
           <div class="col-12">
             <h6 class="fw-bold">AppsFlyer Attribution</h6>
-            <table class="table table-sm">
-              <tr><td><strong>PID:</strong></td><td>${user.pid || 'N/A'}</td></tr>
-              <tr><td><strong>Campaign:</strong></td><td>${user.c || 'N/A'}</td></tr>
-              <tr><td><strong>Channel:</strong></td><td>${user.af_channel || 'N/A'}</td></tr>
-              <tr><td><strong>Ad Set:</strong></td><td>${user.af_adset || 'N/A'}</td></tr>
-              <tr><td><strong>Ad:</strong></td><td>${user.af_ad || 'N/A'}</td></tr>
-              <tr><td><strong>Keywords:</strong></td><td>${user.af_keywords || 'N/A'}</td></tr>
+            <table class="table table-sm table-responsive-sm">
+              <tbody>
+                <tr><td style="width: 20%;"><strong>PID:</strong></td><td style="word-break: break-word;">${user.pid || 'N/A'}</td></tr>
+                <tr><td><strong>Campaign:</strong></td><td style="word-break: break-word;">${user.c || 'N/A'}</td></tr>
+                <tr><td><strong>Channel:</strong></td><td style="word-break: break-word;">${user.af_channel || 'N/A'}</td></tr>
+                <tr><td><strong>Ad Set:</strong></td><td style="word-break: break-word;">${user.af_adset || 'N/A'}</td></tr>
+                <tr><td><strong>Ad:</strong></td><td style="word-break: break-word;">${user.af_ad || 'N/A'}</td></tr>
+                <tr><td><strong>Keywords:</strong></td><td style="word-break: break-word;">${user.af_keywords || 'N/A'}</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
