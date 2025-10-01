@@ -74,6 +74,6 @@ export declare class AdminDashboardController {
     private buildPagination;
     private buildQueryString;
     vouchers(session: AdminSession, res: Response): Promise<void>;
-    voucherRequests(session: AdminSession, res: Response): Promise<void>;
+    voucherRequests(session: AdminSession, query: any, res: Response): Promise<void>;
 }
 export {};

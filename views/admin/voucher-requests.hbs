@@ -5,6 +5,41 @@
   </h1>
 </div>
 
+<!-- Filter Section -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-funnel"></i>
+    Filter Voucher Requests
+  </div>
+  <div class="card-body">
+    <form id="voucherRequestsFilterForm" method="GET" action="/admin/voucher-requests">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status" name="status">
+            <option value="">All Statuses</option>
+            <option value="requested" {{#if (eq statusFilter 'requested')}}selected{{/if}}>Requested</option>
+            <option value="sent" {{#if (eq statusFilter 'sent')}}selected{{/if}}>Sent</option>
+            <option value="canceled" {{#if (eq statusFilter 'canceled')}}selected{{/if}}>Canceled</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i>
+            Apply Filter
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" onclick="clearFilter()">
+            <i class="bi bi-x-circle"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Voucher Requests Table -->
 <div class="card shadow">
   <div class="card-header py-3">
@@ -21,6 +56,7 @@
             <th>Request Date</th>
             <th>Voucher Name</th>
             <th>RP Value</th>
+            <th>Real Value</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -34,6 +70,7 @@
             <td>{{formatDate this.request_date}}</td>
             <td>{{this.voucher.name}}</td>
             <td><span class="badge bg-info">{{this.voucher.rp_price}} RP</span></td>
+            <td><span class="badge bg-success">£{{this.voucher.amazon_vouchers_equivalent}}</span></td>
             <td>
               {{#if (eq this.status "requested")}}
                 <span class="badge bg-warning">Requested</span>
@@ -59,7 +96,7 @@
           {{/each}}
           {{#unless voucherRequests.length}}
           <tr>
-            <td colspan="8" class="text-center text-muted">No voucher requests found</td>
+            <td colspan="9" class="text-center text-muted">No voucher requests found</td>
           </tr>
           {{/unless}}
         </tbody>
@@ -132,6 +169,11 @@
 </div>
 
 <script>
+// Clear Filter
+function clearFilter() {
+  window.location.href = '/admin/voucher-requests';
+}
+
 // Update Voucher Request Status
 function updateVoucherRequestStatus(id, status) {
   const actionText = status === 'sent' ? 'mark as sent' : 'cancel';

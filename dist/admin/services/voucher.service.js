@@ -50,8 +50,8 @@ let VoucherService = class VoucherService {
         await this.findVoucherById(id);
         await this.voucherRepository.delete(id);
     }
-    async findAllVoucherRequests() {
-        return await this.voucherRequestRepository
+    async findAllVoucherRequests(status) {
+        let query = this.voucherRequestRepository
             .createQueryBuilder('voucherRequest')
             .leftJoinAndSelect('voucherRequest.user', 'user')
             .leftJoinAndSelect('voucherRequest.voucher', 'voucher')
@@ -72,9 +72,11 @@ let VoucherService = class VoucherService {
             'voucher.type',
             'voucher.rp_price',
             'voucher.amazon_vouchers_equivalent',
-        ])
-            .orderBy('voucherRequest.created_at', 'DESC')
-            .getMany();
+        ]);
+        if (status) {
+            query = query.where('voucherRequest.status = :status', { status });
+        }
+        return await query.orderBy('voucherRequest.created_at', 'DESC').getMany();
     }
     async findVoucherRequestById(id) {
         const voucherRequest = await this.voucherRequestRepository

@@ -13,7 +13,7 @@ export declare class VoucherService {
     findVoucherById(id: number): Promise<Voucher>;
     updateVoucher(id: number, updateVoucherDto: UpdateVoucherDto): Promise<Voucher>;
     removeVoucher(id: number): Promise<void>;
-    findAllVoucherRequests(): Promise<VoucherRequest[]>;
+    findAllVoucherRequests(status?: string): Promise<VoucherRequest[]>;
     findVoucherRequestById(id: number): Promise<VoucherRequest>;
     updateVoucherRequest(id: number, updateVoucherRequestDto: UpdateVoucherRequestDto): Promise<VoucherRequest>;
     removeVoucherRequest(id: number): Promise<void>;

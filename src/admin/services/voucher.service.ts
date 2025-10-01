@@ -51,8 +51,8 @@ export class VoucherService {
   }
 
   // Voucher Request CRUD operations
-  async findAllVoucherRequests(): Promise<VoucherRequest[]> {
-    return await this.voucherRequestRepository
+  async findAllVoucherRequests(status?: string): Promise<VoucherRequest[]> {
+    let query = this.voucherRequestRepository
       .createQueryBuilder('voucherRequest')
       .leftJoinAndSelect('voucherRequest.user', 'user')
       .leftJoinAndSelect('voucherRequest.voucher', 'voucher')
@@ -73,9 +73,14 @@ export class VoucherService {
         'voucher.type',
         'voucher.rp_price',
         'voucher.amazon_vouchers_equivalent',
-      ])
-      .orderBy('voucherRequest.created_at', 'DESC')
-      .getMany();
+      ]);
+
+    // Filter by status if provided
+    if (status) {
+      query = query.where('voucherRequest.status = :status', { status });
+    }
+
+    return await query.orderBy('voucherRequest.created_at', 'DESC').getMany();
   }
 
   async findVoucherRequestById(id: number): Promise<VoucherRequest> {

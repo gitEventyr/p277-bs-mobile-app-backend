@@ -631,6 +631,7 @@ export class AdminDashboardController {
   @Get('voucher-requests')
   async voucherRequests(
     @Session() session: AdminSession,
+    @Query() query: any,
     @Res() res: Response,
   ) {
     if (!session.admin) {
@@ -638,8 +639,9 @@ export class AdminDashboardController {
     }
 
     try {
+      const status = query.status || '';
       const voucherRequests =
-        await this.voucherService.findAllVoucherRequests();
+        await this.voucherService.findAllVoucherRequests(status);
 
       const flashMessage = session.flashMessage;
       const flashType = session.flashType;
@@ -652,6 +654,7 @@ export class AdminDashboardController {
         isVoucherRequests: true,
         admin: session.admin,
         voucherRequests,
+        statusFilter: status,
         flashMessage,
         flashType,
       });

@@ -474,12 +474,13 @@ let AdminDashboardController = class AdminDashboardController {
             });
         }
     }
-    async voucherRequests(session, res) {
+    async voucherRequests(session, query, res) {
         if (!session.admin) {
             return res.redirect('/admin/login');
         }
         try {
-            const voucherRequests = await this.voucherService.findAllVoucherRequests();
+            const status = query.status || '';
+            const voucherRequests = await this.voucherService.findAllVoucherRequests(status);
             const flashMessage = session.flashMessage;
             const flashType = session.flashType;
             delete session.flashMessage;
@@ -490,6 +491,7 @@ let AdminDashboardController = class AdminDashboardController {
                 isVoucherRequests: true,
                 admin: session.admin,
                 voucherRequests,
+                statusFilter: status,
                 flashMessage,
                 flashType,
             });
@@ -606,9 +608,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('voucher-requests'),
     __param(0, (0, common_1.Session)()),
-    __param(1, (0, common_1.Res)()),
+    __param(1, (0, common_1.Query)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AdminDashboardController.prototype, "voucherRequests", null);
 exports.AdminDashboardController = AdminDashboardController = __decorate([
