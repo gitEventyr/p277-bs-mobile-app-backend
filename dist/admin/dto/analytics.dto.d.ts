@@ -23,6 +23,7 @@ export declare class RetentionMetricsDto {
 export declare class UserLevelDistributionDto {
     level: number;
     userCount: number;
+    percentage: number;
 }
 export declare class GeographicDistributionDto {
     region: string;

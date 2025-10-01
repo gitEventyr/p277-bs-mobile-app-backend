@@ -50,6 +50,7 @@ exports.RetentionMetricsDto = RetentionMetricsDto;
 class UserLevelDistributionDto {
     level;
     userCount;
+    percentage;
 }
 exports.UserLevelDistributionDto = UserLevelDistributionDto;
 class GeographicDistributionDto {

@@ -235,10 +235,16 @@ let AnalyticsService = class AnalyticsService {
             .groupBy('player.level')
             .orderBy('player.level', 'ASC')
             .getRawMany();
-        return result.map((row) => ({
-            level: row.level,
-            userCount: parseInt(row.count),
-        }));
+        const totalUsers = result.reduce((sum, row) => sum + parseInt(row.count), 0);
+        return result.map((row) => {
+            const userCount = parseInt(row.count);
+            const percentage = totalUsers > 0 ? Math.round((userCount / totalUsers) * 100) : 0;
+            return {
+                level: row.level,
+                userCount,
+                percentage,
+            };
+        });
     }
     async getGeographicDistribution() {
         const result = await this.playerRepository

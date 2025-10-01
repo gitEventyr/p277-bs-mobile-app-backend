@@ -35,6 +35,7 @@ export class RetentionMetricsDto {
 export class UserLevelDistributionDto {
   level: number;
   userCount: number;
+  percentage: number;
 }
 
 export class GeographicDistributionDto {

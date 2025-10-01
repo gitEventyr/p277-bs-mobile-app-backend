@@ -39,6 +39,7 @@ export declare class AnalyticsService {
         userLevelDistribution: {
             level: any;
             userCount: number;
+            percentage: number;
         }[];
         geographicDistribution: {
             region: any;

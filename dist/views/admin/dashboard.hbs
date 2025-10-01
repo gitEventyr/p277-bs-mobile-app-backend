@@ -8,10 +8,10 @@
   </div>
 </div>
 
-<!-- Overview Statistics -->
+<!-- Block 1: User Metrics -->
 <div class="row">
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-primary shadow h-100 py-2">
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-primary shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of registered users in the system">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
@@ -28,8 +28,8 @@
     </div>
   </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-success shadow h-100 py-2">
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-success shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Users who have been active in the last 30 days">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
@@ -46,26 +46,8 @@
     </div>
   </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-info shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-              Total Coin Balance
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.totalBalance}}</div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-coin fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-warning shadow h-100 py-2">
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-warning shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of users who registered in the last 24 hours">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
@@ -83,10 +65,46 @@
   </div>
 </div>
 
-<!-- Second row for additional statistics including RP Balance -->
+<!-- Block 2: Coin Balance Metrics -->
 <div class="row">
   <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-purple shadow h-100 py-2" style="border-left-color: #6f42c1 !important;">
+    <div class="card border-left-info shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total coin balance across all users">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Total Coin Balance
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.totalBalance}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-coin fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-info shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Average coin balance per user">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              Average Coin Balance
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.averageBalance}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-calculator fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-purple shadow h-100 py-2" style="border-left-color: #6f42c1 !important;" data-bs-toggle="tooltip" data-bs-placement="top" title="Total Reward Points balance across all users">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
@@ -104,7 +122,7 @@
   </div>
 
   <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-secondary shadow h-100 py-2">
+    <div class="card border-left-secondary shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Average Reward Points balance per user">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
@@ -122,8 +140,10 @@
   </div>
 </div>
 
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-success shadow h-100 py-2">
+<!-- Block 3: Revenue -->
+<div class="row">
+  <div class="col-xl-12 col-md-12 mb-4">
+    <div class="card border-left-success shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total revenue generated from all in-app purchases">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
@@ -139,63 +159,12 @@
       </div>
     </div>
   </div>
-
-  <div class="col-xl-3 col-md-6 mb-4">
-    <div class="card border-left-info shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-              Average Coin Balance
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.averageBalance}}</div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-calculator fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
-<!-- Analytics Details -->
-<div class="row">
-  <!-- User Retention Metrics -->
-  <div class="col-lg-4 mb-4">
-    <div class="card shadow">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="bi bi-arrow-repeat"></i>
-          User Retention
-        </h6>
-      </div>
-      <div class="card-body">
-        <div class="row text-center">
-          <div class="col-4">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">1-Day</div>
-            <div class="h6 mb-0 font-weight-bold text-gray-800">{{userAnalytics.retentionMetrics.dayOne}}%</div>
-          </div>
-          <div class="col-4">
-            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">7-Day</div>
-            <div class="h6 mb-0 font-weight-bold text-gray-800">{{userAnalytics.retentionMetrics.daySeven}}%</div>
-          </div>
-          <div class="col-4">
-            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">30-Day</div>
-            <div class="h6 mb-0 font-weight-bold text-gray-800">{{userAnalytics.retentionMetrics.dayThirty}}%</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-</div>
-
-<!-- User Level Distribution & Top Spenders -->
+<!-- Block 4: User Level Distribution & Top Spenders -->
 <div class="row">
   <div class="col-lg-6">
-    <div class="card shadow mb-4">
+    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Distribution of users across different experience levels">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="bi bi-bar-chart"></i>
@@ -203,9 +172,9 @@
         </h6>
       </div>
       <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-sm table-hover">
+            <thead class="sticky-top bg-white">
               <tr>
                 <th>Level</th>
                 <th>Users</th>
@@ -239,7 +208,7 @@
   </div>
 
   <div class="col-lg-6">
-    <div class="card shadow mb-4">
+    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Top 10 users by total purchase amount">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="bi bi-trophy"></i>
@@ -247,9 +216,9 @@
         </h6>
       </div>
       <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-sm table-hover">
+            <thead class="sticky-top bg-white">
               <tr>
                 <th>User</th>
                 <th>Total Spent</th>
@@ -287,66 +256,87 @@
   </div>
 </div>
 
-<!-- Player Behavior & Quick Actions -->
+<!-- Block 5: Slot Player Behavior -->
 <div class="row">
-  <div class="col-lg-6">
-    <div class="card shadow mb-4">
+  <div class="col-lg-12">
+    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Analytics of player behavior in slot games">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="bi bi-graph-up"></i>
-          Player Behavior
+          Slot Player Behavior
         </h6>
       </div>
       <div class="card-body">
-        <div class="row text-center">
-          <div class="col-6 mb-3">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Active Players</div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.totalActivePlayers}}</div>
+        <div class="row">
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="d-flex justify-content-center align-items-center mb-2" style="height: 60px;">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="25" fill="#4e73df" opacity="0.1"/>
+                  <circle cx="30" cy="30" r="20" fill="#4e73df" opacity="0.2"/>
+                  <circle cx="30" cy="30" r="15" fill="#4e73df" opacity="0.3"/>
+                  <text x="30" y="35" text-anchor="middle" font-size="16" font-weight="bold" fill="#4e73df">{{gameAnalytics.playerBehavior.totalActivePlayers}}</text>
+                </svg>
+              </div>
+              <div class="text-xs font-weight-bold text-primary text-uppercase">Active Players</div>
+            </div>
           </div>
-          <div class="col-6 mb-3">
-            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Avg Plays/Player</div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.avgPlaysPerPlayer}}</div>
-          </div>
-          <div class="col-6">
-            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Avg Bet/Player</div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.avgBetPerPlayer}}</div>
-          </div>
-          <div class="col-6">
-            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Game Revenue</div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{gameAnalytics.playerBehavior.totalGameRevenue}}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="col-lg-6">
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="bi bi-gear"></i>
-          Quick Actions
-        </h6>
-      </div>
-      <div class="card-body">
-        <div class="list-group list-group-flush">
-          <a href="/admin/users" class="list-group-item list-group-item-action">
-            <i class="bi bi-people me-2"></i>
-            Manage Users
-            <i class="bi bi-chevron-right float-end"></i>
-          </a>
-          <a href="/admin/analytics/overview" class="list-group-item list-group-item-action">
-            <i class="bi bi-graph-up me-2"></i>
-            View Analytics API
-            <i class="bi bi-chevron-right float-end"></i>
-          </a>
-          <a href="/admin/analytics/revenue" class="list-group-item list-group-item-action">
-            <i class="bi bi-currency-dollar me-2"></i>
-            Revenue Analytics API
-            <i class="bi bi-chevron-right float-end"></i>
-          </a>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="d-flex justify-content-center align-items-center mb-2" style="height: 60px;">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <rect x="5" y="40" width="10" height="15" fill="#1cc88a" opacity="0.8" rx="2"/>
+                  <rect x="20" y="30" width="10" height="25" fill="#1cc88a" opacity="0.8" rx="2"/>
+                  <rect x="35" y="20" width="10" height="35" fill="#1cc88a" opacity="0.8" rx="2"/>
+                  <rect x="50" y="10" width="10" height="45" fill="#1cc88a" opacity="0.8" rx="2"/>
+                  <text x="30" y="12" text-anchor="middle" font-size="10" font-weight="bold" fill="#1cc88a">{{gameAnalytics.playerBehavior.avgPlaysPerPlayer}}</text>
+                </svg>
+              </div>
+              <div class="text-xs font-weight-bold text-success text-uppercase">Avg Plays/Player</div>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="d-flex justify-content-center align-items-center mb-2" style="height: 60px;">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <path d="M 10,50 Q 30,10 50,50" stroke="#36b9cc" stroke-width="3" fill="none"/>
+                  <circle cx="10" cy="50" r="3" fill="#36b9cc"/>
+                  <circle cx="30" cy="10" r="3" fill="#36b9cc"/>
+                  <circle cx="50" cy="50" r="3" fill="#36b9cc"/>
+                  <text x="30" y="35" text-anchor="middle" font-size="10" font-weight="bold" fill="#36b9cc">{{gameAnalytics.playerBehavior.avgBetPerPlayer}}</text>
+                </svg>
+              </div>
+              <div class="text-xs font-weight-bold text-info text-uppercase">Avg Bet/Player</div>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="d-flex justify-content-center align-items-center mb-2" style="height: 60px;">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="25" fill="none" stroke="#f6c23e" stroke-width="6" stroke-dasharray="157 157" transform="rotate(-90 30 30)"/>
+                  <text x="30" y="32" text-anchor="middle" font-size="8" font-weight="bold" fill="#f6c23e">$</text>
+                  <text x="30" y="42" text-anchor="middle" font-size="9" font-weight="bold" fill="#f6c23e">{{gameAnalytics.playerBehavior.totalGameRevenue}}</text>
+                </svg>
+              </div>
+              <div class="text-xs font-weight-bold text-warning text-uppercase">Game Revenue</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Initialize Bootstrap Tooltips -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
