@@ -30,22 +30,12 @@
   <div class="card-body">
     <form id="casinoSearchForm">
       <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-md-6">
           <label for="search" class="form-label">Search</label>
           <input type="text" class="form-control" id="search" name="search" placeholder="Casino name or ID..."
                  value="{{searchQuery}}">
         </div>
-        <div class="col-md-4">
-          <label for="actionsCount" class="form-label">Actions Count</label>
-          <select class="form-select" id="actionsCount" name="actionsCount">
-            <option value="">All</option>
-            <option value="0" {{#if (eq actionsCountFilter '0')}}selected{{/if}}>0 actions</option>
-            <option value="1-10" {{#if (eq actionsCountFilter '1-10')}}selected{{/if}}>1-10 actions</option>
-            <option value="11-50" {{#if (eq actionsCountFilter '11-50')}}selected{{/if}}>11-50 actions</option>
-            <option value="51+" {{#if (eq actionsCountFilter '51+')}}selected{{/if}}>51+ actions</option>
-          </select>
-        </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
           <label for="sortBy" class="form-label">Sort By</label>
           <select class="form-select" id="sortBy" name="sortBy">
             <option value="created_at" {{#if (eq sortBy 'created_at')}}selected{{/if}}>Creation Date</option>
@@ -373,7 +363,6 @@ function refreshCasinos() {
 
 function clearSearch() {
   document.getElementById('search').value = '';
-  document.getElementById('actionsCount').value = '';
   document.getElementById('sortBy').value = 'created_at';
   document.getElementById('casinoSearchForm').submit();
 }

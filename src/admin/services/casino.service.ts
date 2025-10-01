@@ -15,9 +15,8 @@ export class CasinoService {
     limit: number;
     search: string;
     sortBy: string;
-    actionsCount?: string;
   }) {
-    const { page, limit, search, sortBy, actionsCount } = options;
+    const { page, limit, search, sortBy } = options;
     const skip = (page - 1) * limit;
 
     let query = this.casinoRepository
@@ -30,27 +29,6 @@ export class CasinoService {
         '(casino.casino_name ILIKE :search OR casino.casino_id ILIKE :search)',
         { search: `%${search}%` },
       );
-    }
-
-    // Filter by actions count
-    if (actionsCount) {
-      if (actionsCount === '0') {
-        query = query.andWhere(
-          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) = 0',
-        );
-      } else if (actionsCount === '1-10') {
-        query = query.andWhere(
-          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) BETWEEN 1 AND 10',
-        );
-      } else if (actionsCount === '11-50') {
-        query = query.andWhere(
-          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) BETWEEN 11 AND 50',
-        );
-      } else if (actionsCount === '51+') {
-        query = query.andWhere(
-          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) > 50',
-        );
-      }
     }
 
     // Sorting - use default sorting first, then sort in memory for actions count
