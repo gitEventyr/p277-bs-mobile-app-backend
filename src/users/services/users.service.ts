@@ -301,7 +301,9 @@ export class UsersService {
           ? 'player.email'
           : sortBy === 'coins_balance'
             ? 'player.coins_balance'
-            : 'player.created_at';
+            : sortBy === 'rp_balance'
+              ? 'player.rp_balance'
+              : 'player.created_at';
 
     query = query.orderBy(sortField, 'DESC');
 
