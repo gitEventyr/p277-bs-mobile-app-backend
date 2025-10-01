@@ -8,6 +8,7 @@ export declare class CasinoService {
         limit: number;
         search: string;
         sortBy: string;
+        actionsCount?: string;
     }): Promise<{
         data: Casino[];
         pagination: {

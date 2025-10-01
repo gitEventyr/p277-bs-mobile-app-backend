@@ -35,11 +35,13 @@ let CasinoController = class CasinoController {
             const limit = parseInt(query.limit) || 20;
             const search = query.search || '';
             const sortBy = query.sortBy || 'created_at';
+            const actionsCount = query.actionsCount || '';
             const casinos = await this.casinoService.findAll({
                 page,
                 limit,
                 search,
                 sortBy,
+                actionsCount,
             });
             const flashMessage = session.flashMessage;
             const flashType = session.flashType;
@@ -54,6 +56,7 @@ let CasinoController = class CasinoController {
                 pagination: casinos.pagination,
                 searchQuery: search,
                 sortBy,
+                actionsCountFilter: actionsCount,
                 queryString: this.buildQueryString(query),
                 flashMessage,
                 flashType,

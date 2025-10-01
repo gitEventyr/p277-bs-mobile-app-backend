@@ -15,27 +15,56 @@ export class CasinoService {
     limit: number;
     search: string;
     sortBy: string;
+    actionsCount?: string;
   }) {
-    const { page, limit, search, sortBy } = options;
+    const { page, limit, search, sortBy, actionsCount } = options;
     const skip = (page - 1) * limit;
 
-    let whereCondition = {};
+    let query = this.casinoRepository
+      .createQueryBuilder('casino')
+      .leftJoinAndSelect('casino.actions', 'actions');
+
+    // Search by casino name or casino_id
     if (search) {
-      whereCondition = {
-        casino_name: Like(`%${search}%`),
-      };
+      query = query.andWhere(
+        '(casino.casino_name ILIKE :search OR casino.casino_id ILIKE :search)',
+        { search: `%${search}%` },
+      );
     }
 
-    const order: any = {};
-    order[sortBy] = 'DESC';
+    // Filter by actions count
+    if (actionsCount) {
+      if (actionsCount === '0') {
+        query = query.andWhere(
+          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) = 0',
+        );
+      } else if (actionsCount === '1-10') {
+        query = query.andWhere(
+          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) BETWEEN 1 AND 10',
+        );
+      } else if (actionsCount === '11-50') {
+        query = query.andWhere(
+          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) BETWEEN 11 AND 50',
+        );
+      } else if (actionsCount === '51+') {
+        query = query.andWhere(
+          '(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) > 50',
+        );
+      }
+    }
 
-    const [data, total] = await this.casinoRepository.findAndCount({
-      where: whereCondition,
-      order,
-      skip,
-      take: limit,
-      relations: ['actions'],
-    });
+    // Sorting
+    if (sortBy === 'casino_name') {
+      query = query.orderBy('casino.casino_name', 'ASC');
+    } else {
+      query = query.orderBy('casino.created_at', 'DESC');
+    }
+
+    // Get total count
+    const total = await query.getCount();
+
+    // Apply pagination
+    const data = await query.skip(skip).take(limit).getMany();
 
     const totalPages = Math.ceil(total / limit);
     const from = (page - 1) * limit + 1;

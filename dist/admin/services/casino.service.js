@@ -23,23 +23,36 @@ let CasinoService = class CasinoService {
         this.casinoRepository = casinoRepository;
     }
     async findAll(options) {
-        const { page, limit, search, sortBy } = options;
+        const { page, limit, search, sortBy, actionsCount } = options;
         const skip = (page - 1) * limit;
-        let whereCondition = {};
+        let query = this.casinoRepository
+            .createQueryBuilder('casino')
+            .leftJoinAndSelect('casino.actions', 'actions');
         if (search) {
-            whereCondition = {
-                casino_name: (0, typeorm_2.Like)(`%${search}%`),
-            };
+            query = query.andWhere('(casino.casino_name ILIKE :search OR casino.casino_id ILIKE :search)', { search: `%${search}%` });
         }
-        const order = {};
-        order[sortBy] = 'DESC';
-        const [data, total] = await this.casinoRepository.findAndCount({
-            where: whereCondition,
-            order,
-            skip,
-            take: limit,
-            relations: ['actions'],
-        });
+        if (actionsCount) {
+            if (actionsCount === '0') {
+                query = query.andWhere('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) = 0');
+            }
+            else if (actionsCount === '1-10') {
+                query = query.andWhere('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) BETWEEN 1 AND 10');
+            }
+            else if (actionsCount === '11-50') {
+                query = query.andWhere('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) BETWEEN 11 AND 50');
+            }
+            else if (actionsCount === '51+') {
+                query = query.andWhere('(SELECT COUNT(*) FROM casino_action WHERE casino_action.casino_id = casino.id) > 50');
+            }
+        }
+        if (sortBy === 'casino_name') {
+            query = query.orderBy('casino.casino_name', 'ASC');
+        }
+        else {
+            query = query.orderBy('casino.created_at', 'DESC');
+        }
+        const total = await query.getCount();
+        const data = await query.skip(skip).take(limit).getMany();
         const totalPages = Math.ceil(total / limit);
         const from = (page - 1) * limit + 1;
         const to = Math.min(page * limit, total);
