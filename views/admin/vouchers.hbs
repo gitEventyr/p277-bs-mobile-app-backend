@@ -145,6 +145,28 @@
   </div>
 </div>
 
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle"></i>
+          Confirm Action
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmationMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmActionBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // Add Voucher
 document.getElementById('addVoucherForm').addEventListener('submit', async function(e) {
@@ -224,7 +246,23 @@ document.getElementById('editVoucherForm').addEventListener('submit', async func
 
 // Delete Voucher
 function deleteVoucher(id, name) {
-  if (confirm(`Are you sure you want to delete voucher "${name}"?`)) {
+  const message = `Are you sure you want to delete voucher "${name}"?`;
+
+  // Set up confirmation modal
+  document.getElementById('confirmationMessage').textContent = message;
+  const confirmBtn = document.getElementById('confirmActionBtn');
+
+  // Remove existing event listeners
+  const newConfirmBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+  // Add new event listener
+  newConfirmBtn.addEventListener('click', function() {
+    // Hide modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+    modal.hide();
+
+    // Delete voucher
     fetch(`/admin/vouchers/${id}`, {
       method: 'DELETE',
       headers: {
@@ -239,7 +277,11 @@ function deleteVoucher(id, name) {
     }).catch(error => {
       alert('Error deleting voucher: ' + error.message);
     });
-  }
+  });
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+  modal.show();
 }
 </script>
 

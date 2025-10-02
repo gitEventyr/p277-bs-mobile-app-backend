@@ -15,6 +15,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import * as session from 'express-session';
@@ -33,6 +34,7 @@ interface AdminSession extends session.Session {
   flashType?: 'success' | 'error' | 'warning' | 'info';
 }
 
+@ApiTags('🖥️ Dashboard: Casino Management')
 @Controller('admin/casino-actions')
 export class CasinoActionController {
   constructor(

@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CasinoActionController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const platform_express_1 = require("@nestjs/platform-express");
 const casino_action_service_1 = require("../services/casino-action.service");
 const casino_service_1 = require("../services/casino.service");
@@ -344,6 +345,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CasinoActionController.prototype, "bulkUploadCSV", null);
 exports.CasinoActionController = CasinoActionController = __decorate([
+    (0, swagger_1.ApiTags)('🖥️ Dashboard: Casino Management'),
     (0, common_1.Controller)('admin/casino-actions'),
     __metadata("design:paramtypes", [casino_action_service_1.CasinoActionService,
         casino_service_1.CasinoService,

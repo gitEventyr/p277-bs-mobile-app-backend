@@ -62,7 +62,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], VouchersController.prototype, "createVoucherRequest", null);
 exports.VouchersController = VouchersController = __decorate([
-    (0, swagger_1.ApiTags)('Mobile Vouchers'),
+    (0, swagger_1.ApiTags)('📱 Mobile: Vouchers'),
     (0, swagger_1.ApiBearerAuth)('access-token'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.UseFilters)(mobile_exception_filter_1.MobileExceptionFilter),

@@ -319,7 +319,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CasinoController.prototype, "syncCasinos", null);
 exports.CasinoController = CasinoController = __decorate([
-    (0, swagger_1.ApiTags)('Admin - Casino Management'),
+    (0, swagger_1.ApiTags)('🖥️ Dashboard: Casino Management'),
     (0, common_1.Controller)('admin/casinos'),
     __metadata("design:paramtypes", [casino_service_1.CasinoService,
         casino_api_service_1.CasinoApiService])

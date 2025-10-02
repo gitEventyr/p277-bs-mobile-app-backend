@@ -148,8 +148,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VoucherController.prototype, "removeVoucherRequest", null);
 exports.VoucherController = VoucherController = __decorate([
-    (0, swagger_1.ApiTags)('Admin Vouchers'),
-    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiTags)('🖥️ Dashboard: Vouchers'),
+    (0, swagger_1.ApiBearerAuth)('access-token'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('admin/vouchers'),
     __metadata("design:paramtypes", [voucher_service_1.VoucherService])

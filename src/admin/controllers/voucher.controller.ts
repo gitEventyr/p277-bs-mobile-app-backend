@@ -21,8 +21,8 @@ import { CreateVoucherDto } from '../dto/create-voucher.dto';
 import { UpdateVoucherDto } from '../dto/update-voucher.dto';
 import { UpdateVoucherRequestDto } from '../dto/update-voucher-request.dto';
 
-@ApiTags('Admin Vouchers')
-@ApiBearerAuth()
+@ApiTags('🖥️ Dashboard: Vouchers')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @Controller('admin/vouchers')
 export class VoucherController {

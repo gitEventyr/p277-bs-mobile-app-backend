@@ -165,6 +165,11 @@
             </td>
           </tr>
           {{/each}}
+          {{#unless users.length}}
+          <tr>
+            <td colspan="7" class="text-center text-muted">No users found matching your filters</td>
+          </tr>
+          {{/unless}}
         </tbody>
       </table>
     </div>
@@ -459,3 +464,14 @@
     </div>
   </div>
 </div>
+
+<script>
+// Clear Search Function for Users Page
+function clearSearch() {
+  document.getElementById('search').value = '';
+  document.getElementById('sortBy').value = 'created_at';
+  document.getElementById('emailVerified').value = '';
+  document.getElementById('phoneVerified').value = '';
+  document.getElementById('userSearchForm').submit();
+}
+</script>

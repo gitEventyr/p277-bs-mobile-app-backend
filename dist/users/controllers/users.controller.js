@@ -292,7 +292,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateScratchCards", null);
 __decorate([
-    (0, swagger_1.ApiTags)('📱 Mobile: RP Balance'),
+    (0, swagger_1.ApiTags)('📱 Mobile: Balance & Transactions'),
     (0, swagger_1.ApiOperation)({
         summary: 'Modify user RP balance',
         description: 'Modify user RP balance - positive amounts increase, negative amounts decrease',
@@ -322,7 +322,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "modifyRpBalance", null);
 __decorate([
-    (0, swagger_1.ApiTags)('📱 Mobile: RP Balance'),
+    (0, swagger_1.ApiTags)('📱 Mobile: Balance & Transactions'),
     (0, swagger_1.ApiOperation)({ summary: 'Get RP balance transaction history' }),
     (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number, example: 1 }),
     (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, example: 10 }),
@@ -344,7 +344,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getRpTransactionHistory", null);
 __decorate([
-    (0, swagger_1.ApiTags)('📱 Mobile: Casino Offers'),
+    (0, swagger_1.ApiTags)('📱 Mobile: User Profile'),
     (0, swagger_1.ApiOperation)({
         summary: 'Get casino offers for user',
         description: 'Get personalized casino offers excluding casinos where user has made deposits',

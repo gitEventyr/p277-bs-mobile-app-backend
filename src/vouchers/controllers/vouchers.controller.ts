@@ -20,7 +20,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { MobileExceptionFilter } from '../../common/filters/mobile-exception.filter';
 import type { AuthenticatedUser } from '../../common/types/auth.types';
 
-@ApiTags('Mobile Vouchers')
+@ApiTags('📱 Mobile: Vouchers')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @UseFilters(MobileExceptionFilter)

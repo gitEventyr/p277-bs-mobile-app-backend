@@ -38,7 +38,7 @@ interface AdminSession extends session.Session {
   flashType?: 'success' | 'error' | 'warning' | 'info';
 }
 
-@ApiTags('Admin - Casino Management')
+@ApiTags('🖥️ Dashboard: Casino Management')
 @Controller('admin/casinos')
 export class CasinoController {
   constructor(

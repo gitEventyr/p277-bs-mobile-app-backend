@@ -272,7 +272,7 @@ export class UsersController {
     return await this.usersService.getMobileProfile(user.id);
   }
 
-  @ApiTags('📱 Mobile: RP Balance')
+  @ApiTags('📱 Mobile: Balance & Transactions')
   @ApiOperation({
     summary: 'Modify user RP balance',
     description:
@@ -306,7 +306,7 @@ export class UsersController {
     );
   }
 
-  @ApiTags('📱 Mobile: RP Balance')
+  @ApiTags('📱 Mobile: Balance & Transactions')
   @ApiOperation({ summary: 'Get RP balance transaction history' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -342,7 +342,7 @@ export class UsersController {
     );
   }
 
-  @ApiTags('📱 Mobile: Casino Offers')
+  @ApiTags('📱 Mobile: User Profile')
   @ApiOperation({
     summary: 'Get casino offers for user',
     description:

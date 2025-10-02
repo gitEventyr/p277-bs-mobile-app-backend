@@ -151,7 +151,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AnalyticsController.prototype, "getGameAnalytics", null);
 exports.AnalyticsController = AnalyticsController = __decorate([
-    (0, swagger_1.ApiTags)('Admin Analytics'),
+    (0, swagger_1.ApiTags)('🖥️ Dashboard: Analytics'),
     (0, swagger_1.ApiBearerAuth)('access-token'),
     (0, common_1.UseGuards)(admin_guard_1.AdminGuard),
     (0, common_1.Controller)('admin/analytics'),

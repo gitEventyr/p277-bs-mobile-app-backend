@@ -22,7 +22,7 @@ import {
   GameAnalyticsDto,
 } from '../dto/analytics.dto';
 
-@ApiTags('Admin Analytics')
+@ApiTags('🖥️ Dashboard: Analytics')
 @ApiBearerAuth('access-token')
 @UseGuards(AdminGuard)
 @Controller('admin/analytics')

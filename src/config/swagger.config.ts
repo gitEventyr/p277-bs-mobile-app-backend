@@ -33,21 +33,25 @@ export function setupSwagger(app: INestApplication) {
     // Mobile API tags
     .addTag(
       '📱 Mobile: Authentication',
-      'Mobile app authentication endpoints (login, register, logout, etc.)',
+      'Mobile app authentication endpoints (login, register, logout, verification, etc.)',
     )
     .addTag(
       '📱 Mobile: User Profile',
-      'User profile and account management endpoints',
+      'User profile, account management, and casino offers',
     )
     .addTag(
       '📱 Mobile: Balance & Transactions',
-      'Balance management and transaction history endpoints',
+      'Coin and RP balance management, transaction history',
     )
     .addTag('📱 Mobile: Gaming', 'Game sessions and statistics endpoints')
     .addTag('📱 Mobile: Purchases', 'In-app purchase and payment endpoints')
     .addTag(
       '📱 Mobile: Devices',
       'Device registration and management endpoints',
+    )
+    .addTag(
+      '📱 Mobile: Vouchers',
+      'View available vouchers and request vouchers with RP',
     )
     // Dashboard API tags
     .addTag(
@@ -59,7 +63,14 @@ export function setupSwagger(app: INestApplication) {
       'User administration and management endpoints',
     )
     .addTag('🖥️ Dashboard: Analytics', 'Analytics and reporting endpoints')
-    .addTag('🖥️ Dashboard: Vouchers', 'Voucher management and administration')
+    .addTag(
+      '🖥️ Dashboard: Vouchers',
+      'Voucher and voucher request management and administration',
+    )
+    .addTag(
+      '🖥️ Dashboard: Casino Management',
+      'Casino and casino action management endpoints',
+    )
     // System tags
     .addTag('🔧 System: Health', 'Health checks and system monitoring')
     .build();
