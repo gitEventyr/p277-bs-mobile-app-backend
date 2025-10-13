@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, Min, Max } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, Min, Max, IsOptional, IsDateString } from 'class-validator';
 
 export class UpdateDailyCoinsDto {
   @ApiProperty({
@@ -13,6 +13,16 @@ export class UpdateDailyCoinsDto {
   @Min(0)
   @Max(7)
   daily_coins_days_count: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Optional timestamp for last reward (ISO 8601 format). If not provided, current time will be used.',
+    example: '2025-09-30T12:00:00.000Z',
+    type: 'string',
+  })
+  @IsOptional()
+  @IsDateString()
+  daily_coins_last_reward?: string;
 }
 
 export class UpdateDailyCoinsResponseDto {

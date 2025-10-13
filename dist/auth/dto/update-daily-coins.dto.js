@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class UpdateDailyCoinsDto {
     daily_coins_days_count;
+    daily_coins_last_reward;
 }
 exports.UpdateDailyCoinsDto = UpdateDailyCoinsDto;
 __decorate([
@@ -29,6 +30,16 @@ __decorate([
     (0, class_validator_1.Max)(7),
     __metadata("design:type", Number)
 ], UpdateDailyCoinsDto.prototype, "daily_coins_days_count", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Optional timestamp for last reward (ISO 8601 format). If not provided, current time will be used.',
+        example: '2025-09-30T12:00:00.000Z',
+        type: 'string',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], UpdateDailyCoinsDto.prototype, "daily_coins_last_reward", void 0);
 class UpdateDailyCoinsResponseDto {
     message;
     daily_coins_days_count;

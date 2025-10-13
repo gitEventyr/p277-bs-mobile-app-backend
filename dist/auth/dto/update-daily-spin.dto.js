@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class UpdateDailySpinDto {
     daily_spin_wheel_day_count;
+    daily_spin_wheel_last_spin;
 }
 exports.UpdateDailySpinDto = UpdateDailySpinDto;
 __decorate([
@@ -26,6 +27,16 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], UpdateDailySpinDto.prototype, "daily_spin_wheel_day_count", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Optional timestamp for last spin (ISO 8601 format). If not provided, current time will be used.',
+        example: '2025-09-30T12:00:00.000Z',
+        type: 'string',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], UpdateDailySpinDto.prototype, "daily_spin_wheel_last_spin", void 0);
 class UpdateDailySpinResponseDto {
     message;
     daily_spin_wheel_day_count;

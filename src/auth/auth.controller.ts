@@ -1174,7 +1174,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Update daily spin wheel count',
     description:
-      'Updates the daily spin wheel day count and sets the last spin timestamp to current time',
+      'Updates the daily spin wheel day count and sets the last spin timestamp. If daily_spin_wheel_last_spin is provided, it will be used; otherwise current time will be used.',
   })
   @ApiResponse({
     status: 200,
@@ -1189,21 +1189,24 @@ export class AuthController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() updateDailySpinDto: UpdateDailySpinDto,
   ): Promise<UpdateDailySpinResponseDto> {
-    const now = new Date();
+    // Use provided timestamp or current time
+    const lastSpinTime = updateDailySpinDto.daily_spin_wheel_last_spin
+      ? new Date(updateDailySpinDto.daily_spin_wheel_last_spin)
+      : new Date();
 
     await this.playerRepository.update(
       { id: user.id },
       {
         daily_spin_wheel_day_count:
           updateDailySpinDto.daily_spin_wheel_day_count,
-        daily_spin_wheel_last_spin: now,
+        daily_spin_wheel_last_spin: lastSpinTime,
       },
     );
 
     return {
       message: 'Daily spin updated successfully',
       daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
-      daily_spin_wheel_last_spin: now,
+      daily_spin_wheel_last_spin: lastSpinTime,
     };
   }
 
@@ -1246,7 +1249,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Update daily coins days count',
     description:
-      'Updates the daily coins days count and sets the last reward timestamp to current time',
+      'Updates the daily coins days count and sets the last reward timestamp. If daily_coins_last_reward is provided, it will be used; otherwise current time will be used.',
   })
   @ApiResponse({
     status: 200,
@@ -1261,20 +1264,23 @@ export class AuthController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() updateDailyCoinsDto: UpdateDailyCoinsDto,
   ): Promise<UpdateDailyCoinsResponseDto> {
-    const now = new Date();
+    // Use provided timestamp or current time
+    const lastRewardTime = updateDailyCoinsDto.daily_coins_last_reward
+      ? new Date(updateDailyCoinsDto.daily_coins_last_reward)
+      : new Date();
 
     await this.playerRepository.update(
       { id: user.id },
       {
         daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
-        daily_coins_last_reward: now,
+        daily_coins_last_reward: lastRewardTime,
       },
     );
 
     return {
       message: 'Daily coins updated successfully',
       daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
-      daily_coins_last_reward: now,
+      daily_coins_last_reward: lastRewardTime,
     };
   }
 

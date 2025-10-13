@@ -645,15 +645,17 @@ let AuthController = AuthController_1 = class AuthController {
         };
     }
     async updateDailySpin(user, updateDailySpinDto) {
-        const now = new Date();
+        const lastSpinTime = updateDailySpinDto.daily_spin_wheel_last_spin
+            ? new Date(updateDailySpinDto.daily_spin_wheel_last_spin)
+            : new Date();
         await this.playerRepository.update({ id: user.id }, {
             daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
-            daily_spin_wheel_last_spin: now,
+            daily_spin_wheel_last_spin: lastSpinTime,
         });
         return {
             message: 'Daily spin updated successfully',
             daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
-            daily_spin_wheel_last_spin: now,
+            daily_spin_wheel_last_spin: lastSpinTime,
         };
     }
     async updateLuckyWheel(user, updateLuckyWheelDto) {
@@ -666,15 +668,17 @@ let AuthController = AuthController_1 = class AuthController {
         };
     }
     async updateDailyCoins(user, updateDailyCoinsDto) {
-        const now = new Date();
+        const lastRewardTime = updateDailyCoinsDto.daily_coins_last_reward
+            ? new Date(updateDailyCoinsDto.daily_coins_last_reward)
+            : new Date();
         await this.playerRepository.update({ id: user.id }, {
             daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
-            daily_coins_last_reward: now,
+            daily_coins_last_reward: lastRewardTime,
         });
         return {
             message: 'Daily coins updated successfully',
             daily_coins_days_count: updateDailyCoinsDto.daily_coins_days_count,
-            daily_coins_last_reward: now,
+            daily_coins_last_reward: lastRewardTime,
         };
     }
     getBaseUrl() {
@@ -982,7 +986,7 @@ __decorate([
     (0, swagger_1.ApiBearerAuth)('access-token'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update daily spin wheel count',
-        description: 'Updates the daily spin wheel day count and sets the last spin timestamp to current time',
+        description: 'Updates the daily spin wheel day count and sets the last spin timestamp. If daily_spin_wheel_last_spin is provided, it will be used; otherwise current time will be used.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -1028,7 +1032,7 @@ __decorate([
     (0, swagger_1.ApiBearerAuth)('access-token'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update daily coins days count',
-        description: 'Updates the daily coins days count and sets the last reward timestamp to current time',
+        description: 'Updates the daily coins days count and sets the last reward timestamp. If daily_coins_last_reward is provided, it will be used; otherwise current time will be used.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
