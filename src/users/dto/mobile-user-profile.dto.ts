@@ -157,6 +157,36 @@ export class MobileUserProfileDto {
   phone_verified_at?: Date;
 
   @ApiProperty({
+    description: 'Daily spin wheel day count',
+    example: 0,
+  })
+  daily_spin_wheel_day_count: number;
+
+  @ApiPropertyOptional({
+    description: 'Last daily spin wheel timestamp',
+    example: '2025-01-01T10:00:00Z',
+  })
+  daily_spin_wheel_last_spin?: Date;
+
+  @ApiProperty({
+    description: 'Lucky wheel count',
+    example: 0,
+  })
+  lucky_wheel_count: number;
+
+  @ApiProperty({
+    description: 'Daily coins days count (max 7)',
+    example: 0,
+  })
+  daily_coins_days_count: number;
+
+  @ApiPropertyOptional({
+    description: 'Last daily coins reward timestamp',
+    example: '2025-01-01T10:00:00Z',
+  })
+  daily_coins_last_reward?: Date;
+
+  @ApiProperty({
     description:
       'List of registration offers from casinos where user registered but never deposited',
     type: [RegistrationOfferDto],

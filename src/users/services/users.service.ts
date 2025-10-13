@@ -95,6 +95,15 @@ export class UsersService {
       fullProfile.visitor_id,
     );
 
+    // Get player from database to access additional fields
+    const player = await this.playerRepository.findOne({
+      where: { id: userId, is_deleted: false },
+    });
+
+    if (!player) {
+      throw new NotFoundException('User not found');
+    }
+
     // Convert full profile to mobile profile (excluding specific fields)
     const mobileProfile: MobileUserProfileDto = {
       id: fullProfile.id,
@@ -111,6 +120,12 @@ export class UsersService {
       email_verified_at: fullProfile.email_verified_at,
       phone_verified: fullProfile.phone_verified,
       phone_verified_at: fullProfile.phone_verified_at,
+      // Daily spin, lucky wheel, and daily coins fields
+      daily_spin_wheel_day_count: player.daily_spin_wheel_day_count,
+      daily_spin_wheel_last_spin: player.daily_spin_wheel_last_spin,
+      lucky_wheel_count: player.lucky_wheel_count,
+      daily_coins_days_count: player.daily_coins_days_count,
+      daily_coins_last_reward: player.daily_coins_last_reward,
       // New parameters
       registration_offers: registrationOffers,
       deposit_confirmed: depositConfirmed,
@@ -249,7 +264,15 @@ export class UsersService {
     email_verified?: string;
     phone_verified?: string;
   }): Promise<{ data: Player[]; total: number }> {
-    const { page, limit, search, status, sortBy, email_verified, phone_verified } = options;
+    const {
+      page,
+      limit,
+      search,
+      status,
+      sortBy,
+      email_verified,
+      phone_verified,
+    } = options;
     const skip = (page - 1) * limit;
 
     let query = this.playerRepository
