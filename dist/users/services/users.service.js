@@ -114,6 +114,12 @@ let UsersService = class UsersService {
         const fullProfile = await this.getProfile(userId);
         const registrationOffers = await this.getRegistrationOffers(fullProfile.visitor_id);
         const depositConfirmed = await this.getDepositConfirmed(fullProfile.visitor_id);
+        const player = await this.playerRepository.findOne({
+            where: { id: userId, is_deleted: false },
+        });
+        if (!player) {
+            throw new common_1.NotFoundException('User not found');
+        }
         const mobileProfile = {
             id: fullProfile.id,
             visitor_id: fullProfile.visitor_id,
@@ -128,6 +134,11 @@ let UsersService = class UsersService {
             email_verified_at: fullProfile.email_verified_at,
             phone_verified: fullProfile.phone_verified,
             phone_verified_at: fullProfile.phone_verified_at,
+            daily_spin_wheel_day_count: player.daily_spin_wheel_day_count,
+            daily_spin_wheel_last_spin: player.daily_spin_wheel_last_spin,
+            lucky_wheel_count: player.lucky_wheel_count,
+            daily_coins_days_count: player.daily_coins_days_count,
+            daily_coins_last_reward: player.daily_coins_last_reward,
             registration_offers: registrationOffers,
             deposit_confirmed: depositConfirmed,
         };
@@ -226,7 +237,7 @@ let UsersService = class UsersService {
             .getCount();
     }
     async findUsersForAdmin(options) {
-        const { page, limit, search, status, sortBy, email_verified, phone_verified } = options;
+        const { page, limit, search, status, sortBy, email_verified, phone_verified, } = options;
         const skip = (page - 1) * limit;
         let query = this.playerRepository
             .createQueryBuilder('player')

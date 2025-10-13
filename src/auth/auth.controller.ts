@@ -1194,7 +1194,8 @@ export class AuthController {
     await this.playerRepository.update(
       { id: user.id },
       {
-        daily_spin_wheel_day_count: updateDailySpinDto.daily_spin_wheel_day_count,
+        daily_spin_wheel_day_count:
+          updateDailySpinDto.daily_spin_wheel_day_count,
         daily_spin_wheel_last_spin: now,
       },
     );

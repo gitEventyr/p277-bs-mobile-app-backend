@@ -127,6 +127,11 @@ class MobileUserProfileDto {
     email_verified_at;
     phone_verified;
     phone_verified_at;
+    daily_spin_wheel_day_count;
+    daily_spin_wheel_last_spin;
+    lucky_wheel_count;
+    daily_coins_days_count;
+    daily_coins_last_reward;
     registration_offers;
     deposit_confirmed;
 }
@@ -222,6 +227,41 @@ __decorate([
     }),
     __metadata("design:type", Date)
 ], MobileUserProfileDto.prototype, "phone_verified_at", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Daily spin wheel day count',
+        example: 0,
+    }),
+    __metadata("design:type", Number)
+], MobileUserProfileDto.prototype, "daily_spin_wheel_day_count", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Last daily spin wheel timestamp',
+        example: '2025-01-01T10:00:00Z',
+    }),
+    __metadata("design:type", Date)
+], MobileUserProfileDto.prototype, "daily_spin_wheel_last_spin", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Lucky wheel count',
+        example: 0,
+    }),
+    __metadata("design:type", Number)
+], MobileUserProfileDto.prototype, "lucky_wheel_count", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Daily coins days count (max 7)',
+        example: 0,
+    }),
+    __metadata("design:type", Number)
+], MobileUserProfileDto.prototype, "daily_coins_days_count", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Last daily coins reward timestamp',
+        example: '2025-01-01T10:00:00Z',
+    }),
+    __metadata("design:type", Date)
+], MobileUserProfileDto.prototype, "daily_coins_last_reward", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'List of registration offers from casinos where user registered but never deposited',

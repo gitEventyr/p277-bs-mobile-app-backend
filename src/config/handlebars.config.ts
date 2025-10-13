@@ -86,6 +86,6 @@ export function configureHandlebars() {
   // Helper for counting items with specific status
   hbs.registerHelper('countStatus', function (items: any[], status: string) {
     if (!items || !Array.isArray(items)) return 0;
-    return items.filter(item => item.status === status).length;
+    return items.filter((item) => item.status === status).length;
   });
 }

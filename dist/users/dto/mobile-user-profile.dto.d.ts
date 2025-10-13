@@ -28,6 +28,11 @@ export declare class MobileUserProfileDto {
     email_verified_at?: Date;
     phone_verified: boolean;
     phone_verified_at?: Date;
+    daily_spin_wheel_day_count: number;
+    daily_spin_wheel_last_spin?: Date;
+    lucky_wheel_count: number;
+    daily_coins_days_count: number;
+    daily_coins_last_reward?: Date;
     registration_offers: RegistrationOfferDto[];
     deposit_confirmed: DepositConfirmedDto[];
 }

@@ -32,7 +32,8 @@ export class CasinoService {
     }
 
     // Sorting - use default sorting first, then sort in memory for actions count
-    const sortByActionsCount = sortBy === 'actions_count_desc' || sortBy === 'actions_count_asc';
+    const sortByActionsCount =
+      sortBy === 'actions_count_desc' || sortBy === 'actions_count_asc';
 
     if (sortBy === 'casino_name') {
       query = query.orderBy('casino.casino_name', 'ASC');
@@ -54,7 +55,9 @@ export class CasinoService {
       allData.sort((a, b) => {
         const countA = a.actions?.length || 0;
         const countB = b.actions?.length || 0;
-        return sortBy === 'actions_count_desc' ? countB - countA : countA - countB;
+        return sortBy === 'actions_count_desc'
+          ? countB - countA
+          : countA - countB;
       });
 
       // Apply pagination manually
