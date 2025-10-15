@@ -516,38 +516,51 @@ async function deleteUser(userId) {
       const result = await response.json();
       const user = result.success ? result.data : result;
 
-      // Show confirmation dialog
-      const confirmed = confirm(
-        `Are you sure you want to delete user "${user.name || 'Unknown'}" (${user.email || user.visitor_id})?\n\n` +
-        `This will:\n` +
-        `- Soft delete the user account\n` +
-        `- Remove all casino action history\n` +
-        `- Clear personal information\n\n` +
-        `This action cannot be undone.`
-      );
+      // Build confirmation message
+      const message = `Are you sure you want to delete user "${user.name || 'Unknown'}" (${user.email || user.visitor_id})?\n\nThis will:\n- Soft delete the user account\n- Remove all casino action history\n- Clear personal information\n\nThis action cannot be undone.`;
 
-      if (!confirmed) {
-        return;
-      }
+      // Set up confirmation modal
+      document.getElementById('confirmationMessage').textContent = message;
+      const confirmBtn = document.getElementById('confirmActionBtn');
 
-      // Proceed with deletion
-      const deleteResponse = await fetch(`/admin/api/users/${userId}/delete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
+      // Remove existing event listeners by cloning the button
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+      // Add new event listener
+      newConfirmBtn.addEventListener('click', async function() {
+        // Hide modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+        modal.hide();
+
+        try {
+          // Proceed with deletion
+          const deleteResponse = await fetch(`/admin/api/users/${userId}/delete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+          });
+
+          if (deleteResponse.ok) {
+            showToast('User deleted successfully', 'success');
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            const errorResult = await deleteResponse.json();
+            showToast(errorResult.message || 'Error deleting user', 'danger');
+          }
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          showToast('Network error. Please try again.', 'danger');
+        }
       });
 
-      if (deleteResponse.ok) {
-        showToast('User deleted successfully', 'success');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } else {
-        const errorResult = await deleteResponse.json();
-        showToast(errorResult.message || 'Error deleting user', 'danger');
-      }
+      // Show modal
+      const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+      modal.show();
     } else {
       const errorResult = await response.json();
       showToast('Error loading user details: ' + (errorResult.message || 'Unknown error'), 'danger');
