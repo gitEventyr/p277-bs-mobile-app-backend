@@ -569,4 +569,57 @@ export class UsersService {
       return [];
     }
   }
+
+  async softDeleteUser(userId: number): Promise<void> {
+    try {
+      // Find the user
+      const user = await this.playerRepository.findOne({
+        where: { id: userId, is_deleted: false },
+        select: ['id', 'email', 'name', 'phone', 'visitor_id'],
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found or already deleted');
+      }
+
+      // Delete all related casino actions to avoid foreign key constraint issues
+      await this.casinoActionRepository.delete({
+        visitor_id: user.visitor_id,
+      });
+
+      // Create unique suffixes to avoid constraint violations during re-registration
+      const timestamp = new Date().getTime();
+      const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
+      const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+
+      // Prepare update data for soft delete
+      const updateData: any = {
+        is_deleted: true,
+        deleted_at: new Date(),
+        deletion_reason: 'Admin deletion',
+        name: null,
+        password: null,
+        updated_at: new Date(),
+      };
+
+      // Add modified email, phone, and visitor_id to avoid constraint violations
+      if (user.email && emailSuffix) {
+        updateData.email = user.email + emailSuffix;
+      }
+      if (user.phone && phoneSuffix) {
+        updateData.phone = user.phone + phoneSuffix;
+      }
+      // Always modify visitor_id to avoid conflicts during re-registration
+      updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
+
+      // Perform the soft delete
+      await this.playerRepository.update({ id: userId }, updateData);
+    } catch (error) {
+      console.error('Error during soft delete:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('Database operation failed');
+    }
+  }
 }

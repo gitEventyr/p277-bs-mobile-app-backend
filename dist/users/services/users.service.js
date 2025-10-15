@@ -442,6 +442,46 @@ let UsersService = class UsersService {
             return [];
         }
     }
+    async softDeleteUser(userId) {
+        try {
+            const user = await this.playerRepository.findOne({
+                where: { id: userId, is_deleted: false },
+                select: ['id', 'email', 'name', 'phone', 'visitor_id'],
+            });
+            if (!user) {
+                throw new common_1.NotFoundException('User not found or already deleted');
+            }
+            await this.casinoActionRepository.delete({
+                visitor_id: user.visitor_id,
+            });
+            const timestamp = new Date().getTime();
+            const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
+            const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+            const updateData = {
+                is_deleted: true,
+                deleted_at: new Date(),
+                deletion_reason: 'Admin deletion',
+                name: null,
+                password: null,
+                updated_at: new Date(),
+            };
+            if (user.email && emailSuffix) {
+                updateData.email = user.email + emailSuffix;
+            }
+            if (user.phone && phoneSuffix) {
+                updateData.phone = user.phone + phoneSuffix;
+            }
+            updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
+            await this.playerRepository.update({ id: userId }, updateData);
+        }
+        catch (error) {
+            console.error('Error during soft delete:', error);
+            if (error instanceof common_1.NotFoundException) {
+                throw error;
+            }
+            throw new common_1.BadRequestException('Database operation failed');
+        }
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

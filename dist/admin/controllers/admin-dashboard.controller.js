@@ -344,6 +344,22 @@ let AdminDashboardController = class AdminDashboardController {
             throw error;
         }
     }
+    async deleteUser(id, session) {
+        if (!session.admin) {
+            throw new common_1.UnauthorizedException('Not authenticated');
+        }
+        try {
+            const userId = parseInt(id, 10);
+            await this.usersService.softDeleteUser(userId);
+            return {
+                message: 'User successfully deleted',
+            };
+        }
+        catch (error) {
+            console.error('Delete user error:', error);
+            throw new common_1.BadRequestException(error?.message || 'Error deleting user');
+        }
+    }
     async getDashboardStats() {
         try {
             return {
@@ -597,6 +613,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AdminDashboardController.prototype, "createUser", null);
+__decorate([
+    (0, common_1.Post)('api/users/:id/delete'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Session)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AdminDashboardController.prototype, "deleteUser", null);
 __decorate([
     (0, common_1.Get)('vouchers'),
     __param(0, (0, common_1.Session)()),

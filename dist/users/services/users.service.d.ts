@@ -43,4 +43,5 @@ export declare class UsersService {
     private hashPassword;
     private getRegistrationOffers;
     private getDepositConfirmed;
+    softDeleteUser(userId: number): Promise<void>;
 }

@@ -113,27 +113,51 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Adjust Balance Form Handler
+// Unified Balance Type Selector Handler
+document.addEventListener('DOMContentLoaded', function() {
+  const balanceTypeSelect = document.getElementById('adjustBalanceType');
+  const amountUnit = document.getElementById('adjustAmountUnit');
+
+  if (balanceTypeSelect && amountUnit) {
+    balanceTypeSelect.addEventListener('change', function() {
+      if (this.value === 'coins') {
+        amountUnit.textContent = 'coins';
+      } else if (this.value === 'rp') {
+        amountUnit.textContent = 'RP';
+      } else {
+        amountUnit.textContent = 'coins/RP';
+      }
+    });
+  }
+});
+
+// Unified Adjust Balance Form Handler
 document.addEventListener('DOMContentLoaded', function() {
   const adjustBalanceForm = document.getElementById('adjustBalanceForm');
   if (adjustBalanceForm) {
     adjustBalanceForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      
+
       const submitBtn = this.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
       const removeLoadingState = addLoadingState(submitBtn, originalText);
-      
+
       try {
         const formData = new FormData(this);
         const userId = formData.get('userId');
+        const balanceType = formData.get('balanceType');
         const amount = parseInt(formData.get('amount'));
         const reason = formData.get('reason');
         const customReason = formData.get('customReason');
-        
+
         const finalReason = reason === 'other' && customReason ? customReason : reason;
-        
-        const response = await fetch(`/admin/api/users/${userId}/adjust-balance`, {
+
+        // Determine endpoint based on balance type
+        const endpoint = balanceType === 'coins'
+          ? `/admin/api/users/${userId}/adjust-balance`
+          : `/admin/api/users/${userId}/adjust-rp-balance`;
+
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -144,13 +168,13 @@ document.addEventListener('DOMContentLoaded', function() {
             reason: finalReason
           })
         });
-        
+
         if (response.ok) {
           const result = await response.json();
           // Close modal and refresh page
           bootstrap.Modal.getInstance(document.getElementById('adjustBalanceModal')).hide();
-          const amount = parseInt(document.getElementById('adjustAmount').value);
-          showToast(`Balance ${amount > 0 ? 'increased' : 'decreased'} successfully`, 'success');
+          const balanceName = balanceType === 'coins' ? 'Coins balance' : 'RP balance';
+          showToast(`${balanceName} ${amount > 0 ? 'increased' : 'decreased'} successfully`, 'success');
           setTimeout(() => {
             window.location.reload();
           }, 1000);
@@ -172,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   const reasonSelect = document.getElementById('adjustReason');
   const customReasonGroup = document.getElementById('customReasonGroup');
-  
+
   if (reasonSelect && customReasonGroup) {
     reasonSelect.addEventListener('change', function() {
       if (this.value === 'other') {
@@ -182,80 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
         customReasonGroup.style.display = 'none';
         document.getElementById('customReason').required = false;
         document.getElementById('customReason').value = '';
-      }
-    });
-  }
-});
-
-// Adjust RP Balance Form Handler
-document.addEventListener('DOMContentLoaded', function() {
-  const adjustRpBalanceForm = document.getElementById('adjustRpBalanceForm');
-  if (adjustRpBalanceForm) {
-    adjustRpBalanceForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const submitBtn = this.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      const removeLoadingState = addLoadingState(submitBtn, originalText);
-      
-      try {
-        const formData = new FormData(this);
-        const userId = formData.get('userId');
-        const amount = parseInt(formData.get('amount'));
-        const reason = formData.get('reason');
-        const customReason = formData.get('customReason');
-        
-        const finalReason = reason === 'other' && customReason ? customReason : reason;
-        
-        const response = await fetch(`/admin/api/users/${userId}/adjust-rp-balance`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'same-origin',
-          body: JSON.stringify({
-            amount: amount,
-            reason: finalReason
-          })
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          // Close modal and refresh page
-          bootstrap.Modal.getInstance(document.getElementById('adjustRpBalanceModal')).hide();
-          const amount = parseInt(document.getElementById('adjustRpAmount').value);
-          showToast(`RP Balance ${amount > 0 ? 'increased' : 'decreased'} successfully`, 'success');
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        } else {
-          const errorResult = await response.json();
-          showToast(errorResult.message || 'Error adjusting RP balance', 'danger');
-        }
-      } catch (error) {
-        console.error('Error adjusting RP balance:', error);
-        showToast('Network error. Please try again.', 'danger');
-      } finally {
-        removeLoadingState();
-      }
-    });
-  }
-});
-
-// RP Reason dropdown handler
-document.addEventListener('DOMContentLoaded', function() {
-  const rpReasonSelect = document.getElementById('adjustRpReason');
-  const customRpReasonGroup = document.getElementById('customRpReasonGroup');
-  
-  if (rpReasonSelect && customRpReasonGroup) {
-    rpReasonSelect.addEventListener('change', function() {
-      if (this.value === 'other') {
-        customRpReasonGroup.style.display = 'block';
-        document.getElementById('customRpReason').required = true;
-      } else {
-        customRpReasonGroup.style.display = 'none';
-        document.getElementById('customRpReason').required = false;
-        document.getElementById('customRpReason').value = '';
       }
     });
   }
@@ -498,89 +448,41 @@ async function editUser(userId) {
   }
 }
 
-// Adjust RP Balance Function
-async function adjustRpBalance(userId) {
-  try {
-    // First get user details
-    const response = await fetch(`/admin/api/users/${userId}`, {
-      credentials: 'same-origin'
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
-      
-      // Handle the response based on structure
-      const user = result.success ? result.data : result;
-      
-      // Debug: Log the user data for RP balance adjustment
-      console.log('RP Balance adjustment user data:', user);
-      console.log('RP Balance adjustment name:', user.name, typeof user.name);
-      console.log('RP Balance adjustment balance:', user.rp_balance, typeof user.rp_balance);
-      
-      // Populate adjustment form
-      document.getElementById('adjustRpUserId').value = userId;
-      document.getElementById('adjustRpUserName').textContent = user.name || 'N/A';
-      document.getElementById('adjustRpCurrentBalance').textContent = `${user.rp_balance !== undefined && user.rp_balance !== null ? user.rp_balance : 0} RP`;
-      
-      // Reset form fields
-      document.getElementById('adjustRpAmount').value = '';
-      document.getElementById('adjustRpReason').value = '';
-      document.getElementById('customRpReason').value = '';
-      document.getElementById('customRpReasonGroup').style.display = 'none';
-      document.getElementById('customRpReason').required = false;
-      
-      // Show adjustment modal
-      const adjustModal = new bootstrap.Modal(document.getElementById('adjustRpBalanceModal'));
-      adjustModal.show();
-    } else {
-      const errorResult = await response.json();
-      console.error('Adjust RP balance API error:', response.status, errorResult);
-      showToast('Error loading user details: ' + (errorResult.message || 'Unknown error'), 'danger');
-      
-      // If authentication failed, reload the page
-      if (response.status === 401) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
-    }
-  } catch (error) {
-    console.error('Error loading user for RP balance adjustment:', error);
-    showToast('Error loading user details', 'danger');
-  }
-}
-
-// Adjust Balance Function
+// Unified Adjust Balance Function
 async function adjustBalance(userId) {
   try {
     // First get user details
     const response = await fetch(`/admin/api/users/${userId}`, {
       credentials: 'same-origin'
     });
-    
+
     if (response.ok) {
       const result = await response.json();
-      
+
       // Handle the response based on structure
       const user = result.success ? result.data : result;
-      
+
       // Debug: Log the user data for balance adjustment
       console.log('Balance adjustment user data:', user);
       console.log('Balance adjustment name:', user.name, typeof user.name);
-      console.log('Balance adjustment balance:', user.coins_balance, typeof user.coins_balance);
-      
+      console.log('Balance adjustment coins:', user.coins_balance, typeof user.coins_balance);
+      console.log('Balance adjustment RP:', user.rp_balance, typeof user.rp_balance);
+
       // Populate adjustment form
       document.getElementById('adjustUserId').value = userId;
       document.getElementById('adjustUserName').textContent = user.name || 'N/A';
-      document.getElementById('adjustCurrentBalance').textContent = `${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins`;
-      
+      document.getElementById('adjustCurrentCoinsBalance').textContent = `${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins`;
+      document.getElementById('adjustCurrentRpBalance').textContent = `${user.rp_balance !== undefined && user.rp_balance !== null ? user.rp_balance : 0} RP`;
+
       // Reset form fields
+      document.getElementById('adjustBalanceType').value = '';
       document.getElementById('adjustAmount').value = '';
       document.getElementById('adjustReason').value = '';
       document.getElementById('customReason').value = '';
       document.getElementById('customReasonGroup').style.display = 'none';
       document.getElementById('customReason').required = false;
-      
+      document.getElementById('adjustAmountUnit').textContent = 'coins/RP';
+
       // Show adjustment modal
       const adjustModal = new bootstrap.Modal(document.getElementById('adjustBalanceModal'));
       adjustModal.show();
@@ -588,7 +490,7 @@ async function adjustBalance(userId) {
       const errorResult = await response.json();
       console.error('Adjust balance API error:', response.status, errorResult);
       showToast('Error loading user details: ' + (errorResult.message || 'Unknown error'), 'danger');
-      
+
       // If authentication failed, reload the page
       if (response.status === 401) {
         setTimeout(() => {
@@ -602,10 +504,64 @@ async function adjustBalance(userId) {
   }
 }
 
+// Delete User Function
+async function deleteUser(userId) {
+  try {
+    // First get user details for confirmation
+    const response = await fetch(`/admin/api/users/${userId}`, {
+      credentials: 'same-origin'
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      const user = result.success ? result.data : result;
+
+      // Show confirmation dialog
+      const confirmed = confirm(
+        `Are you sure you want to delete user "${user.name || 'Unknown'}" (${user.email || user.visitor_id})?\n\n` +
+        `This will:\n` +
+        `- Soft delete the user account\n` +
+        `- Remove all casino action history\n` +
+        `- Clear personal information\n\n` +
+        `This action cannot be undone.`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      // Proceed with deletion
+      const deleteResponse = await fetch(`/admin/api/users/${userId}/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+      });
+
+      if (deleteResponse.ok) {
+        showToast('User deleted successfully', 'success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        const errorResult = await deleteResponse.json();
+        showToast(errorResult.message || 'Error deleting user', 'danger');
+      }
+    } else {
+      const errorResult = await response.json();
+      showToast('Error loading user details: ' + (errorResult.message || 'Unknown error'), 'danger');
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    showToast('Network error. Please try again.', 'danger');
+  }
+}
+
 // Date Formatting Helper
 function formatDate(dateString) {
   if (!dateString) return 'N/A';
-  
+
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -712,7 +668,7 @@ window.AdminDashboard = {
   viewUser,
   editUser,
   adjustBalance,
-  adjustRpBalance,
+  deleteUser,
   formatDate,
   addLoadingState,
   confirmAction,

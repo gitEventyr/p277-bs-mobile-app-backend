@@ -471,6 +471,28 @@ export class AdminDashboardController {
     }
   }
 
+  // Delete User (Admin endpoint)
+  @Post('api/users/:id/delete')
+  async deleteUser(@Param('id') id: string, @Session() session: AdminSession) {
+    if (!session.admin) {
+      throw new UnauthorizedException('Not authenticated');
+    }
+
+    try {
+      const userId = parseInt(id, 10);
+
+      // Use the users service to soft delete the user
+      await this.usersService.softDeleteUser(userId);
+
+      return {
+        message: 'User successfully deleted',
+      };
+    } catch (error: any) {
+      console.error('Delete user error:', error);
+      throw new BadRequestException(error?.message || 'Error deleting user');
+    }
+  }
+
   // Helper Methods
   private async getDashboardStats() {
     try {

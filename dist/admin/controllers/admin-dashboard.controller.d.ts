@@ -68,6 +68,9 @@ export declare class AdminDashboardController {
         phone?: string;
         password: string;
     }, session: AdminSession): Promise<import("../../users/dto/user-profile.dto").UserProfileDto>;
+    deleteUser(id: string, session: AdminSession): Promise<{
+        message: string;
+    }>;
     private getDashboardStats;
     private getRecentActivity;
     private getUsersList;
