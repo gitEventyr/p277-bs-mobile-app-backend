@@ -351,12 +351,13 @@ async function viewUser(userId) {
             <h6 class="fw-bold">AppsFlyer Attribution</h6>
             <table class="table table-sm table-responsive-sm">
               <tbody>
-                <tr><td style="width: 20%;"><strong>PID:</strong></td><td style="word-break: break-word;">${user.pid || 'N/A'}</td></tr>
-                <tr><td><strong>Campaign:</strong></td><td style="word-break: break-word;">${user.c || 'N/A'}</td></tr>
-                <tr><td><strong>Channel:</strong></td><td style="word-break: break-word;">${user.af_channel || 'N/A'}</td></tr>
-                <tr><td><strong>Ad Set:</strong></td><td style="word-break: break-word;">${user.af_adset || 'N/A'}</td></tr>
-                <tr><td><strong>Ad:</strong></td><td style="word-break: break-word;">${user.af_ad || 'N/A'}</td></tr>
-                <tr><td><strong>Keywords:</strong></td><td style="word-break: break-word;">${user.af_keywords || 'N/A'}</td></tr>
+                <tr><td style="width: 20%;"><strong>PID:</strong></td><td style="word-break: break-word;">${user.pid === null ? 'null' : (user.pid || 'N/A')}</td></tr>
+                <tr><td><strong>Campaign:</strong></td><td style="word-break: break-word;">${user.c === null ? 'null' : (user.c || 'N/A')}</td></tr>
+                <tr><td><strong>Channel:</strong></td><td style="word-break: break-word;">${user.af_channel === null ? 'null' : (user.af_channel || 'N/A')}</td></tr>
+                <tr><td><strong>Ad Set:</strong></td><td style="word-break: break-word;">${user.af_adset === null ? 'null' : (user.af_adset || 'N/A')}</td></tr>
+                <tr><td><strong>Ad:</strong></td><td style="word-break: break-word;">${user.af_ad === null ? 'null' : (user.af_ad || 'N/A')}</td></tr>
+                <tr><td><strong>Keywords:</strong></td><td style="word-break: break-word;">${user.af_keywords === null ? 'null' : (user.af_keywords || 'N/A')}</td></tr>
+                <tr><td><strong>Click Lookback:</strong></td><td style="word-break: break-word;">${user.af_click_lookback === null ? 'null' : (user.af_click_lookback || 'N/A')}</td></tr>
               </tbody>
             </table>
           </div>
@@ -517,7 +518,7 @@ async function deleteUser(userId) {
       const user = result.success ? result.data : result;
 
       // Build confirmation message
-      const message = `Are you sure you want to delete user "${user.name || 'Unknown'}" (${user.email || user.visitor_id})?\n\nThis will:\n- Soft delete the user account\n- Remove all casino action history\n- Clear personal information\n\nThis action cannot be undone.`;
+      const message = `Are you sure you want to delete user "${user.name || 'Unknown'}" (${user.email || user.visitor_id})?\n\nThis will:\n• Soft delete the user account\n• Clear personal information\n\nThis action cannot be undone.`;
 
       // Set up confirmation modal
       document.getElementById('confirmationMessage').textContent = message;
