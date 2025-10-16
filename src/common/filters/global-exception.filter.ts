@@ -42,6 +42,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             error: 'Validation failed',
             details: validationErrors,
           };
+        } else if (typeof responseObj.message === 'string') {
+          // Extract the string message from the nested structure
+          message = responseObj.message;
         } else {
           message =
             typeof exceptionResponse === 'string'
@@ -52,7 +55,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message =
           typeof exceptionResponse === 'string'
             ? exceptionResponse
-            : exceptionResponse;
+            : (exceptionResponse as any)?.message || exceptionResponse;
       }
     } else if (exception instanceof QueryFailedError) {
       // Handle database errors
