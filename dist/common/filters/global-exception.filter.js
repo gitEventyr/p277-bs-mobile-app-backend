@@ -32,6 +32,9 @@ let GlobalExceptionFilter = GlobalExceptionFilter_1 = class GlobalExceptionFilte
                         details: validationErrors,
                     };
                 }
+                else if (typeof responseObj.message === 'string') {
+                    message = responseObj.message;
+                }
                 else {
                     message =
                         typeof exceptionResponse === 'string'
@@ -43,7 +46,7 @@ let GlobalExceptionFilter = GlobalExceptionFilter_1 = class GlobalExceptionFilte
                 message =
                     typeof exceptionResponse === 'string'
                         ? exceptionResponse
-                        : exceptionResponse;
+                        : exceptionResponse?.message || exceptionResponse;
             }
         }
         else if (exception instanceof typeorm_1.QueryFailedError) {
