@@ -242,6 +242,12 @@ export class Player {
   @IsString()
   deletion_reason?: string;
 
+  // Token versioning for invalidating old tokens
+  @Column({ type: 'integer', default: 0 })
+  @IsNumber()
+  @Min(0)
+  token_version: number;
+
   // Relationships
   @OneToMany('Device', (device: any) => device.user)
   devices: any[];

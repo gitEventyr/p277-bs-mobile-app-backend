@@ -70,7 +70,7 @@ export class AuthService {
     if (payload.type === 'user') {
       const userId =
         typeof payload.sub === 'string' ? parseInt(payload.sub) : payload.sub;
-      return this.validatePlayer(userId);
+      return this.validatePlayer(userId, payload.token_version);
     } else if (payload.type === 'admin') {
       const adminId =
         typeof payload.sub === 'number' ? payload.sub.toString() : payload.sub;
@@ -79,7 +79,10 @@ export class AuthService {
     return null;
   }
 
-  async validatePlayer(playerId: number): Promise<AuthenticatedUser | null> {
+  async validatePlayer(
+    playerId: number,
+    tokenVersion?: number,
+  ): Promise<AuthenticatedUser | null> {
     const player = await this.playerRepository.findOne({
       where: { id: playerId, is_deleted: false },
       select: [
@@ -92,10 +95,21 @@ export class AuthService {
         'scratch_cards',
         'is_deleted',
         'avatar',
+        'token_version',
       ],
     });
 
     if (!player || player.is_deleted) {
+      return null;
+    }
+
+    // Validate token version if provided (for mobile users)
+    if (
+      tokenVersion !== undefined &&
+      player.token_version !== undefined &&
+      tokenVersion !== player.token_version
+    ) {
+      // Token version mismatch - token has been invalidated
       return null;
     }
 

@@ -1,4 +1,9 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumberString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCasinoDto {
@@ -11,11 +16,15 @@ export class CreateCasinoDto {
   casino_name: string;
 
   @ApiProperty({
-    description: 'External casino ID for third-party API integration',
-    example: 'bella_vegas_123',
+    description:
+      'External casino ID for third-party API integration (must be numeric)',
+    example: '123',
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsNumberString(
+    {},
+    { message: 'Casino ID must contain only numeric characters' },
+  )
   casino_id?: string;
 }

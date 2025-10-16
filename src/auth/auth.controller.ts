@@ -233,6 +233,7 @@ export class AuthController {
       coins_balance: 10000, // Starting balance
       level: 1,
       scratch_cards: 0,
+      token_version: 1, // Initialize token version
       // New fields
       device_udid: registerDto.deviceUDID,
       subscription_agreement: registerDto.subscription_agreement,
@@ -280,7 +281,7 @@ export class AuthController {
     // Registration RP rewards are now handled by casino actions
     // See casino-action.service.ts for RP reward logic
 
-    // Generate JWT token
+    // Generate JWT token with initial token_version
     const payload: JwtPayload = {
       sub:
         typeof savedPlayer.id === 'string'
@@ -288,6 +289,7 @@ export class AuthController {
           : savedPlayer.id,
       email: savedPlayer.email || '',
       type: 'user',
+      token_version: savedPlayer.token_version,
     };
 
     const accessToken = await this.authService.generateJwtToken(payload);
@@ -365,6 +367,7 @@ export class AuthController {
         'avatar',
         'daily_spin_wheel_last_spin',
         'daily_spin_wheel_day_count',
+        'token_version',
       ],
     });
 
@@ -381,6 +384,13 @@ export class AuthController {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
+
+    // Increment token_version to invalidate all previous tokens
+    const newTokenVersion = (player.token_version || 0) + 1;
+    await this.playerRepository.update(
+      { id: player.id },
+      { token_version: newTokenVersion },
+    );
 
     // Check if daily spin needs to be reset (if 2+ days passed since last spin)
     if (player.daily_spin_wheel_last_spin) {
@@ -428,7 +438,7 @@ export class AuthController {
       throw new UnauthorizedException('Player not found');
     }
 
-    // Generate JWT token
+    // Generate JWT token with new token_version
     const payload: JwtPayload = {
       sub:
         typeof updatedPlayer.id === 'string'
@@ -436,6 +446,7 @@ export class AuthController {
           : updatedPlayer.id,
       email: updatedPlayer.email || '',
       type: 'user',
+      token_version: newTokenVersion,
     };
 
     const accessToken = await this.authService.generateJwtToken(payload);

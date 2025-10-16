@@ -28,12 +28,12 @@ __decorate([
 ], UpdateCasinoDto.prototype, "casino_name", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'External casino ID for third-party API integration',
-        example: 'bella_vegas_updated_123',
+        description: 'External casino ID for third-party API integration (must be numeric)',
+        example: '456',
         required: false,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNumberString)({}, { message: 'Casino ID must contain only numeric characters' }),
     __metadata("design:type", String)
 ], UpdateCasinoDto.prototype, "casino_id", void 0);
 //# sourceMappingURL=update-casino.dto.js.map

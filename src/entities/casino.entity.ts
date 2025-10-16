@@ -17,7 +17,7 @@ export class Casino {
   @IsString()
   casino_name: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, unique: true })
   @IsOptional()
   @IsString()
   casino_id?: string;

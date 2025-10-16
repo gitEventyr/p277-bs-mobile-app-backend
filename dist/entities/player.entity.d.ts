@@ -46,6 +46,7 @@ export declare class Player {
     is_deleted: boolean;
     deleted_at?: Date;
     deletion_reason?: string;
+    token_version: number;
     devices: any[];
     balanceChanges: any[];
     rpBalanceTransactions: any[];

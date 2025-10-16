@@ -102,6 +102,12 @@ let CasinoController = class CasinoController {
             if (existingCasino) {
                 throw new common_1.BadRequestException('Casino name already exists');
             }
+            if (casino_id) {
+                const existingCasinoById = await this.casinoService.findByCasinoId(casino_id);
+                if (existingCasinoById) {
+                    throw new common_1.BadRequestException('Casino ID already exists. Each casino must have a unique casino ID.');
+                }
+            }
             const casino = await this.casinoService.create({
                 casino_name,
                 casino_id,
@@ -129,6 +135,12 @@ let CasinoController = class CasinoController {
             const existingCasino = await this.casinoService.findByName(casino_name);
             if (existingCasino && existingCasino.id !== parseInt(id)) {
                 throw new common_1.BadRequestException('Casino name already exists');
+            }
+            if (casino_id) {
+                const existingCasinoById = await this.casinoService.findByCasinoId(casino_id);
+                if (existingCasinoById && existingCasinoById.id !== parseInt(id)) {
+                    throw new common_1.BadRequestException('Casino ID already exists. Each casino must have a unique casino ID.');
+                }
             }
             const updatedCasino = await this.casinoService.update(parseInt(id), {
                 casino_name,

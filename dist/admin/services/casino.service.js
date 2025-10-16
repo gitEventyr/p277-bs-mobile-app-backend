@@ -92,6 +92,11 @@ let CasinoService = class CasinoService {
             where: { casino_name },
         });
     }
+    async findByCasinoId(casino_id) {
+        return await this.casinoRepository.findOne({
+            where: { casino_id },
+        });
+    }
     async create(createData) {
         const casino = this.casinoRepository.create(createData);
         return await this.casinoRepository.save(casino);

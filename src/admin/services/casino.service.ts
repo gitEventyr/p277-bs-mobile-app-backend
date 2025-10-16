@@ -110,6 +110,12 @@ export class CasinoService {
     });
   }
 
+  async findByCasinoId(casino_id: string): Promise<Casino | null> {
+    return await this.casinoRepository.findOne({
+      where: { casino_id },
+    });
+  }
+
   async create(createData: {
     casino_name: string;
     casino_id?: string;

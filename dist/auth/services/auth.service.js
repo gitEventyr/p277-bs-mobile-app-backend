@@ -93,7 +93,7 @@ let AuthService = class AuthService {
     async validateUser(payload) {
         if (payload.type === 'user') {
             const userId = typeof payload.sub === 'string' ? parseInt(payload.sub) : payload.sub;
-            return this.validatePlayer(userId);
+            return this.validatePlayer(userId, payload.token_version);
         }
         else if (payload.type === 'admin') {
             const adminId = typeof payload.sub === 'number' ? payload.sub.toString() : payload.sub;
@@ -101,7 +101,7 @@ let AuthService = class AuthService {
         }
         return null;
     }
-    async validatePlayer(playerId) {
+    async validatePlayer(playerId, tokenVersion) {
         const player = await this.playerRepository.findOne({
             where: { id: playerId, is_deleted: false },
             select: [
@@ -114,9 +114,15 @@ let AuthService = class AuthService {
                 'scratch_cards',
                 'is_deleted',
                 'avatar',
+                'token_version',
             ],
         });
         if (!player || player.is_deleted) {
+            return null;
+        }
+        if (tokenVersion !== undefined &&
+            player.token_version !== undefined &&
+            tokenVersion !== player.token_version) {
             return null;
         }
         return {

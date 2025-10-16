@@ -5,38 +5,68 @@
   </h1>
 </div>
 
-<!-- Filter Section -->
-<div class="card mb-4">
-  <div class="card-header">
-    <i class="bi bi-funnel"></i>
-    Filter Voucher Requests
+<!-- Statistics and Filter Section -->
+<div class="row mb-4">
+  <!-- Status Cards -->
+  <div class="col-xl-4 col-md-6 mb-3">
+    <div class="card border-left-warning shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Pending Requests
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              {{countStatus voucherRequests "requested"}}
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-clock fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="card-body">
-    <form id="voucherRequestsFilterForm" method="GET" action="/admin/voucher-requests">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="status" class="form-label">Status</label>
-          <select class="form-select" id="status" name="status">
+
+  <div class="col-xl-4 col-md-6 mb-3">
+    <div class="card border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              Sent Requests
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              {{countStatus voucherRequests "sent"}}
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="col-xl-4 col-md-12 mb-3">
+    <div class="card shadow h-100">
+      <div class="card-body">
+        <form id="voucherRequestsFilterForm" method="GET" action="/admin/voucher-requests" class="d-flex flex-column h-100">
+          <label for="status" class="form-label fw-bold mb-2">
+            <i class="bi bi-funnel"></i> Filter by Status
+          </label>
+          <select class="form-select mb-2" id="status" name="status" onchange="this.form.submit()">
             <option value="">All Statuses</option>
-            <option value="requested" {{#if (eq statusFilter 'requested')}}selected{{/if}}>Requested</option>
+            <option value="requested" {{#if (eq statusFilter 'requested')}}selected{{/if}}>Pending</option>
             <option value="sent" {{#if (eq statusFilter 'sent')}}selected{{/if}}>Sent</option>
-            <option value="canceled" {{#if (eq statusFilter 'canceled')}}selected{{/if}}>Canceled</option>
           </select>
-        </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary">
-            <i class="bi bi-search"></i>
-            Apply Filter
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-auto" onclick="clearFilter()">
+            <i class="bi bi-x-circle"></i> Clear Filter
           </button>
-          <button type="button" class="btn btn-secondary ms-2" onclick="clearFilter()">
-            <i class="bi bi-x-circle"></i>
-            Clear
-          </button>
-        </div>
+        </form>
       </div>
-    </form>
+    </div>
   </div>
 </div>
 
@@ -83,10 +113,7 @@
             <td>
               {{#if (eq this.status "requested")}}
                 <button class="btn btn-sm btn-success" onclick="updateVoucherRequestStatus({{this.id}}, 'sent')">
-                  <i class="bi bi-check"></i> Mark as Sent
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="updateVoucherRequestStatus({{this.id}}, 'canceled')">
-                  <i class="bi bi-x"></i> Cancel
+                  <i class="bi bi-check"></i> Sent
                 </button>
               {{else}}
                 <span class="text-muted">No actions available</span>
@@ -105,68 +132,6 @@
   </div>
 </div>
 
-<!-- Status Statistics -->
-<div class="row mt-4">
-  <div class="col-xl-4 col-md-6 mb-4">
-    <div class="card border-left-warning shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-              Pending Requests
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{countStatus voucherRequests "requested"}}
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-clock fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-4 col-md-6 mb-4">
-    <div class="card border-left-success shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-              Sent Requests
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{countStatus voucherRequests "sent"}}
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-4 col-md-6 mb-4">
-    <div class="card border-left-danger shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-              Canceled Requests
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{countStatus voucherRequests "canceled"}}
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-x-circle fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Confirmation Modal -->
 <div class="modal fade" id="confirmationModal" tabindex="-1">
@@ -198,16 +163,15 @@ function clearFilter() {
 
 // Update Voucher Request Status
 function updateVoucherRequestStatus(id, status) {
-  const actionText = status === 'sent' ? 'mark as sent' : 'cancel';
-  const message = `Are you sure you want to ${actionText} this voucher request?`;
+  const message = 'Are you sure you want to mark this voucher request as sent?';
 
   // Set up confirmation modal
   document.getElementById('confirmationMessage').textContent = message;
   const confirmBtn = document.getElementById('confirmActionBtn');
 
-  // Update button style based on action
-  confirmBtn.className = status === 'sent' ? 'btn btn-success' : 'btn btn-danger';
-  confirmBtn.textContent = status === 'sent' ? 'Mark as Sent' : 'Cancel Request';
+  // Update button style
+  confirmBtn.className = 'btn btn-success';
+  confirmBtn.textContent = 'Confirm';
 
   // Remove existing event listeners
   const newConfirmBtn = confirmBtn.cloneNode(true);
@@ -250,8 +214,5 @@ function updateVoucherRequestStatus(id, status) {
 }
 .border-left-success {
   border-left: 0.25rem solid #1cc88a !important;
-}
-.border-left-danger {
-  border-left: 0.25rem solid #e74a3b !important;
 }
 </style>

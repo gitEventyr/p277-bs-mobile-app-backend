@@ -2,6 +2,7 @@ export interface JwtPayload {
   sub: number | string; // user ID (number for players, string for admins)
   email: string;
   type: 'user' | 'admin';
+  token_version?: number; // token version for invalidating old tokens (only for users)
   iat?: number;
   exp?: number;
 }

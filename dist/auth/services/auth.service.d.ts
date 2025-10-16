@@ -17,7 +17,7 @@ export declare class AuthService {
     generateResetToken(): string;
     generateResetCode(): string;
     validateUser(payload: JwtPayload): Promise<AuthenticatedUser | AuthenticatedAdmin | null>;
-    validatePlayer(playerId: number): Promise<AuthenticatedUser | null>;
+    validatePlayer(playerId: number, tokenVersion?: number): Promise<AuthenticatedUser | null>;
     validateAdmin(adminId: string): Promise<AuthenticatedAdmin | null>;
     createSessionUser(user: AuthenticatedUser | AuthenticatedAdmin, type: 'user' | 'admin'): SessionUser;
     softDeleteAccount(userId: number): Promise<void>;

@@ -60,6 +60,7 @@ let Player = class Player {
     is_deleted;
     deleted_at;
     deletion_reason;
+    token_version;
     devices;
     balanceChanges;
     rpBalanceTransactions;
@@ -330,6 +331,12 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], Player.prototype, "deletion_reason", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'integer', default: 0 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], Player.prototype, "token_version", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)('Device', (device) => device.user),
     __metadata("design:type", Array)

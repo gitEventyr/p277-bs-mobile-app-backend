@@ -31,7 +31,7 @@ __decorate([
     __metadata("design:type", String)
 ], Casino.prototype, "casino_name", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true, unique: true }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

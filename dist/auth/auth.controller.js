@@ -157,6 +157,7 @@ let AuthController = AuthController_1 = class AuthController {
             coins_balance: 10000,
             level: 1,
             scratch_cards: 0,
+            token_version: 1,
             device_udid: registerDto.deviceUDID,
             subscription_agreement: registerDto.subscription_agreement,
             tnc_agreement: registerDto.tnc_agreement,
@@ -194,6 +195,7 @@ let AuthController = AuthController_1 = class AuthController {
                 : savedPlayer.id,
             email: savedPlayer.email || '',
             type: 'user',
+            token_version: savedPlayer.token_version,
         };
         const accessToken = await this.authService.generateJwtToken(payload);
         return {
@@ -237,6 +239,7 @@ let AuthController = AuthController_1 = class AuthController {
                 'avatar',
                 'daily_spin_wheel_last_spin',
                 'daily_spin_wheel_day_count',
+                'token_version',
             ],
         });
         if (!player || !player.password) {
@@ -246,6 +249,8 @@ let AuthController = AuthController_1 = class AuthController {
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException('Invalid email or password');
         }
+        const newTokenVersion = (player.token_version || 0) + 1;
+        await this.playerRepository.update({ id: player.id }, { token_version: newTokenVersion });
         if (player.daily_spin_wheel_last_spin) {
             const now = new Date();
             const lastSpin = new Date(player.daily_spin_wheel_last_spin);
@@ -277,6 +282,7 @@ let AuthController = AuthController_1 = class AuthController {
                 : updatedPlayer.id,
             email: updatedPlayer.email || '',
             type: 'user',
+            token_version: newTokenVersion,
         };
         const accessToken = await this.authService.generateJwtToken(payload);
         return {

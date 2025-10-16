@@ -29,6 +29,7 @@ export declare class CasinoService {
     }>;
     findById(id: number): Promise<Casino | null>;
     findByName(casino_name: string): Promise<Casino | null>;
+    findByCasinoId(casino_id: string): Promise<Casino | null>;
     create(createData: {
         casino_name: string;
         casino_id?: string;

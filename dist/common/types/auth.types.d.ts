@@ -2,6 +2,7 @@ export interface JwtPayload {
     sub: number | string;
     email: string;
     type: 'user' | 'admin';
+    token_version?: number;
     iat?: number;
     exp?: number;
 }
