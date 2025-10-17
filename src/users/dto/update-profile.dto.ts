@@ -79,4 +79,14 @@ export class UpdateProfileDto {
   @IsNumber()
   @Min(0, { message: 'Scratch cards must be at least 0' })
   scratch_cards?: number;
+
+  @ApiPropertyOptional({
+    description: 'User experience points',
+    example: 0,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0, { message: 'Experience must be at least 0' })
+  experience?: number;
 }

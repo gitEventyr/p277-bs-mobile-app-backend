@@ -61,6 +61,11 @@ export class Player {
   @Min(1)
   level: number;
 
+  @Column({ type: 'integer', default: 0 })
+  @IsNumber()
+  @Min(0)
+  experience: number;
+
   // AppsFlyer attribution fields
   @Column({ type: 'text', nullable: true })
   @IsOptional()

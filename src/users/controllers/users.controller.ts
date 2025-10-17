@@ -26,6 +26,7 @@ import { CasinoOffersService } from '../services/casino-offers.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UpdateLevelDto } from '../dto/update-level.dto';
 import { UpdateScratchCardsDto } from '../dto/update-scratch-cards.dto';
+import { UpdateExperienceDto } from '../dto/update-experience.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
 import { MobileUserProfileDto } from '../dto/mobile-user-profile.dto';
 import { BalanceChangeDto, ModifyBalanceDto } from '../dto/balance-change.dto';
@@ -268,6 +269,36 @@ export class UsersController {
   ): Promise<MobileUserProfileDto> {
     await this.usersService.updateProfile(user.id, {
       scratch_cards: updateScratchCardsDto.scratch_cards,
+    });
+    return await this.usersService.getMobileProfile(user.id);
+  }
+
+  @ApiTags('📱 Mobile: User Profile')
+  @ApiOperation({ summary: 'Update user experience' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User experience updated successfully',
+    type: MobileUserProfileDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentication required',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid experience value',
+  })
+  @Put('experience')
+  async updateExperience(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateExperienceDto: UpdateExperienceDto,
+  ): Promise<MobileUserProfileDto> {
+    await this.usersService.updateProfile(user.id, {
+      experience: updateExperienceDto.experience,
     });
     return await this.usersService.getMobileProfile(user.id);
   }

@@ -233,6 +233,7 @@ export class AuthController {
       coins_balance: 10000, // Starting balance
       level: 1,
       scratch_cards: 0,
+      experience: 0, // Starting experience
       token_version: 1, // Initialize token version
       // New fields
       device_udid: registerDto.deviceUDID,
@@ -323,6 +324,7 @@ export class AuthController {
         name: savedPlayer.name,
         coins_balance: savedPlayer.coins_balance,
         level: savedPlayer.level,
+        experience: savedPlayer.experience,
         scratch_cards: savedPlayer.scratch_cards,
         rp_balance: savedPlayer.rp_balance,
         ipaddress: this.getClientIp(req),
@@ -462,6 +464,7 @@ export class AuthController {
         name: updatedPlayer.name,
         coins_balance: updatedPlayer.coins_balance,
         level: updatedPlayer.level,
+        experience: updatedPlayer.experience,
         scratch_cards: updatedPlayer.scratch_cards,
         rp_balance: updatedPlayer.rp_balance,
         ipaddress: this.getClientIp(req),
@@ -530,6 +533,7 @@ export class AuthController {
         coins_balance: fullUser.coins_balance,
         rp_balance: fullUser.rp_balance,
         level: fullUser.level,
+        experience: fullUser.experience,
         scratch_cards: fullUser.scratch_cards,
         avatar: fullUser.avatar,
         device_udid: fullUser.device_udid,

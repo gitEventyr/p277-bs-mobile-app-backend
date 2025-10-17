@@ -50,6 +50,12 @@ export class UserProfileDto {
   level: number;
 
   @ApiProperty({
+    description: 'User experience points',
+    example: 0,
+  })
+  experience: number;
+
+  @ApiProperty({
     description: 'Number of scratch cards',
     example: 0,
   })
