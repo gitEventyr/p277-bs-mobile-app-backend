@@ -22,14 +22,37 @@ export class GeolocationService {
     }
 
     try {
-      // In production, you would use a real geolocation API like:
-      // - ipapi.co
-      // - ipinfo.io
-      // - freegeoip.app
-      // For development, we'll mock the response
+      // Use ip-api.com for real geolocation data
+      // Free tier: 45 requests per minute, no API key required
+      const response = await fetch(
+        `http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,isp,query`,
+      );
 
-      const mockResponse = await this.mockGeolocationApi(ip);
-      return mockResponse;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Check if the API returned an error
+      if (data.status === 'fail') {
+        this.logger.warn(
+          `IP-API returned error for ${ip}: ${data.message || 'Unknown error'}`,
+        );
+        throw new Error(data.message || 'IP-API request failed');
+      }
+
+      return {
+        ip: data.query || ip,
+        city: data.city || 'Unknown',
+        region: data.regionName || data.region || 'Unknown',
+        country: data.country || 'Unknown',
+        countryCode: data.countryCode || 'XX',
+        isp: data.isp || 'Unknown ISP',
+        timezone: data.timezone || 'UTC',
+        lat: data.lat || 0,
+        lon: data.lon || 0,
+      };
     } catch (error) {
       this.logger.error(
         `Failed to get geolocation for IP ${ip}:`,
@@ -51,66 +74,6 @@ export class GeolocationService {
     }
   }
 
-  private async mockGeolocationApi(
-    ip: string,
-  ): Promise<GeolocationResponseDto> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Mock different responses based on IP pattern
-    const ipSegments = ip.split('.');
-    const firstSegment = parseInt(ipSegments[0]);
-
-    if (firstSegment >= 1 && firstSegment <= 50) {
-      return {
-        ip,
-        city: 'New York',
-        region: 'NY',
-        country: 'United States',
-        countryCode: 'US',
-        isp: 'Verizon Communications',
-        timezone: 'America/New_York',
-        lat: 40.7128,
-        lon: -74.006,
-      };
-    } else if (firstSegment >= 51 && firstSegment <= 100) {
-      return {
-        ip,
-        city: 'London',
-        region: 'England',
-        country: 'United Kingdom',
-        countryCode: 'GB',
-        isp: 'British Telecom',
-        timezone: 'Europe/London',
-        lat: 51.5074,
-        lon: -0.1278,
-      };
-    } else if (firstSegment >= 101 && firstSegment <= 150) {
-      return {
-        ip,
-        city: 'Tokyo',
-        region: 'Tokyo',
-        country: 'Japan',
-        countryCode: 'JP',
-        isp: 'NTT Communications',
-        timezone: 'Asia/Tokyo',
-        lat: 35.6762,
-        lon: 139.6503,
-      };
-    } else {
-      return {
-        ip,
-        city: 'San Francisco',
-        region: 'CA',
-        country: 'United States',
-        countryCode: 'US',
-        isp: 'Comcast Cable',
-        timezone: 'America/Los_Angeles',
-        lat: 37.7749,
-        lon: -122.4194,
-      };
-    }
-  }
 
   private isLocalIp(ip: string): boolean {
     // Check for local/private IP ranges

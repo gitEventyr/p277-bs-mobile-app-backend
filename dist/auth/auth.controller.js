@@ -199,6 +199,7 @@ let AuthController = AuthController_1 = class AuthController {
                 is_deleted: false,
                 deleted_at: undefined,
                 deletion_reason: undefined,
+                created_at: new Date(),
                 updated_at: new Date(),
             });
             const updatedPlayer = await this.playerRepository.findOne({

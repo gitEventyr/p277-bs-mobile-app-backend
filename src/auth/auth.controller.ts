@@ -290,7 +290,8 @@ export class AuthController {
           is_deleted: false,
           deleted_at: undefined,
           deletion_reason: undefined,
-          // Update timestamps
+          // Update timestamps - set created_at to reflect new registration
+          created_at: new Date(),
           updated_at: new Date(),
         },
       );
