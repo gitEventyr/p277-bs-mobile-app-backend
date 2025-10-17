@@ -223,10 +223,7 @@ export class CasinoController {
 
       // Check if casino name already exists (excluding current casino)
       const existingCasino = await this.casinoService.findByName(casino_name);
-      if (
-        existingCasino &&
-        existingCasino.id.toString() !== id.toString()
-      ) {
+      if (existingCasino && existingCasino.id.toString() !== id.toString()) {
         throw new BadRequestException('Casino name already exists');
       }
 

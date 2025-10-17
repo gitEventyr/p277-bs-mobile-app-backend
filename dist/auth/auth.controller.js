@@ -145,43 +145,106 @@ let AuthController = AuthController_1 = class AuthController {
                 where: { visitor_id: visitorId, is_deleted: false },
             }));
         }
+        const softDeletedUserWithVisitorId = await this.playerRepository.findOne({
+            where: { visitor_id: visitorId, is_deleted: true },
+        });
         const hashedPassword = registerDto.password
             ? await this.authService.hashPassword(registerDto.password)
             : undefined;
-        const player = this.playerRepository.create({
-            visitor_id: visitorId,
-            email: registerDto.email,
-            name: registerDto.name,
-            phone: registerDto.phone,
-            password: hashedPassword,
-            coins_balance: 10000,
-            level: 1,
-            scratch_cards: 0,
-            experience: 0,
-            token_version: 1,
-            device_udid: registerDto.deviceUDID,
-            subscription_agreement: registerDto.subscription_agreement,
-            tnc_agreement: registerDto.tnc_agreement,
-            os: registerDto.os,
-            device: registerDto.device,
-            pid: registerDto.appsflyer?.pid,
-            c: registerDto.appsflyer?.c,
-            af_channel: registerDto.appsflyer?.af_channel,
-            af_adset: registerDto.appsflyer?.af_adset,
-            af_ad: registerDto.appsflyer?.af_ad,
-            af_keywords: registerDto.appsflyer?.af_keywords
-                ? [registerDto.appsflyer.af_keywords]
-                : undefined,
-            is_retargeting: registerDto.appsflyer?.is_retargeting,
-            af_click_lookback: registerDto.appsflyer?.af_click_lookback,
-            af_viewthrough_lookback: registerDto.appsflyer?.af_viewthrough_lookback,
-            af_sub1: registerDto.appsflyer?.af_sub1,
-            af_sub2: registerDto.appsflyer?.af_sub2,
-            af_sub3: registerDto.appsflyer?.af_sub3,
-            af_sub4: registerDto.appsflyer?.af_sub4,
-            af_sub5: registerDto.appsflyer?.af_sub5,
-        });
-        const savedPlayer = await this.playerRepository.save(player);
+        let savedPlayer;
+        if (softDeletedUserWithVisitorId) {
+            this.logger.log(`Found soft-deleted user with visitor_id ${visitorId}, replacing data instead of creating new user`);
+            await this.playerRepository.update({ id: softDeletedUserWithVisitorId.id }, {
+                email: registerDto.email,
+                name: registerDto.name,
+                phone: registerDto.phone,
+                password: hashedPassword,
+                coins_balance: 10000,
+                level: 1,
+                scratch_cards: 0,
+                experience: 0,
+                token_version: 1,
+                rp_balance: 0,
+                device_udid: registerDto.deviceUDID,
+                subscription_agreement: registerDto.subscription_agreement,
+                tnc_agreement: registerDto.tnc_agreement,
+                os: registerDto.os,
+                device: registerDto.device,
+                pid: registerDto.appsflyer?.pid,
+                c: registerDto.appsflyer?.c,
+                af_channel: registerDto.appsflyer?.af_channel,
+                af_adset: registerDto.appsflyer?.af_adset,
+                af_ad: registerDto.appsflyer?.af_ad,
+                af_keywords: registerDto.appsflyer?.af_keywords
+                    ? [registerDto.appsflyer.af_keywords]
+                    : undefined,
+                is_retargeting: registerDto.appsflyer?.is_retargeting,
+                af_click_lookback: registerDto.appsflyer?.af_click_lookback,
+                af_viewthrough_lookback: registerDto.appsflyer?.af_viewthrough_lookback,
+                af_sub1: registerDto.appsflyer?.af_sub1,
+                af_sub2: registerDto.appsflyer?.af_sub2,
+                af_sub3: registerDto.appsflyer?.af_sub3,
+                af_sub4: registerDto.appsflyer?.af_sub4,
+                af_sub5: registerDto.appsflyer?.af_sub5,
+                avatar: undefined,
+                email_verified: false,
+                email_verified_at: undefined,
+                phone_verified: false,
+                phone_verified_at: undefined,
+                daily_spin_wheel_day_count: 0,
+                daily_spin_wheel_last_spin: undefined,
+                lucky_wheel_count: 0,
+                daily_coins_days_count: 0,
+                daily_coins_last_reward: undefined,
+                is_deleted: false,
+                deleted_at: undefined,
+                deletion_reason: undefined,
+                updated_at: new Date(),
+            });
+            const updatedPlayer = await this.playerRepository.findOne({
+                where: { id: softDeletedUserWithVisitorId.id },
+            });
+            if (!updatedPlayer) {
+                throw new common_1.BadRequestException('Failed to restore user account');
+            }
+            savedPlayer = updatedPlayer;
+        }
+        else {
+            const player = this.playerRepository.create({
+                visitor_id: visitorId,
+                email: registerDto.email,
+                name: registerDto.name,
+                phone: registerDto.phone,
+                password: hashedPassword,
+                coins_balance: 10000,
+                level: 1,
+                scratch_cards: 0,
+                experience: 0,
+                token_version: 1,
+                device_udid: registerDto.deviceUDID,
+                subscription_agreement: registerDto.subscription_agreement,
+                tnc_agreement: registerDto.tnc_agreement,
+                os: registerDto.os,
+                device: registerDto.device,
+                pid: registerDto.appsflyer?.pid,
+                c: registerDto.appsflyer?.c,
+                af_channel: registerDto.appsflyer?.af_channel,
+                af_adset: registerDto.appsflyer?.af_adset,
+                af_ad: registerDto.appsflyer?.af_ad,
+                af_keywords: registerDto.appsflyer?.af_keywords
+                    ? [registerDto.appsflyer.af_keywords]
+                    : undefined,
+                is_retargeting: registerDto.appsflyer?.is_retargeting,
+                af_click_lookback: registerDto.appsflyer?.af_click_lookback,
+                af_viewthrough_lookback: registerDto.appsflyer?.af_viewthrough_lookback,
+                af_sub1: registerDto.appsflyer?.af_sub1,
+                af_sub2: registerDto.appsflyer?.af_sub2,
+                af_sub3: registerDto.appsflyer?.af_sub3,
+                af_sub4: registerDto.appsflyer?.af_sub4,
+                af_sub5: registerDto.appsflyer?.af_sub5,
+            });
+            savedPlayer = await this.playerRepository.save(player);
+        }
         if (registerDto.deviceUDID) {
             try {
                 await this.devicesService.createOrUpdateDevice(savedPlayer.id, registerDto.deviceUDID, req.headers['user-agent'] || '', this.getClientIp(req));

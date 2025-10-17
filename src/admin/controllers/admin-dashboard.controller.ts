@@ -306,15 +306,19 @@ export class AdminDashboardController {
       return {
         ...user,
         ip_address: latestDevice?.ip || null,
-        location: latestDevice ? {
-          city: latestDevice.city || null,
-          country: latestDevice.country || null,
-          isp: latestDevice.isp || null,
-          timezone: latestDevice.timezone || null,
-        } : null,
+        location: latestDevice
+          ? {
+              city: latestDevice.city || null,
+              country: latestDevice.country || null,
+              isp: latestDevice.isp || null,
+              timezone: latestDevice.timezone || null,
+            }
+          : null,
         purchases: {
           total_spent: parseFloat(totalSpentResult?.total || '0'),
-          total_count: await purchaseRepository.count({ where: { user_id: userId } }),
+          total_count: await purchaseRepository.count({
+            where: { user_id: userId },
+          }),
           recent: purchases.map((p: any) => ({
             id: p.id,
             platform: p.platform,
