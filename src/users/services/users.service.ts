@@ -203,6 +203,9 @@ export class UsersService {
     if (updateProfileDto.scratch_cards !== undefined) {
       player.scratch_cards = updateProfileDto.scratch_cards;
     }
+    if (updateProfileDto.experience !== undefined) {
+      player.experience = updateProfileDto.experience;
+    }
 
     // Save the updated player
     const updatedPlayer = await this.playerRepository.save(player);

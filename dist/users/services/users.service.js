@@ -199,6 +199,9 @@ let UsersService = class UsersService {
         if (updateProfileDto.scratch_cards !== undefined) {
             player.scratch_cards = updateProfileDto.scratch_cards;
         }
+        if (updateProfileDto.experience !== undefined) {
+            player.experience = updateProfileDto.experience;
+        }
         const updatedPlayer = await this.playerRepository.save(player);
         return this.getProfile(updatedPlayer.id);
     }
