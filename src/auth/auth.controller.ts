@@ -218,49 +218,133 @@ export class AuthController {
       );
     }
 
+    // Check if a soft-deleted user with this visitor_id already exists
+    const softDeletedUserWithVisitorId = await this.playerRepository.findOne({
+      where: { visitor_id: visitorId, is_deleted: true },
+    });
+
     // Hash password if provided
     const hashedPassword = registerDto.password
       ? await this.authService.hashPassword(registerDto.password)
       : undefined;
 
-    // Create new player with default values
-    const player = this.playerRepository.create({
-      visitor_id: visitorId,
-      email: registerDto.email,
-      name: registerDto.name,
-      phone: registerDto.phone,
-      password: hashedPassword,
-      coins_balance: 10000, // Starting balance
-      level: 1,
-      scratch_cards: 0,
-      experience: 0, // Starting experience
-      token_version: 1, // Initialize token version
-      // New fields
-      device_udid: registerDto.deviceUDID,
-      subscription_agreement: registerDto.subscription_agreement,
-      tnc_agreement: registerDto.tnc_agreement,
-      os: registerDto.os,
-      device: registerDto.device,
-      // AppsFlyer fields
-      pid: registerDto.appsflyer?.pid,
-      c: registerDto.appsflyer?.c,
-      af_channel: registerDto.appsflyer?.af_channel,
-      af_adset: registerDto.appsflyer?.af_adset,
-      af_ad: registerDto.appsflyer?.af_ad,
-      af_keywords: registerDto.appsflyer?.af_keywords
-        ? [registerDto.appsflyer.af_keywords]
-        : undefined,
-      is_retargeting: registerDto.appsflyer?.is_retargeting,
-      af_click_lookback: registerDto.appsflyer?.af_click_lookback,
-      af_viewthrough_lookback: registerDto.appsflyer?.af_viewthrough_lookback,
-      af_sub1: registerDto.appsflyer?.af_sub1,
-      af_sub2: registerDto.appsflyer?.af_sub2,
-      af_sub3: registerDto.appsflyer?.af_sub3,
-      af_sub4: registerDto.appsflyer?.af_sub4,
-      af_sub5: registerDto.appsflyer?.af_sub5,
-    });
+    let savedPlayer: Player;
 
-    const savedPlayer = await this.playerRepository.save(player);
+    if (softDeletedUserWithVisitorId) {
+      // Replace soft-deleted user's data with new registration data
+      this.logger.log(
+        `Found soft-deleted user with visitor_id ${visitorId}, replacing data instead of creating new user`,
+      );
+
+      await this.playerRepository.update(
+        { id: softDeletedUserWithVisitorId.id },
+        {
+          email: registerDto.email,
+          name: registerDto.name,
+          phone: registerDto.phone,
+          password: hashedPassword,
+          coins_balance: 10000, // Starting balance
+          level: 1,
+          scratch_cards: 0,
+          experience: 0, // Starting experience
+          token_version: 1, // Reset token version
+          rp_balance: 0, // Reset RP balance
+          // New fields
+          device_udid: registerDto.deviceUDID,
+          subscription_agreement: registerDto.subscription_agreement,
+          tnc_agreement: registerDto.tnc_agreement,
+          os: registerDto.os,
+          device: registerDto.device,
+          // AppsFlyer fields
+          pid: registerDto.appsflyer?.pid,
+          c: registerDto.appsflyer?.c,
+          af_channel: registerDto.appsflyer?.af_channel,
+          af_adset: registerDto.appsflyer?.af_adset,
+          af_ad: registerDto.appsflyer?.af_ad,
+          af_keywords: registerDto.appsflyer?.af_keywords
+            ? [registerDto.appsflyer.af_keywords]
+            : undefined,
+          is_retargeting: registerDto.appsflyer?.is_retargeting,
+          af_click_lookback: registerDto.appsflyer?.af_click_lookback,
+          af_viewthrough_lookback:
+            registerDto.appsflyer?.af_viewthrough_lookback,
+          af_sub1: registerDto.appsflyer?.af_sub1,
+          af_sub2: registerDto.appsflyer?.af_sub2,
+          af_sub3: registerDto.appsflyer?.af_sub3,
+          af_sub4: registerDto.appsflyer?.af_sub4,
+          af_sub5: registerDto.appsflyer?.af_sub5,
+          // Clear avatar
+          avatar: undefined,
+          // Clear verification fields
+          email_verified: false,
+          email_verified_at: undefined,
+          phone_verified: false,
+          phone_verified_at: undefined,
+          // Reset game progress fields
+          daily_spin_wheel_day_count: 0,
+          daily_spin_wheel_last_spin: undefined,
+          lucky_wheel_count: 0,
+          daily_coins_days_count: 0,
+          daily_coins_last_reward: undefined,
+          // Clear soft-delete fields to restore the account
+          is_deleted: false,
+          deleted_at: undefined,
+          deletion_reason: undefined,
+          // Update timestamps
+          updated_at: new Date(),
+        },
+      );
+
+      // Fetch the updated player
+      const updatedPlayer = await this.playerRepository.findOne({
+        where: { id: softDeletedUserWithVisitorId.id },
+      });
+
+      if (!updatedPlayer) {
+        throw new BadRequestException('Failed to restore user account');
+      }
+
+      savedPlayer = updatedPlayer;
+    } else {
+      // Create new player with default values
+      const player = this.playerRepository.create({
+        visitor_id: visitorId,
+        email: registerDto.email,
+        name: registerDto.name,
+        phone: registerDto.phone,
+        password: hashedPassword,
+        coins_balance: 10000, // Starting balance
+        level: 1,
+        scratch_cards: 0,
+        experience: 0, // Starting experience
+        token_version: 1, // Initialize token version
+        // New fields
+        device_udid: registerDto.deviceUDID,
+        subscription_agreement: registerDto.subscription_agreement,
+        tnc_agreement: registerDto.tnc_agreement,
+        os: registerDto.os,
+        device: registerDto.device,
+        // AppsFlyer fields
+        pid: registerDto.appsflyer?.pid,
+        c: registerDto.appsflyer?.c,
+        af_channel: registerDto.appsflyer?.af_channel,
+        af_adset: registerDto.appsflyer?.af_adset,
+        af_ad: registerDto.appsflyer?.af_ad,
+        af_keywords: registerDto.appsflyer?.af_keywords
+          ? [registerDto.appsflyer.af_keywords]
+          : undefined,
+        is_retargeting: registerDto.appsflyer?.is_retargeting,
+        af_click_lookback: registerDto.appsflyer?.af_click_lookback,
+        af_viewthrough_lookback: registerDto.appsflyer?.af_viewthrough_lookback,
+        af_sub1: registerDto.appsflyer?.af_sub1,
+        af_sub2: registerDto.appsflyer?.af_sub2,
+        af_sub3: registerDto.appsflyer?.af_sub3,
+        af_sub4: registerDto.appsflyer?.af_sub4,
+        af_sub5: registerDto.appsflyer?.af_sub5,
+      });
+
+      savedPlayer = await this.playerRepository.save(player);
+    }
 
     // Track device if deviceUDID is provided
     if (registerDto.deviceUDID) {
