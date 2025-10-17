@@ -164,49 +164,77 @@ export class AuthService {
       // Find the user
       const user = await this.playerRepository.findOne({
         where: { id: userId, is_deleted: false },
-        select: ['id', 'email', 'name', 'phone', 'visitor_id'],
+        select: [
+          'id',
+          'email',
+          'name',
+          'phone',
+          'visitor_id',
+          'device_udid',
+          'auth_user_id',
+          'avatar',
+        ],
       });
 
       if (!user) {
         throw new NotFoundException('User not found or already deleted');
       }
 
-      // Delete all related casino actions to avoid foreign key constraint issues
-      await this.casinoActionRepository.delete({
-        visitor_id: user.visitor_id,
-      });
-
-      // Create unique suffixes to avoid constraint violations during re-registration
+      // Generate timestamp and anonymized data
       const timestamp = new Date().getTime();
-      const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
-      const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+      const anonymizedId = this.generateAnonymizedString(12);
 
-      // Prepare update data for soft delete
+      // Prepare update data for soft delete with anonymization
       const updateData: any = {
         is_deleted: true,
         deleted_at: new Date(),
         deletion_reason: 'Mobile app account deletion',
-        name: null,
+        // Anonymize personal data fields with random gibberish
+        name: `deleted_user_${anonymizedId}`,
+        email: user.email ? `deleted_${anonymizedId}@deleted.local` : null,
+        phone: user.phone ? `+00000${anonymizedId.substring(0, 8)}` : null,
         password: null,
+        device_udid: null,
+        auth_user_id: null,
+        avatar: null,
+        // visitor_id stays UNCHANGED to preserve casino actions relationship
+        // AppsFlyer and tracking data anonymization
+        pid: null,
+        c: null,
+        af_channel: null,
+        af_adset: null,
+        af_ad: null,
+        af_keywords: null,
+        is_retargeting: null,
+        af_click_lookback: null,
+        af_viewthrough_lookback: null,
+        af_sub1: null,
+        af_sub2: null,
+        af_sub3: null,
+        af_sub4: null,
+        af_sub5: null,
         updated_at: new Date(),
       };
 
-      // Add modified email, phone, and visitor_id to avoid constraint violations
-      if (user.email && emailSuffix) {
-        updateData.email = user.email + emailSuffix;
-      }
-      if (user.phone && phoneSuffix) {
-        updateData.phone = user.phone + phoneSuffix;
-      }
-      // Always modify visitor_id to avoid conflicts during re-registration
-      updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
-
-      // Perform the soft delete
+      // Perform the soft delete - casino actions are preserved
       await this.playerRepository.update({ id: userId }, updateData);
     } catch (error) {
       console.error('Error during soft delete:', error);
       throw new BadRequestException('Database operation failed');
     }
+  }
+
+  /**
+   * Generates a random alphanumeric string for anonymization
+   */
+  private generateAnonymizedString(length: number): string {
+    const chars =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
   }
 
   // Note: In a real implementation with session management,

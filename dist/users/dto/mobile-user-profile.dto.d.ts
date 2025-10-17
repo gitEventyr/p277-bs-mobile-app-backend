@@ -23,6 +23,7 @@ export declare class MobileUserProfileDto {
     coins_balance: number;
     rp_balance: number;
     level: number;
+    experience: number;
     scratch_cards: number;
     email_verified: boolean;
     email_verified_at?: Date;

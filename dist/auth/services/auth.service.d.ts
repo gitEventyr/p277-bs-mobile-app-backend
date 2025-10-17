@@ -21,5 +21,6 @@ export declare class AuthService {
     validateAdmin(adminId: string): Promise<AuthenticatedAdmin | null>;
     createSessionUser(user: AuthenticatedUser | AuthenticatedAdmin, type: 'user' | 'admin'): SessionUser;
     softDeleteAccount(userId: number): Promise<void>;
+    private generateAnonymizedString;
     logout(): Promise<void>;
 }

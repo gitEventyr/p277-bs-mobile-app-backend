@@ -60,6 +60,7 @@ export declare class AuthController {
         coins_balance: number;
         rp_balance: number;
         level: number;
+        experience: number;
         scratch_cards: number;
         avatar: string | undefined;
         device_udid: string | undefined;
@@ -110,6 +111,7 @@ export declare class AuthController {
         coins_balance?: undefined;
         rp_balance?: undefined;
         level?: undefined;
+        experience?: undefined;
         scratch_cards?: undefined;
         avatar?: undefined;
         device_udid?: undefined;

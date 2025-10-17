@@ -5,6 +5,7 @@ import { CasinoOffersService } from '../services/casino-offers.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UpdateLevelDto } from '../dto/update-level.dto';
 import { UpdateScratchCardsDto } from '../dto/update-scratch-cards.dto';
+import { UpdateExperienceDto } from '../dto/update-experience.dto';
 import { MobileUserProfileDto } from '../dto/mobile-user-profile.dto';
 import { ModifyBalanceDto } from '../dto/balance-change.dto';
 import { ModifyRpBalanceDto, RpBalanceChangeResponseDto, RpBalanceTransactionHistoryResponseDto } from '../dto/rp-balance.dto';
@@ -26,6 +27,7 @@ export declare class UsersController {
     getTransactionById(user: AuthenticatedUser, transactionId: number): Promise<TransactionHistoryDto>;
     updateLevel(user: AuthenticatedUser, updateLevelDto: UpdateLevelDto): Promise<MobileUserProfileDto>;
     updateScratchCards(user: AuthenticatedUser, updateScratchCardsDto: UpdateScratchCardsDto): Promise<MobileUserProfileDto>;
+    updateExperience(user: AuthenticatedUser, updateExperienceDto: UpdateExperienceDto): Promise<MobileUserProfileDto>;
     modifyRpBalance(user: AuthenticatedUser, modifyRpBalanceDto: ModifyRpBalanceDto): Promise<RpBalanceChangeResponseDto>;
     getRpTransactionHistory(user: AuthenticatedUser, page?: number, limit?: number): Promise<RpBalanceTransactionHistoryResponseDto>;
     private getClientIp;

@@ -81,6 +81,7 @@ let UsersService = class UsersService {
             coins_balance: player.coins_balance,
             rp_balance: player.rp_balance,
             level: player.level,
+            experience: player.experience,
             scratch_cards: player.scratch_cards,
             device_udid: player.device_udid,
             subscription_agreement: player.subscription_agreement,
@@ -129,6 +130,7 @@ let UsersService = class UsersService {
             coins_balance: fullProfile.coins_balance,
             rp_balance: fullProfile.rp_balance,
             level: fullProfile.level,
+            experience: fullProfile.experience,
             scratch_cards: fullProfile.scratch_cards,
             email_verified: fullProfile.email_verified,
             email_verified_at: fullProfile.email_verified_at,
@@ -446,32 +448,49 @@ let UsersService = class UsersService {
         try {
             const user = await this.playerRepository.findOne({
                 where: { id: userId, is_deleted: false },
-                select: ['id', 'email', 'name', 'phone', 'visitor_id'],
+                select: [
+                    'id',
+                    'email',
+                    'name',
+                    'phone',
+                    'visitor_id',
+                    'device_udid',
+                    'auth_user_id',
+                    'avatar',
+                ],
             });
             if (!user) {
                 throw new common_1.NotFoundException('User not found or already deleted');
             }
-            await this.casinoActionRepository.delete({
-                visitor_id: user.visitor_id,
-            });
             const timestamp = new Date().getTime();
-            const emailSuffix = user.email ? `_deleted_${timestamp}` : null;
-            const phoneSuffix = user.phone ? `_deleted_${timestamp}` : null;
+            const anonymizedId = this.generateAnonymizedString(12);
             const updateData = {
                 is_deleted: true,
                 deleted_at: new Date(),
                 deletion_reason: 'Admin deletion',
-                name: null,
+                name: `deleted_user_${anonymizedId}`,
+                email: user.email ? `deleted_${anonymizedId}@deleted.local` : null,
+                phone: user.phone ? `+00000${anonymizedId.substring(0, 8)}` : null,
                 password: null,
+                device_udid: null,
+                auth_user_id: null,
+                avatar: null,
+                pid: null,
+                c: null,
+                af_channel: null,
+                af_adset: null,
+                af_ad: null,
+                af_keywords: null,
+                is_retargeting: null,
+                af_click_lookback: null,
+                af_viewthrough_lookback: null,
+                af_sub1: null,
+                af_sub2: null,
+                af_sub3: null,
+                af_sub4: null,
+                af_sub5: null,
                 updated_at: new Date(),
             };
-            if (user.email && emailSuffix) {
-                updateData.email = user.email + emailSuffix;
-            }
-            if (user.phone && phoneSuffix) {
-                updateData.phone = user.phone + phoneSuffix;
-            }
-            updateData.visitor_id = `${user.visitor_id}_deleted_${timestamp}`;
             await this.playerRepository.update({ id: userId }, updateData);
         }
         catch (error) {
@@ -481,6 +500,14 @@ let UsersService = class UsersService {
             }
             throw new common_1.BadRequestException('Database operation failed');
         }
+    }
+    generateAnonymizedString(length) {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
     }
 };
 exports.UsersService = UsersService;

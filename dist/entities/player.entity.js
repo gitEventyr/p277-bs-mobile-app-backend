@@ -23,6 +23,7 @@ let Player = class Player {
     coins_balance;
     rp_balance;
     level;
+    experience;
     pid;
     c;
     af_channel;
@@ -121,6 +122,12 @@ __decorate([
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], Player.prototype, "level", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'integer', default: 0 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], Player.prototype, "experience", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     (0, class_validator_1.IsOptional)(),

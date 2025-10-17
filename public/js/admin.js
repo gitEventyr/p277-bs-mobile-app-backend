@@ -314,26 +314,74 @@ async function viewUser(userId) {
       console.log('Email field:', user.email, typeof user.email);
       console.log('Phone field:', user.phone, typeof user.phone);
       
+      // Build location string
+      const locationStr = user.location && (user.location.city || user.location.country)
+        ? `${user.location.city || ''}${user.location.city && user.location.country ? ', ' : ''}${user.location.country || ''}`
+        : 'N/A';
+
+      // Build purchase history table
+      const purchaseHistoryHTML = user.purchases && user.purchases.recent && user.purchases.recent.length > 0
+        ? `
+          <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+            <table class="table table-sm table-striped">
+              <thead class="sticky-top bg-light">
+                <tr>
+                  <th style="font-size: 0.85rem;">Date</th>
+                  <th style="font-size: 0.85rem;">Product</th>
+                  <th style="font-size: 0.85rem;">Amount</th>
+                  <th style="font-size: 0.85rem;">Platform</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${user.purchases.recent.map(p => `
+                  <tr>
+                    <td style="font-size: 0.8rem;">${formatDate(p.purchased_at)}</td>
+                    <td style="font-size: 0.8rem;">${p.product_id}</td>
+                    <td style="font-size: 0.8rem;">${p.currency} ${p.amount.toFixed(2)}</td>
+                    <td style="font-size: 0.8rem;"><span class="badge bg-${p.platform === 'ios' ? 'secondary' : 'success'}">${p.platform}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              Total: ${user.purchases.total_count} purchase${user.purchases.total_count !== 1 ? 's' : ''} |
+              Total Spent: $${user.purchases.total_spent.toFixed(2)}
+            </small>
+          </div>
+        `
+        : '<p class="text-muted">No purchase history</p>';
+
       modalBody.innerHTML = `
         <div class="row">
-          <div class="col-md-6 mb-3">
-            <h6 class="fw-bold">Basic Information</h6>
-            <table class="table table-sm table-responsive-sm">
+          <!-- Left Column: User Information -->
+          <div class="col-md-6">
+            <h6 class="fw-bold mb-3">Basic Information</h6>
+            <table class="table table-sm table-responsive-sm mb-4">
               <tbody>
-                <tr><td style="width: 40%;"><strong>Name:</strong></td><td style="word-break: break-word;">${user.name && user.name.trim() !== '' ? user.name : 'N/A'}</td></tr>
+                <tr><td style="width: 40%;"><strong>User ID:</strong></td><td style="word-break: break-word;">${user.id || 'N/A'}</td></tr>
+                <tr><td><strong>Name:</strong></td><td style="word-break: break-word;">${user.name && user.name.trim() !== '' ? user.name : 'N/A'}</td></tr>
                 <tr><td><strong>Email:</strong></td><td style="word-break: break-word;">${user.email && user.email.trim() !== '' ? user.email : 'N/A'}</td></tr>
                 <tr><td><strong>Phone:</strong></td><td style="word-break: break-word;">${user.phone && user.phone.trim() !== '' ? user.phone : 'N/A'}</td></tr>
                 <tr><td><strong>Visitor ID:</strong></td><td style="word-break: break-all; font-size: 0.85rem;">${user.visitor_id && user.visitor_id.trim() !== '' ? user.visitor_id : 'N/A'}</td></tr>
-                <tr><td><strong>Coin Balance:</strong></td><td><span class="badge bg-success">${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins</span></td></tr>
+                <tr><td><strong>IP Address:</strong></td><td style="word-break: break-word;">${user.ip_address || 'N/A'}</td></tr>
+                <tr><td><strong>Location:</strong></td><td style="word-break: break-word;">${locationStr}</td></tr>
+              </tbody>
+            </table>
+
+            <h6 class="fw-bold mb-3">Balance & Progress</h6>
+            <table class="table table-sm table-responsive-sm mb-4">
+              <tbody>
+                <tr><td style="width: 40%;"><strong>Coin Balance:</strong></td><td><span class="badge bg-success">${user.coins_balance !== undefined && user.coins_balance !== null ? user.coins_balance : 0} coins</span></td></tr>
                 <tr><td><strong>RP Balance:</strong></td><td><span class="badge bg-info">${user.rp_balance !== undefined && user.rp_balance !== null ? user.rp_balance : 0} RP</span></td></tr>
                 <tr><td><strong>Level:</strong></td><td>${user.level !== undefined && user.level !== null ? user.level : 1}</td></tr>
                 <tr><td><strong>Scratch Cards:</strong></td><td>${user.scratch_cards !== undefined && user.scratch_cards !== null ? user.scratch_cards : 0}</td></tr>
               </tbody>
             </table>
-          </div>
-          <div class="col-md-6 mb-3">
-            <h6 class="fw-bold">Device Information</h6>
-            <table class="table table-sm table-responsive-sm">
+
+            <h6 class="fw-bold mb-3">Device Information</h6>
+            <table class="table table-sm table-responsive-sm mb-4">
               <tbody>
                 <tr><td style="width: 40%;"><strong>Device UDID:</strong></td><td style="word-break: break-all; font-size: 0.85rem;">${user.device_udid && user.device_udid.trim() !== '' ? user.device_udid : 'N/A'}</td></tr>
                 <tr><td><strong>OS:</strong></td><td style="word-break: break-word;">${user.os && user.os.trim() !== '' ? user.os : 'N/A'}</td></tr>
@@ -342,27 +390,31 @@ async function viewUser(userId) {
                 <tr><td><strong>Last Updated:</strong></td><td style="word-break: break-word;">${formatDate(user.updated_at)}</td></tr>
               </tbody>
             </table>
-          </div>
-        </div>
 
-        ${user.pid ? `
-        <div class="row mt-2">
-          <div class="col-12">
-            <h6 class="fw-bold">AppsFlyer Attribution</h6>
-            <table class="table table-sm table-responsive-sm">
-              <tbody>
-                <tr><td style="width: 20%;"><strong>PID:</strong></td><td style="word-break: break-word;">${user.pid === null ? 'null' : (user.pid || 'N/A')}</td></tr>
-                <tr><td><strong>Campaign:</strong></td><td style="word-break: break-word;">${user.c === null ? 'null' : (user.c || 'N/A')}</td></tr>
-                <tr><td><strong>Channel:</strong></td><td style="word-break: break-word;">${user.af_channel === null ? 'null' : (user.af_channel || 'N/A')}</td></tr>
-                <tr><td><strong>Ad Set:</strong></td><td style="word-break: break-word;">${user.af_adset === null ? 'null' : (user.af_adset || 'N/A')}</td></tr>
-                <tr><td><strong>Ad:</strong></td><td style="word-break: break-word;">${user.af_ad === null ? 'null' : (user.af_ad || 'N/A')}</td></tr>
-                <tr><td><strong>Keywords:</strong></td><td style="word-break: break-word;">${user.af_keywords === null ? 'null' : (user.af_keywords || 'N/A')}</td></tr>
-                <tr><td><strong>Click Lookback:</strong></td><td style="word-break: break-word;">${user.af_click_lookback === null ? 'null' : (user.af_click_lookback || 'N/A')}</td></tr>
-              </tbody>
-            </table>
+            ${user.pid ? `
+              <h6 class="fw-bold mb-3">AppsFlyer Attribution</h6>
+              <table class="table table-sm table-responsive-sm">
+                <tbody>
+                  <tr><td style="width: 40%;"><strong>PID:</strong></td><td style="word-break: break-word;">${user.pid === null ? 'null' : (user.pid || 'N/A')}</td></tr>
+                  <tr><td><strong>Campaign:</strong></td><td style="word-break: break-word;">${user.c === null ? 'null' : (user.c || 'N/A')}</td></tr>
+                  <tr><td><strong>Channel:</strong></td><td style="word-break: break-word;">${user.af_channel === null ? 'null' : (user.af_channel || 'N/A')}</td></tr>
+                  <tr><td><strong>Ad Set:</strong></td><td style="word-break: break-word;">${user.af_adset === null ? 'null' : (user.af_adset || 'N/A')}</td></tr>
+                  <tr><td><strong>Ad:</strong></td><td style="word-break: break-word;">${user.af_ad === null ? 'null' : (user.af_ad || 'N/A')}</td></tr>
+                  <tr><td><strong>Keywords:</strong></td><td style="word-break: break-word;">${user.af_keywords === null ? 'null' : (user.af_keywords || 'N/A')}</td></tr>
+                  <tr><td><strong>Click Lookback:</strong></td><td style="word-break: break-word;">${user.af_click_lookback === null ? 'null' : (user.af_click_lookback || 'N/A')}</td></tr>
+                </tbody>
+              </table>
+            ` : ''}
+          </div>
+
+          <!-- Right Column: Purchase History -->
+          <div class="col-md-6">
+            <h6 class="fw-bold mb-3">
+              <i class="bi bi-receipt"></i> Purchase History
+            </h6>
+            ${purchaseHistoryHTML}
           </div>
         </div>
-        ` : ''}
       `;
       
       editBtn.onclick = () => editUser(userId);

@@ -57,12 +57,12 @@
       <div class="row mt-2">
         <div class="col-12">
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-search"></i>
-            Search
+            <i class="bi bi-check2-square"></i>
+            Apply
           </button>
           <button type="button" class="btn btn-secondary ms-2" onclick="clearSearch()">
             <i class="bi bi-x-circle"></i>
-            Clear Filters
+            Clear
           </button>
         </div>
       </div>
@@ -235,7 +235,7 @@
 
 <!-- User Details Modal -->
 <div class="modal fade" id="userModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
@@ -244,7 +244,7 @@
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="userModalBody">
+      <div class="modal-body" id="userModalBody" style="max-height: 70vh; overflow-y: auto;">
         <!-- User details will be loaded here -->
       </div>
       <div class="modal-footer">

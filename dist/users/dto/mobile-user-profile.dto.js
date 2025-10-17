@@ -122,6 +122,7 @@ class MobileUserProfileDto {
     coins_balance;
     rp_balance;
     level;
+    experience;
     scratch_cards;
     email_verified;
     email_verified_at;
@@ -192,6 +193,13 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], MobileUserProfileDto.prototype, "level", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'User experience points',
+        example: 0,
+    }),
+    __metadata("design:type", Number)
+], MobileUserProfileDto.prototype, "experience", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Number of scratch cards',

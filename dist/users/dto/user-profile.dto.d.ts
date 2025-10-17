@@ -7,6 +7,7 @@ export declare class UserProfileDto {
     coins_balance: number;
     rp_balance: number;
     level: number;
+    experience: number;
     scratch_cards: number;
     device_udid?: string;
     subscription_agreement?: boolean;

@@ -9,6 +9,7 @@ export declare class Player {
     coins_balance: number;
     rp_balance: number;
     level: number;
+    experience: number;
     pid?: string;
     c?: string;
     af_channel?: string;

@@ -21,6 +21,7 @@ class UpdateProfileDto {
     device;
     level;
     scratch_cards;
+    experience;
 }
 exports.UpdateProfileDto = UpdateProfileDto;
 __decorate([
@@ -102,4 +103,15 @@ __decorate([
     (0, class_validator_1.Min)(0, { message: 'Scratch cards must be at least 0' }),
     __metadata("design:type", Number)
 ], UpdateProfileDto.prototype, "scratch_cards", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'User experience points',
+        example: 0,
+        minimum: 0,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0, { message: 'Experience must be at least 0' }),
+    __metadata("design:type", Number)
+], UpdateProfileDto.prototype, "experience", void 0);
 //# sourceMappingURL=update-profile.dto.js.map

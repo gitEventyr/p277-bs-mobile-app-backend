@@ -15,6 +15,7 @@ export declare class LoginResponseDto {
         coins_balance: number;
         rp_balance: number;
         level: number;
+        experience: number;
         scratch_cards: number;
         ipaddress: string;
         avatar?: string;

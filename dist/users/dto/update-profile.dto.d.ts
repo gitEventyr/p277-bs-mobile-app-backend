@@ -7,4 +7,5 @@ export declare class UpdateProfileDto {
     device?: string;
     level?: number;
     scratch_cards?: number;
+    experience?: number;
 }

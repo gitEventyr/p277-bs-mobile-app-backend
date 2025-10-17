@@ -22,6 +22,7 @@ const casino_offers_service_1 = require("../services/casino-offers.service");
 const update_profile_dto_1 = require("../dto/update-profile.dto");
 const update_level_dto_1 = require("../dto/update-level.dto");
 const update_scratch_cards_dto_1 = require("../dto/update-scratch-cards.dto");
+const update_experience_dto_1 = require("../dto/update-experience.dto");
 const mobile_user_profile_dto_1 = require("../dto/mobile-user-profile.dto");
 const balance_change_dto_1 = require("../dto/balance-change.dto");
 const rp_balance_dto_1 = require("../dto/rp-balance.dto");
@@ -69,6 +70,12 @@ let UsersController = class UsersController {
     async updateScratchCards(user, updateScratchCardsDto) {
         await this.usersService.updateProfile(user.id, {
             scratch_cards: updateScratchCardsDto.scratch_cards,
+        });
+        return await this.usersService.getMobileProfile(user.id);
+    }
+    async updateExperience(user, updateExperienceDto) {
+        await this.usersService.updateProfile(user.id, {
+            experience: updateExperienceDto.experience,
         });
         return await this.usersService.getMobileProfile(user.id);
     }
@@ -291,6 +298,33 @@ __decorate([
     __metadata("design:paramtypes", [Object, update_scratch_cards_dto_1.UpdateScratchCardsDto]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateScratchCards", null);
+__decorate([
+    (0, swagger_1.ApiTags)('📱 Mobile: User Profile'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update user experience' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'User experience updated successfully',
+        type: mobile_user_profile_dto_1.MobileUserProfileDto,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.UNAUTHORIZED,
+        description: 'Authentication required',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.NOT_FOUND,
+        description: 'User not found',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'Invalid experience value',
+    }),
+    (0, common_1.Put)('experience'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_experience_dto_1.UpdateExperienceDto]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "updateExperience", null);
 __decorate([
     (0, swagger_1.ApiTags)('📱 Mobile: Balance & Transactions'),
     (0, swagger_1.ApiOperation)({

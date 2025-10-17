@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import * as session from 'express-session';
+import { DataSource } from 'typeorm';
 import { AdminService } from '../services/admin.service';
 import { AnalyticsService } from '../services/analytics.service';
 import { VoucherService } from '../services/voucher.service';
@@ -42,6 +43,7 @@ export class AdminDashboardController {
     private readonly balanceService: BalanceService,
     private readonly rpBalanceService: RpBalanceService,
     private readonly voucherService: VoucherService,
+    private readonly dataSource: DataSource,
   ) {}
 
   // Admin Login Page
@@ -271,8 +273,60 @@ export class AdminDashboardController {
     }
 
     try {
-      const user = await this.usersService.getProfile(parseInt(id));
-      return user;
+      const userId = parseInt(id);
+
+      // Get basic user profile
+      const user = await this.usersService.getProfile(userId);
+
+      // Get latest device information (IP, location)
+      const deviceRepository = this.dataSource.getRepository('Device');
+      const latestDevice = await deviceRepository
+        .createQueryBuilder('device')
+        .where('device.user_id = :userId', { userId })
+        .orderBy('device.logged_at', 'DESC')
+        .limit(1)
+        .getOne();
+
+      // Get purchase history (last 10 purchases)
+      const purchaseRepository = this.dataSource.getRepository('InAppPurchase');
+      const purchases = await purchaseRepository
+        .createQueryBuilder('purchase')
+        .where('purchase.user_id = :userId', { userId })
+        .orderBy('purchase.created_at', 'DESC')
+        .limit(10)
+        .getMany();
+
+      // Calculate total spent
+      const totalSpentResult = await purchaseRepository
+        .createQueryBuilder('purchase')
+        .select('SUM(purchase.amount)', 'total')
+        .where('purchase.user_id = :userId', { userId })
+        .getRawOne();
+
+      return {
+        ...user,
+        ip_address: latestDevice?.ip || null,
+        location: latestDevice ? {
+          city: latestDevice.city || null,
+          country: latestDevice.country || null,
+          isp: latestDevice.isp || null,
+          timezone: latestDevice.timezone || null,
+        } : null,
+        purchases: {
+          total_spent: parseFloat(totalSpentResult?.total || '0'),
+          total_count: await purchaseRepository.count({ where: { user_id: userId } }),
+          recent: purchases.map((p: any) => ({
+            id: p.id,
+            platform: p.platform,
+            product_id: p.product_id,
+            transaction_id: p.transaction_id,
+            amount: p.amount,
+            currency: p.currency,
+            purchased_at: p.purchased_at,
+            created_at: p.created_at,
+          })),
+        },
+      };
     } catch (error) {
       console.error('Get user error:', error);
       throw new NotFoundException('User not found');

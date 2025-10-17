@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminDashboardController = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("typeorm");
 const admin_service_1 = require("../services/admin.service");
 const analytics_service_1 = require("../services/analytics.service");
 const voucher_service_1 = require("../services/voucher.service");
@@ -28,13 +29,15 @@ let AdminDashboardController = class AdminDashboardController {
     balanceService;
     rpBalanceService;
     voucherService;
-    constructor(adminService, usersService, analyticsService, balanceService, rpBalanceService, voucherService) {
+    dataSource;
+    constructor(adminService, usersService, analyticsService, balanceService, rpBalanceService, voucherService, dataSource) {
         this.adminService = adminService;
         this.usersService = usersService;
         this.analyticsService = analyticsService;
         this.balanceService = balanceService;
         this.rpBalanceService = rpBalanceService;
         this.voucherService = voucherService;
+        this.dataSource = dataSource;
     }
     loginPage(session, query) {
         if (session.admin) {
@@ -220,8 +223,51 @@ let AdminDashboardController = class AdminDashboardController {
             throw new common_1.UnauthorizedException('Not authenticated');
         }
         try {
-            const user = await this.usersService.getProfile(parseInt(id));
-            return user;
+            const userId = parseInt(id);
+            const user = await this.usersService.getProfile(userId);
+            const deviceRepository = this.dataSource.getRepository('Device');
+            const latestDevice = await deviceRepository
+                .createQueryBuilder('device')
+                .where('device.user_id = :userId', { userId })
+                .orderBy('device.logged_at', 'DESC')
+                .limit(1)
+                .getOne();
+            const purchaseRepository = this.dataSource.getRepository('InAppPurchase');
+            const purchases = await purchaseRepository
+                .createQueryBuilder('purchase')
+                .where('purchase.user_id = :userId', { userId })
+                .orderBy('purchase.created_at', 'DESC')
+                .limit(10)
+                .getMany();
+            const totalSpentResult = await purchaseRepository
+                .createQueryBuilder('purchase')
+                .select('SUM(purchase.amount)', 'total')
+                .where('purchase.user_id = :userId', { userId })
+                .getRawOne();
+            return {
+                ...user,
+                ip_address: latestDevice?.ip || null,
+                location: latestDevice ? {
+                    city: latestDevice.city || null,
+                    country: latestDevice.country || null,
+                    isp: latestDevice.isp || null,
+                    timezone: latestDevice.timezone || null,
+                } : null,
+                purchases: {
+                    total_spent: parseFloat(totalSpentResult?.total || '0'),
+                    total_count: await purchaseRepository.count({ where: { user_id: userId } }),
+                    recent: purchases.map((p) => ({
+                        id: p.id,
+                        platform: p.platform,
+                        product_id: p.product_id,
+                        transaction_id: p.transaction_id,
+                        amount: p.amount,
+                        currency: p.currency,
+                        purchased_at: p.purchased_at,
+                        created_at: p.created_at,
+                    })),
+                },
+            };
         }
         catch (error) {
             console.error('Get user error:', error);
@@ -645,6 +691,7 @@ exports.AdminDashboardController = AdminDashboardController = __decorate([
         analytics_service_1.AnalyticsService,
         balance_service_1.BalanceService,
         rp_balance_service_1.RpBalanceService,
-        voucher_service_1.VoucherService])
+        voucher_service_1.VoucherService,
+        typeorm_1.DataSource])
 ], AdminDashboardController);
 //# sourceMappingURL=admin-dashboard.controller.js.map

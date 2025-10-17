@@ -20,6 +20,7 @@ class UserProfileDto {
     coins_balance;
     rp_balance;
     level;
+    experience;
     scratch_cards;
     device_udid;
     subscription_agreement;
@@ -104,6 +105,13 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], UserProfileDto.prototype, "level", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'User experience points',
+        example: 0,
+    }),
+    __metadata("design:type", Number)
+], UserProfileDto.prototype, "experience", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Number of scratch cards',

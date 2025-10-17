@@ -3,88 +3,68 @@
     <i class="bi bi-clipboard-check"></i>
     Voucher Requests Management
   </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshPage()">
+        <i class="bi bi-arrow-clockwise"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
 </div>
 
-<!-- Statistics and Filter Section -->
-<div class="row mb-4">
-  <!-- Status Cards -->
-  <div class="col-xl-4 col-md-6 mb-3">
-    <div class="card border-left-warning shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-              Pending Requests
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{countStatus voucherRequests "requested"}}
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-clock fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-funnel"></i>
+    Search & Filter Voucher Requests
   </div>
-
-  <div class="col-xl-4 col-md-6 mb-3">
-    <div class="card border-left-success shadow h-100 py-2">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-              Sent Requests
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">
-              {{countStatus voucherRequests "sent"}}
-            </div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filter Section -->
-  <div class="col-xl-4 col-md-12 mb-3">
-    <div class="card shadow h-100">
-      <div class="card-body">
-        <form id="voucherRequestsFilterForm" method="GET" action="/admin/voucher-requests" class="d-flex flex-column h-100">
-          <label for="status" class="form-label fw-bold mb-2">
-            <i class="bi bi-funnel"></i> Filter by Status
-          </label>
-          <select class="form-select mb-2" id="status" name="status" onchange="this.form.submit()">
+  <div class="card-body">
+    <form id="voucherRequestsFilterForm">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status" name="status">
             <option value="">All Statuses</option>
             <option value="requested" {{#if (eq statusFilter 'requested')}}selected{{/if}}>Pending</option>
             <option value="sent" {{#if (eq statusFilter 'sent')}}selected{{/if}}>Sent</option>
+            <option value="canceled" {{#if (eq statusFilter 'canceled')}}selected{{/if}}>Canceled</option>
           </select>
-          <button type="button" class="btn btn-sm btn-outline-secondary mt-auto" onclick="clearFilter()">
-            <i class="bi bi-x-circle"></i> Clear Filter
-          </button>
-        </form>
+        </div>
       </div>
-    </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check2-square"></i>
+            Apply
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" onclick="clearFilter()">
+            <i class="bi bi-x-circle"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Voucher Requests Table -->
-<div class="card shadow">
-  <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-primary">Voucher Requests List</h6>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>
+      <i class="bi bi-table"></i>
+      Voucher Requests List ({{voucherRequests.length}} total)
+    </span>
   </div>
-  <div class="card-body">
+  <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-bordered" width="100%" cellspacing="0">
-        <thead>
+      <table class="table table-hover mb-0">
+        <thead class="table-dark">
           <tr>
             <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
+            <th>User</th>
             <th>Request Date</th>
-            <th>Voucher Name</th>
+            <th>Voucher</th>
             <th>RP Value</th>
             <th>Real Value</th>
             <th>Status</th>
@@ -94,10 +74,18 @@
         <tbody>
           {{#each voucherRequests}}
           <tr>
-            <td>{{this.id}}</td>
-            <td>{{this.user.name}}</td>
-            <td>{{this.user.email}}</td>
-            <td>{{formatDate this.request_date}}</td>
+            <td>
+              <span class="badge bg-info">{{this.id}}</span>
+            </td>
+            <td>
+              <div>
+                <div class="fw-bold">{{this.user.name}}</div>
+                <small class="text-muted">{{this.user.email}}</small>
+              </div>
+            </td>
+            <td>
+              <small class="text-muted">{{formatDate this.request_date}}</small>
+            </td>
             <td>{{this.voucher.name}}</td>
             <td><span class="badge bg-info">{{this.voucher.rp_price}} RP</span></td>
             <td><span class="badge bg-success">£{{this.voucher.amazon_vouchers_equivalent}}</span></td>
@@ -111,19 +99,23 @@
               {{/if}}
             </td>
             <td>
-              {{#if (eq this.status "requested")}}
-                <button class="btn btn-sm btn-success" onclick="updateVoucherRequestStatus({{this.id}}, 'sent')">
-                  <i class="bi bi-check"></i> Sent
-                </button>
-              {{else}}
-                <span class="text-muted">No actions available</span>
-              {{/if}}
+              <div class="btn-group btn-group-sm" role="group">
+                {{#if (eq this.status "requested")}}
+                  <button type="button" class="btn btn-outline-success"
+                          onclick="updateVoucherRequestStatus({{this.id}}, 'sent')"
+                          title="Mark as Sent">
+                    <i class="bi bi-check-circle"></i>
+                  </button>
+                {{else}}
+                  <span class="text-muted">-</span>
+                {{/if}}
+              </div>
             </td>
           </tr>
           {{/each}}
           {{#unless voucherRequests.length}}
           <tr>
-            <td colspan="9" class="text-center text-muted">No voucher requests found</td>
+            <td colspan="8" class="text-center text-muted">No voucher requests found matching your filters</td>
           </tr>
           {{/unless}}
         </tbody>
@@ -156,9 +148,32 @@
 </div>
 
 <script>
+// Form submission handler
+document.addEventListener('DOMContentLoaded', function() {
+  const filterForm = document.getElementById('voucherRequestsFilterForm');
+  if (filterForm) {
+    filterForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const status = document.getElementById('status').value;
+      const params = new URLSearchParams();
+
+      if (status) params.append('status', status);
+
+      window.location.href = '/admin/voucher-requests?' + params.toString();
+    });
+  }
+});
+
 // Clear Filter
 function clearFilter() {
+  document.getElementById('status').value = '';
   window.location.href = '/admin/voucher-requests';
+}
+
+// Refresh Page
+function refreshPage() {
+  window.location.reload();
 }
 
 // Update Voucher Request Status
@@ -207,12 +222,3 @@ function updateVoucherRequestStatus(id, status) {
   modal.show();
 }
 </script>
-
-<style>
-.border-left-warning {
-  border-left: 0.25rem solid #f6c23e !important;
-}
-.border-left-success {
-  border-left: 0.25rem solid #1cc88a !important;
-}
-</style>
