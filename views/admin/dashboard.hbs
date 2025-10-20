@@ -161,7 +161,52 @@
   </div>
 </div>
 
-<!-- Block 4: User Level Distribution & Top Spenders -->
+<!-- Block 4: Slot Player Behavior -->
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Analytics of active player behavior in slot games">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-graph-up"></i>
+          Slot Player Behavior
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-primary">{{gameAnalytics.playerBehavior.totalActivePlayers}}</div>
+              <div class="text-xs font-weight-bold text-primary text-uppercase">Active Players</div>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-success">{{gameAnalytics.playerBehavior.avgPlaysPerPlayer}}</div>
+              <div class="text-xs font-weight-bold text-success text-uppercase">Avg Plays/Player</div>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-info">{{gameAnalytics.playerBehavior.avgBetPerPlayer}}</div>
+              <div class="text-xs font-weight-bold text-info text-uppercase">Avg Bet/Player</div>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-warning">{{gameAnalytics.playerBehavior.totalGameRevenue}}</div>
+              <div class="text-xs font-weight-bold text-warning text-uppercase">Games Coins Spent</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Block 5: User Level Distribution & Top Spenders -->
 <div class="row">
   <div class="col-lg-6">
     <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Distribution of active users across different experience levels">
@@ -250,51 +295,6 @@
               {{/unless}}
             </tbody>
           </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Block 5: Slot Player Behavior -->
-<div class="row">
-  <div class="col-lg-12">
-    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Analytics of active player behavior in slot games">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">
-          <i class="bi bi-graph-up"></i>
-          Slot Player Behavior
-        </h6>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
-              <div class="h3 mb-2 font-weight-bold text-primary">{{gameAnalytics.playerBehavior.totalActivePlayers}}</div>
-              <div class="text-xs font-weight-bold text-primary text-uppercase">Active Players</div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
-              <div class="h3 mb-2 font-weight-bold text-success">{{gameAnalytics.playerBehavior.avgPlaysPerPlayer}}</div>
-              <div class="text-xs font-weight-bold text-success text-uppercase">Avg Plays/Player</div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
-              <div class="h3 mb-2 font-weight-bold text-info">{{gameAnalytics.playerBehavior.avgBetPerPlayer}}</div>
-              <div class="text-xs font-weight-bold text-info text-uppercase">Avg Bet/Player</div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
-              <div class="h3 mb-2 font-weight-bold text-warning">{{gameAnalytics.playerBehavior.totalGameRevenue}}</div>
-              <div class="text-xs font-weight-bold text-warning text-uppercase">Games Coins Spent</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

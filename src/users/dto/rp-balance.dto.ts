@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min, IsInt } from 'class-validator';
 
 export class ModifyRpBalanceDto {
   @ApiProperty({
@@ -7,7 +7,7 @@ export class ModifyRpBalanceDto {
       'Amount to modify (positive to increase, negative to decrease)',
     example: 100,
   })
-  @IsNumber()
+  @IsInt()
   amount: number;
 
   @ApiProperty({

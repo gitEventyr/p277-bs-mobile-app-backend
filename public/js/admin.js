@@ -33,11 +33,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// User Search Functionality
+// User Search Functionality with AJAX table reload
 document.addEventListener('DOMContentLoaded', function() {
   const searchForm = document.getElementById('userSearchForm');
   if (searchForm) {
-    searchForm.addEventListener('submit', function(e) {
+    searchForm.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const search = document.getElementById('search').value;
@@ -51,7 +51,51 @@ document.addEventListener('DOMContentLoaded', function() {
       if (emailVerified) params.append('email_verified', emailVerified);
       if (phoneVerified) params.append('phone_verified', phoneVerified);
 
-      window.location.href = '/admin/users?' + params.toString();
+      // Add loading overlay
+      const tableCard = document.querySelector('.card:has(table)');
+      if (tableCard) {
+        tableCard.style.position = 'relative';
+        const overlay = document.createElement('div');
+        overlay.id = 'table-loading-overlay';
+        overlay.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+        overlay.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        tableCard.appendChild(overlay);
+      }
+
+      // Fetch the page with new parameters
+      try {
+        const response = await fetch('/admin/users?' + params.toString(), {
+          credentials: 'same-origin'
+        });
+
+        if (response.ok) {
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+
+          // Extract and replace only the table card
+          const newTableCard = doc.querySelector('.card:has(table)');
+          const oldTableCard = document.querySelector('.card:has(table)');
+
+          if (newTableCard && oldTableCard) {
+            oldTableCard.innerHTML = newTableCard.innerHTML;
+          }
+
+          // Update URL without reload
+          window.history.pushState({}, '', '/admin/users?' + params.toString());
+        } else {
+          // Fallback to full page reload
+          window.location.href = '/admin/users?' + params.toString();
+        }
+      } catch (error) {
+        console.error('Error reloading table:', error);
+        // Fallback to full page reload
+        window.location.href = '/admin/users?' + params.toString();
+      } finally {
+        // Remove loading overlay
+        const overlay = document.getElementById('table-loading-overlay');
+        if (overlay) overlay.remove();
+      }
     });
   }
 });

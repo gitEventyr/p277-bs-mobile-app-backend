@@ -385,17 +385,137 @@ main {
 }
 
 /* Responsive Design */
+
+/* Smaller PC screens (tablets in landscape and small desktops) */
+@media (max-width: 1200px) and (min-width: 769px) {
+  /* Adjust sidebar width */
+  .sidebar {
+    width: 180px !important;
+  }
+
+  .col-md-3.col-lg-2 {
+    flex: 0 0 180px !important;
+    max-width: 180px !important;
+  }
+
+  .col-md-9.col-lg-10 {
+    flex: 0 0 calc(100% - 180px) !important;
+    max-width: calc(100% - 180px) !important;
+  }
+
+  /* Make sidebar links more compact */
+  .sidebar .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .sidebar .nav-link i {
+    margin-right: 0.5rem;
+  }
+
+  /* Adjust navbar */
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+  /* Make cards more compact */
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  .card-header {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.95rem;
+  }
+
+  /* Reduce padding in main content */
+  main.px-md-4 {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  /* Make stat cards smaller */
+  .h5 {
+    font-size: 1.1rem !important;
+  }
+
+  .text-xs {
+    font-size: 0.7rem;
+  }
+
+  /* Compact tables */
+  .table {
+    font-size: 0.85rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem !important;
+  }
+
+  /* Adjust button sizes */
+  .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  /* Compact form elements */
+  .form-control,
+  .form-select {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.875rem;
+  }
+
+  /* Smaller dashboard metric cards */
+  .col-xl-3,
+  .col-xl-4 {
+    min-width: 250px;
+  }
+
+  /* Make progress bars in tables more compact */
+  .progress {
+    height: 18px !important;
+  }
+
+  /* Adjust modal sizes */
+  .modal-dialog {
+    max-width: 90%;
+  }
+}
+
+/* Medium screens adjustment */
+@media (max-width: 992px) and (min-width: 769px) {
+  /* Stack cards on medium screens */
+  .col-lg-6 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Full width slot behavior section */
+  .col-lg-12 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Adjust metric cards to 2 per row on medium screens */
+  .col-xl-3,
+  .col-xl-4 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: relative;
     top: 0;
     height: auto;
   }
-  
+
   .login-card {
     margin: 10px;
   }
-  
+
   .table-responsive {
     font-size: 0.875rem;
   }
