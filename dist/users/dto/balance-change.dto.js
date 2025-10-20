@@ -66,10 +66,10 @@ class ModifyBalanceDto {
 exports.ModifyBalanceDto = ModifyBalanceDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: 100.5,
+        example: 100,
         description: 'Amount to modify (positive for increase, negative for decrease)',
     }),
-    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsInt)(),
     __metadata("design:type", Number)
 ], ModifyBalanceDto.prototype, "amount", void 0);
 __decorate([
