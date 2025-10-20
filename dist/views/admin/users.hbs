@@ -423,11 +423,38 @@
 
 <script>
 // Clear Search Function for Users Page
-function clearSearch() {
+async function clearSearch() {
   document.getElementById('search').value = '';
   document.getElementById('sortBy').value = 'created_at';
   document.getElementById('emailVerified').value = '';
   document.getElementById('phoneVerified').value = '';
-  document.getElementById('userSearchForm').submit();
+
+  // Use AJAX reload instead of form submit to avoid page reload
+  const tableCard = document.querySelector('.card:has(table)');
+  if (tableCard) {
+    tableCard.style.position = 'relative';
+    const overlay = document.createElement('div');
+    overlay.id = 'table-loading-overlay';
+    overlay.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+    overlay.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+    tableCard.appendChild(overlay);
+  }
+
+  try {
+    const response = await fetch(window.location.pathname, { credentials: 'same-origin' });
+    if (response.ok) {
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const newTableCard = doc.querySelector('.card:has(table)');
+      const oldTableCard = document.querySelector('.card:has(table)');
+      if (newTableCard && oldTableCard) {
+        oldTableCard.innerHTML = newTableCard.innerHTML;
+      }
+      window.history.pushState({}, '', window.location.pathname);
+    }
+  } catch (error) {
+    console.error('Error clearing filters:', error);
+  }
 }
 </script>
