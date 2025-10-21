@@ -234,16 +234,6 @@ export class GamesService {
       throw new BadRequestException('Cannot have wins or losses without a bet');
     }
 
-    // For most games, won + lost should not exceed bet by too much
-    // Allow some flexibility for bonus features
-    const totalPayout = won + lost;
-    if (totalPayout > bet * 10) {
-      // Allow up to 10x bet for bonus features
-      throw new BadRequestException(
-        'Win/loss amounts seem unrealistic compared to bet amount',
-      );
-    }
-
     // Game name validation
     if (
       !playSessionDto.game_name ||

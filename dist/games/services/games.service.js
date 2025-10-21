@@ -163,10 +163,6 @@ let GamesService = GamesService_1 = class GamesService {
         if (bet === 0 && (won > 0 || lost > 0)) {
             throw new common_1.BadRequestException('Cannot have wins or losses without a bet');
         }
-        const totalPayout = won + lost;
-        if (totalPayout > bet * 10) {
-            throw new common_1.BadRequestException('Win/loss amounts seem unrealistic compared to bet amount');
-        }
         if (!playSessionDto.game_name ||
             playSessionDto.game_name.trim().length === 0) {
             throw new common_1.BadRequestException('Game name is required');
