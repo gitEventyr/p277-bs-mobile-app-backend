@@ -126,18 +126,18 @@
                 <span class="badge bg-info">{{this.rp_balance}} RP</span>
               </div>
             </td>
-            <td>
+            <td class="text-center">
               {{#if this.email_verified}}
-              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
+              <i class="bi bi-check-circle-fill verification-icon verified" title="Email Verified"></i>
               {{else}}
-              <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Not Verified</span>
+              <i class="bi bi-x-circle-fill verification-icon not-verified" title="Email Not Verified"></i>
               {{/if}}
             </td>
-            <td>
+            <td class="text-center">
               {{#if this.phone_verified}}
-              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
+              <i class="bi bi-check-circle-fill verification-icon verified" title="Phone Verified"></i>
               {{else}}
-              <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Not Verified</span>
+              <i class="bi bi-x-circle-fill verification-icon not-verified" title="Phone Not Verified"></i>
               {{/if}}
             </td>
             <td>
