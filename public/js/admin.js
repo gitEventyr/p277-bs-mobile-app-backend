@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
       tooltips.forEach(tooltip => tooltip.dispose());
       tooltips = [];
 
-      // Create new tooltips only if sidebar is minimized
-      const isMinimized = sidebar.classList.contains('minimized');
-      if (isMinimized) {
+      // Create new tooltips only if sidebar is NOT expanded
+      const isExpanded = sidebar.classList.contains('expanded');
+      if (!isExpanded) {
         sidebarLinks.forEach(link => {
           const tooltip = new bootstrap.Tooltip(link, {
             trigger: 'hover',
@@ -30,11 +30,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Check if sidebar state is stored in localStorage
-    const isSidebarMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+    // Default to minimized (expanded = false) if not set
+    const storedState = localStorage.getItem('sidebarExpanded');
+    const isSidebarExpanded = storedState === 'true';
 
-    if (isSidebarMinimized) {
-      sidebar.classList.add('minimized');
-      mainContent.classList.add('sidebar-minimized');
+    if (isSidebarExpanded) {
+      sidebar.classList.add('expanded');
+      mainContent.classList.add('sidebar-expanded');
     }
 
     // Initialize tooltips based on initial state
@@ -42,11 +44,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle sidebar on button click
     sidebarToggle.addEventListener('click', function() {
-      const isMinimized = sidebar.classList.toggle('minimized');
-      mainContent.classList.toggle('sidebar-minimized');
+      const isExpanded = sidebar.classList.toggle('expanded');
+      mainContent.classList.toggle('sidebar-expanded');
 
       // Persist state to localStorage
-      localStorage.setItem('sidebarMinimized', isMinimized);
+      localStorage.setItem('sidebarExpanded', isExpanded);
 
       // Reinitialize tooltips
       initTooltips();
