@@ -1,5 +1,59 @@
 // Admin Dashboard JavaScript
 
+// Sidebar Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const mainContent = document.querySelector('main');
+
+  if (sidebar && sidebarToggle && mainContent) {
+    // Initialize tooltips for sidebar links
+    const sidebarLinks = sidebar.querySelectorAll('.nav-link');
+    let tooltips = [];
+
+    function initTooltips() {
+      // Dispose existing tooltips
+      tooltips.forEach(tooltip => tooltip.dispose());
+      tooltips = [];
+
+      // Create new tooltips only if sidebar is minimized
+      const isMinimized = sidebar.classList.contains('minimized');
+      if (isMinimized) {
+        sidebarLinks.forEach(link => {
+          const tooltip = new bootstrap.Tooltip(link, {
+            trigger: 'hover',
+            container: 'body'
+          });
+          tooltips.push(tooltip);
+        });
+      }
+    }
+
+    // Check if sidebar state is stored in localStorage
+    const isSidebarMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+
+    if (isSidebarMinimized) {
+      sidebar.classList.add('minimized');
+      mainContent.classList.add('sidebar-minimized');
+    }
+
+    // Initialize tooltips based on initial state
+    initTooltips();
+
+    // Toggle sidebar on button click
+    sidebarToggle.addEventListener('click', function() {
+      const isMinimized = sidebar.classList.toggle('minimized');
+      mainContent.classList.toggle('sidebar-minimized');
+
+      // Persist state to localStorage
+      localStorage.setItem('sidebarMinimized', isMinimized);
+
+      // Reinitialize tooltips
+      initTooltips();
+    });
+  }
+});
+
 // Password Toggle Functionality
 function togglePassword() {
   const passwordInput = document.getElementById('password');
