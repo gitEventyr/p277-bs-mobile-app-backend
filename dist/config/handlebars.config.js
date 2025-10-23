@@ -15,6 +15,25 @@ function configureHandlebars() {
             minute: '2-digit',
         });
     });
+    hbs.registerHelper('formatDateOnly', function (date) {
+        if (!date)
+            return 'N/A';
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
+    });
+    hbs.registerHelper('formatTimeOnly', function (date) {
+        if (!date)
+            return 'N/A';
+        const d = new Date(date);
+        return d.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    });
     hbs.registerHelper('eq', function (a, b) {
         return a === b;
     });

@@ -106,6 +106,10 @@ main.sidebar-minimized {
   overflow-x: hidden;
 }
 
+.sidebar .nav.flex-column {
+  padding-bottom: 60px;
+}
+
 .sidebar.minimized {
   width: 60px !important;
   min-width: 60px !important;
@@ -116,7 +120,12 @@ main.sidebar-minimized {
   display: flex;
   justify-content: flex-end;
   padding: 0.5rem 1rem;
-  border-bottom: 1px solid #E3E6F0;
+  border-top: 1px solid #E3E6F0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--white);
 }
 
 .sidebar-toggle-btn {
@@ -287,6 +296,7 @@ main.sidebar-minimized {
   background-color: var(--white) !important;
   color: var(--text-dark) !important;
   border-bottom: 1px solid #e3e6f0;
+  vertical-align: middle;
 }
 
 .table tbody tr:hover {
@@ -721,6 +731,18 @@ main.sidebar-minimized {
 .badge {
   font-size: 0.75em;
   font-weight: 600;
+}
+
+.verification-badge {
+  font-size: 0.7rem;
+  padding: 0.35rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.verification-badge i {
+  font-size: 0.75rem;
 }
 
 /* Verification Icon Styles */

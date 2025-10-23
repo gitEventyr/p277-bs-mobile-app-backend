@@ -89,8 +89,7 @@
             <th>User</th>
             <th>Contact</th>
             <th>Balance</th>
-            <th>Email Verified</th>
-            <th>Phone Verified</th>
+            <th>Verified</th>
             <th>Registered</th>
             <th>Actions</th>
           </tr>
@@ -126,22 +125,23 @@
                 <span class="badge bg-info">{{this.rp_balance}} RP</span>
               </div>
             </td>
-            <td class="text-center">
-              {{#if this.email_verified}}
-              <i class="bi bi-check-circle-fill verification-icon verified" title="Email Verified"></i>
-              {{else}}
-              <i class="bi bi-x-circle-fill verification-icon not-verified" title="Email Not Verified"></i>
-              {{/if}}
-            </td>
-            <td class="text-center">
-              {{#if this.phone_verified}}
-              <i class="bi bi-check-circle-fill verification-icon verified" title="Phone Verified"></i>
-              {{else}}
-              <i class="bi bi-x-circle-fill verification-icon not-verified" title="Phone Not Verified"></i>
-              {{/if}}
+            <td>
+              <div>
+                <span class="badge verification-badge {{#if this.email_verified}}bg-success{{else}}bg-secondary{{/if}}" title="{{#if this.email_verified}}Email Verified{{else}}Email Not Verified{{/if}}">
+                  <i class="bi bi-envelope-fill"></i>
+                  Email
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="badge verification-badge {{#if this.phone_verified}}bg-success{{else}}bg-secondary{{/if}}" title="{{#if this.phone_verified}}Phone Verified{{else}}Phone Not Verified{{/if}}">
+                  <i class="bi bi-phone-fill"></i>
+                  Phone
+                </span>
+              </div>
             </td>
             <td>
-              <small class="text-muted">{{formatDate this.created_at}}</small>
+              <div>{{formatDateOnly this.created_at}}</div>
+              <small class="text-muted">{{formatTimeOnly this.created_at}}</small>
             </td>
             <td>
               <div class="btn-group btn-group-sm" role="group">
@@ -163,7 +163,7 @@
           {{/each}}
           {{#unless users.length}}
           <tr>
-            <td colspan="7" class="text-center text-muted">No users found matching your filters</td>
+            <td colspan="6" class="text-center text-muted">No users found matching your filters</td>
           </tr>
           {{/unless}}
         </tbody>

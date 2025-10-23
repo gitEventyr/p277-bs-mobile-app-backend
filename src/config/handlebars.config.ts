@@ -15,6 +15,29 @@ export function configureHandlebars() {
     });
   });
 
+  // Helper for formatting date only
+  hbs.registerHelper('formatDateOnly', function (date: Date | string) {
+    if (!date) return 'N/A';
+
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  });
+
+  // Helper for formatting time only
+  hbs.registerHelper('formatTimeOnly', function (date: Date | string) {
+    if (!date) return 'N/A';
+
+    const d = new Date(date);
+    return d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  });
+
   // Helper for equality comparison
   hbs.registerHelper('eq', function (a: any, b: any) {
     return a === b;
