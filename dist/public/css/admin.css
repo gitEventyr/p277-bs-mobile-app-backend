@@ -27,12 +27,17 @@ body {
 main {
   background-color: var(--light-gray);
   min-height: calc(100vh - 72px);
-  transition: margin-left 0.3s ease, max-width 0.3s ease;
+  transition: margin-left 0.3s ease, max-width 0.3s ease, width 0.3s ease, flex 0.3s ease;
+  flex: 0 0 calc(100% - 250px) !important;
+  max-width: calc(100% - 250px) !important;
+  width: calc(100% - 250px) !important;
 }
 
 main.sidebar-minimized {
   margin-left: 60px !important;
+  flex: 0 0 calc(100% - 60px) !important;
   max-width: calc(100% - 60px) !important;
+  width: calc(100% - 60px) !important;
 }
 
 /* Login Page Styles */
