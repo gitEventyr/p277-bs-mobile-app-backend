@@ -8,35 +8,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   <link href="/css/admin.css" rel="stylesheet">
-  <script>
-    // Apply sidebar state immediately to prevent flash
-    (function() {
-      const isExpanded = localStorage.getItem('sidebarExpanded') === 'true';
-      if (isExpanded) {
-        document.documentElement.style.setProperty('--sidebar-initial-state', 'expanded');
-      }
-    })();
-  </script>
-  <style>
-    /* Apply initial state before page renders */
-    :root {
-      --sidebar-initial-state: minimized;
-    }
-    .sidebar {
-      width: 60px;
-    }
-    .sidebar.expanded,
-    html[style*="--sidebar-initial-state: expanded"] .sidebar {
-      width: 250px;
-    }
-    main {
-      margin-left: 60px;
-    }
-    main.sidebar-expanded,
-    html[style*="--sidebar-initial-state: expanded"] main {
-      margin-left: 250px;
-    }
-  </style>
 </head>
 <body>
   {{#if isAuthenticated}}
