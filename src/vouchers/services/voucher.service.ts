@@ -52,6 +52,13 @@ export class VoucherService {
         throw new NotFoundException('User not found');
       }
 
+      // Check if user has verified their email
+      if (!player.email_verified) {
+        throw new BadRequestException(
+          'Email verification required. Please verify your email address before requesting vouchers.',
+        );
+      }
+
       // Find the voucher
       const voucher = await queryRunner.manager.findOne(Voucher, {
         where: { id: voucherId },

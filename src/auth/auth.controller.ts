@@ -1083,7 +1083,18 @@ export class AuthController {
 
     // If newEmail is provided and not empty, update the user's email
     if (verifyEmailDto.newEmail && verifyEmailDto.newEmail.trim()) {
-      updateData.email = verifyEmailDto.newEmail.trim();
+      const trimmedNewEmail = verifyEmailDto.newEmail.trim();
+
+      // Check if the new email is already in use by another account
+      const existingUser = await this.playerRepository.findOne({
+        where: { email: trimmedNewEmail, is_deleted: false },
+      });
+
+      if (existingUser && existingUser.id !== user.id) {
+        throw new BadRequestException('This email address is already in use');
+      }
+
+      updateData.email = trimmedNewEmail;
     }
 
     await this.playerRepository.update({ id: user.id }, updateData);
