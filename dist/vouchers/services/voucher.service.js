@@ -50,6 +50,9 @@ let VoucherService = class VoucherService {
             if (!player) {
                 throw new common_1.NotFoundException('User not found');
             }
+            if (!player.email_verified) {
+                throw new common_1.BadRequestException('Email verification required. Please verify your email address before requesting vouchers.');
+            }
             const voucher = await queryRunner.manager.findOne(voucher_entity_1.Voucher, {
                 where: { id: voucherId },
             });

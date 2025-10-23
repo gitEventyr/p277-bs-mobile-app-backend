@@ -73,11 +73,13 @@ let AnalyticsService = class AnalyticsService {
         const revenueByPlatform = await this.getRevenueByPlatform(dateRange);
         const averageTransactionValue = await this.getAverageTransactionValue(dateRange);
         const topSpenders = await this.getTopSpenders(dateRange);
+        const lastTransactions = await this.getLastTransactions();
         return {
             dailyRevenue,
             revenueByPlatform,
             averageTransactionValue: Math.round(averageTransactionValue * 100) / 100,
             topSpenders,
+            lastTransactions,
         };
     }
     async getGameAnalytics(dateRange) {
@@ -351,6 +353,24 @@ let AnalyticsService = class AnalyticsService {
             email: row.email || 'N/A',
             totalSpent: parseFloat(row.totalSpent || '0'),
             transactionCount: parseInt(row.transactionCount),
+        }));
+    }
+    async getLastTransactions() {
+        const transactions = await this.purchaseRepository.find({
+            relations: ['user'],
+            order: { purchased_at: 'DESC' },
+            take: 10,
+        });
+        return transactions.map((transaction) => ({
+            id: transaction.id,
+            userName: transaction.user?.name || 'Anonymous',
+            userEmail: transaction.user?.email || 'N/A',
+            amount: parseFloat(transaction.amount.toString()),
+            currency: transaction.currency,
+            platform: transaction.platform,
+            productId: transaction.product_id,
+            transactionId: transaction.transaction_id,
+            purchasedAt: transaction.purchased_at,
         }));
     }
     async getGamePerformance(dateRange) {

@@ -63,6 +63,17 @@ export declare class AnalyticsService {
             totalSpent: number;
             transactionCount: number;
         }[];
+        lastTransactions: {
+            id: number;
+            userName: any;
+            userEmail: any;
+            amount: number;
+            currency: string;
+            platform: string;
+            productId: string;
+            transactionId: string;
+            purchasedAt: Date;
+        }[];
     }>;
     getGameAnalytics(dateRange?: DateRange): Promise<{
         gamePerformance: {
@@ -101,6 +112,7 @@ export declare class AnalyticsService {
     private getRevenueByPlatform;
     private getAverageTransactionValue;
     private getTopSpenders;
+    private getLastTransactions;
     private getGamePerformance;
     private getDailyGameActivity;
     private getPlayerBehavior;

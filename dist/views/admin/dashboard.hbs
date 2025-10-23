@@ -253,12 +253,17 @@
   </div>
 
   <div class="col-lg-6">
-    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Top 10 active users by total purchase amount">
-      <div class="card-header py-3">
+    <!-- Top Spenders Card -->
+    <div class="card shadow mb-4" id="topSpendersCard" data-bs-toggle="tooltip" data-bs-placement="top" title="Top 10 active users by total purchase amount">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="bi bi-trophy"></i>
           Top Spenders
         </h6>
+        <button class="btn btn-sm btn-outline-primary" onclick="toggleTransactionView()">
+          <i class="bi bi-clock-history"></i>
+          View Last Transactions
+        </button>
       </div>
       <div class="card-body">
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -298,6 +303,71 @@
         </div>
       </div>
     </div>
+
+    <!-- Last 10 Transactions Card (Hidden by default) -->
+    <div class="card shadow mb-4" id="lastTransactionsCard" style="display: none;" data-bs-toggle="tooltip" data-bs-placement="top" title="Latest 10 purchases">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-clock-history"></i>
+          Last 10 Transactions
+        </h6>
+        <button class="btn btn-sm btn-outline-primary" onclick="toggleTransactionView()">
+          <i class="bi bi-trophy"></i>
+          View Top Spenders
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-sm table-hover">
+            <thead class="sticky-top bg-white">
+              <tr>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Platform</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each revenueAnalytics.lastTransactions}}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-sm me-2">
+                      <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                      <div>{{this.userName}}</div>
+                      <small class="text-muted">{{this.userEmail}}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <strong>${{this.amount}}</strong>
+                  <br>
+                  <small class="text-muted">{{this.productId}}</small>
+                </td>
+                <td>
+                  {{#if (eq this.platform "ios")}}
+                    <span class="badge bg-dark"><i class="bi bi-apple"></i> iOS</span>
+                  {{else}}
+                    <span class="badge bg-success"><i class="bi bi-google-play"></i> Android</span>
+                  {{/if}}
+                </td>
+                <td>
+                  <small>{{formatDate this.purchasedAt}}</small>
+                </td>
+              </tr>
+              {{/each}}
+              {{#unless revenueAnalytics.lastTransactions.length}}
+              <tr>
+                <td colspan="4" class="text-muted text-center">No transactions available</td>
+              </tr>
+              {{/unless}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -310,4 +380,18 @@
       return new bootstrap.Tooltip(tooltipTriggerEl);
     });
   });
+
+  // Toggle between Top Spenders and Last Transactions cards
+  function toggleTransactionView() {
+    const topSpendersCard = document.getElementById('topSpendersCard');
+    const lastTransactionsCard = document.getElementById('lastTransactionsCard');
+
+    if (topSpendersCard.style.display === 'none') {
+      topSpendersCard.style.display = 'block';
+      lastTransactionsCard.style.display = 'none';
+    } else {
+      topSpendersCard.style.display = 'none';
+      lastTransactionsCard.style.display = 'block';
+    }
+  }
 </script>

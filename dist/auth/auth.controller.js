@@ -630,7 +630,14 @@ let AuthController = AuthController_1 = class AuthController {
             email_verified_at: new Date(),
         };
         if (verifyEmailDto.newEmail && verifyEmailDto.newEmail.trim()) {
-            updateData.email = verifyEmailDto.newEmail.trim();
+            const trimmedNewEmail = verifyEmailDto.newEmail.trim();
+            const existingUser = await this.playerRepository.findOne({
+                where: { email: trimmedNewEmail, is_deleted: false },
+            });
+            if (existingUser && existingUser.id !== user.id) {
+                throw new common_1.BadRequestException('This email address is already in use');
+            }
+            updateData.email = trimmedNewEmail;
         }
         await this.playerRepository.update({ id: user.id }, updateData);
         try {
