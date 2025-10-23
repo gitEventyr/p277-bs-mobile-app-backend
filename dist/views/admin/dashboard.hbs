@@ -323,7 +323,6 @@
               <tr>
                 <th>User</th>
                 <th>Amount</th>
-                <th>Platform</th>
                 <th>Date</th>
               </tr>
             </thead>
@@ -343,15 +342,6 @@
                 </td>
                 <td>
                   <strong>${{this.amount}}</strong>
-                  <br>
-                  <small class="text-muted">{{this.productId}}</small>
-                </td>
-                <td>
-                  {{#if (eq this.platform "ios")}}
-                    <span class="badge bg-dark"><i class="bi bi-apple"></i> iOS</span>
-                  {{else}}
-                    <span class="badge bg-success"><i class="bi bi-google-play"></i> Android</span>
-                  {{/if}}
                 </td>
                 <td>
                   <small>{{formatDate this.purchasedAt}}</small>
@@ -360,7 +350,7 @@
               {{/each}}
               {{#unless revenueAnalytics.lastTransactions.length}}
               <tr>
-                <td colspan="4" class="text-muted text-center">No transactions available</td>
+                <td colspan="3" class="text-muted text-center">No transactions available</td>
               </tr>
               {{/unless}}
             </tbody>
