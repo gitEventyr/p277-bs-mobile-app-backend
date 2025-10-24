@@ -74,64 +74,12 @@ async function cleanupDatabase() {
     console.log('');
     console.log('✨ Database cleanup completed!');
     console.log('');
-
-    // Now seed admin users
-    console.log('🌱 Re-seeding admin users...');
-    await seedAdminUsers(dataSource);
   } catch (error) {
     console.error('❌ Database cleanup failed:', error);
     throw error;
   } finally {
     await app.close();
   }
-}
-
-async function seedAdminUsers(dataSource: DataSource) {
-  const adminRepository = dataSource.getRepository(AdminUser);
-
-  const admins = [
-    {
-      email: 'admin@casino.com',
-      password: 'admin123',
-      display_name: 'Casino Admin',
-    },
-    {
-      email: 'test@admin.com',
-      password: 'test123',
-      display_name: 'Test Admin',
-    },
-  ];
-
-  for (const adminData of admins) {
-    try {
-      // Hash password
-      const passwordHash = await bcryptjs.hash(adminData.password, 10);
-
-      // Create new admin
-      const admin = adminRepository.create({
-        email: adminData.email,
-        password_hash: passwordHash,
-        display_name: adminData.display_name,
-        is_active: true,
-      });
-
-      await adminRepository.save(admin);
-      console.log(
-        `   ✅ Created admin: ${adminData.email} (password: ${adminData.password})`,
-      );
-    } catch (error) {
-      console.error(`   ❌ Error creating admin ${adminData.email}:`, error);
-    }
-  }
-
-  console.log('');
-  console.log('🎉 Database cleanup and seeding completed!');
-  console.log('');
-  console.log('📋 Available login credentials:');
-  console.log('   • admin@casino.com / admin123');
-  console.log('   • test@admin.com / test123');
-  console.log('');
-  console.log('🌐 Access admin dashboard: http://localhost:3000/admin/login');
 }
 
 // Execute the cleanup
