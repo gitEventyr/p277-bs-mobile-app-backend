@@ -16,14 +16,9 @@ async function seedAdmins() {
 
   const admins = [
     {
-      email: 'admin@casino.com',
-      password: 'admin123',
-      display_name: 'Casino Admin',
-    },
-    {
-      email: 'test@admin.com',
-      password: 'test123',
-      display_name: 'Test Admin',
+      email: 'olivier@olikaone.com',
+      password: 'kezzyN-0vusqu-cegnaw',
+      display_name: 'Oliver',
     },
   ];
 
@@ -63,8 +58,7 @@ async function seedAdmins() {
   console.log('🎉 Admin seeding completed!');
   console.log('');
   console.log('Login credentials:');
-  console.log('- admin@casino.com / admin123');
-  console.log('- test@admin.com / test123');
+  console.log('- olivier@olikaone.com / kezzyN-0vusqu-cegnaw');
   console.log('');
   console.log(
     'Access the admin dashboard at: http://localhost:3000/admin/login',
