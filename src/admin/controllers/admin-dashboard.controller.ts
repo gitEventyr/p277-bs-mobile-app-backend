@@ -303,6 +303,11 @@ export class AdminDashboardController {
         .where('purchase.user_id = :userId', { userId })
         .getRawOne();
 
+      // Get unique casino actions for this user
+      const casinoActions = await this.usersService.getUserCasinoActions(
+        user.visitor_id,
+      );
+
       return {
         ...user,
         ip_address: latestDevice?.ip || null,
@@ -330,6 +335,14 @@ export class AdminDashboardController {
             created_at: p.created_at,
           })),
         },
+        casino_actions: casinoActions.map((action) => ({
+          id: action.id,
+          casino_name: action.casino_name,
+          date_of_action: action.date_of_action,
+          registration: action.registration,
+          deposit: action.deposit,
+          created_at: action.created_at,
+        })),
       };
     } catch (error) {
       console.error('Get user error:', error);
@@ -613,15 +626,93 @@ export class AdminDashboardController {
     phone_verified?: string;
   }) {
     try {
-      const users = await this.usersService.findUsersForAdmin(options);
-      return {
-        data: users.data || [],
-        pagination: this.buildPagination(
-          options.page,
-          options.limit,
-          users.total || 0,
-        ),
-      };
+      // For casino actions sorting, we need to fetch all users first, then sort
+      const isCasinoActionSort =
+        options.sortBy === 'casino_registrations' ||
+        options.sortBy === 'casino_deposits';
+
+      if (isCasinoActionSort) {
+        // Fetch all users matching filters without pagination
+        const allUsers = await this.usersService.findUsersForAdmin({
+          ...options,
+          page: 1,
+          limit: 1000000, // Large number to get all users
+          sortBy: 'created_at', // Use default sort for initial fetch
+        });
+
+        // Get casino actions counts for all users
+        const visitorIds = allUsers.data.map((user) => user.visitor_id);
+        const casinoActionsCounts =
+          await this.usersService.getCasinoActionsCounts(visitorIds);
+
+        // Add casino actions counts to each user
+        const usersWithCasinoActions = allUsers.data.map((user) => {
+          const counts = casinoActionsCounts.get(user.visitor_id) || {
+            registrations: 0,
+            deposits: 0,
+          };
+          return {
+            ...user,
+            casino_registrations: counts.registrations,
+            casino_deposits: counts.deposits,
+          };
+        });
+
+        // Sort by casino actions
+        usersWithCasinoActions.sort((a, b) => {
+          if (options.sortBy === 'casino_registrations') {
+            return b.casino_registrations - a.casino_registrations;
+          } else {
+            return b.casino_deposits - a.casino_deposits;
+          }
+        });
+
+        // Apply pagination manually
+        const skip = (options.page - 1) * options.limit;
+        const paginatedUsers = usersWithCasinoActions.slice(
+          skip,
+          skip + options.limit,
+        );
+
+        return {
+          data: paginatedUsers,
+          pagination: this.buildPagination(
+            options.page,
+            options.limit,
+            usersWithCasinoActions.length,
+          ),
+        };
+      } else {
+        // Normal sorting - use database sort
+        const users = await this.usersService.findUsersForAdmin(options);
+
+        // Get casino actions counts for displayed users only
+        const visitorIds = users.data.map((user) => user.visitor_id);
+        const casinoActionsCounts =
+          await this.usersService.getCasinoActionsCounts(visitorIds);
+
+        // Add casino actions counts to each user
+        const usersWithCasinoActions = users.data.map((user) => {
+          const counts = casinoActionsCounts.get(user.visitor_id) || {
+            registrations: 0,
+            deposits: 0,
+          };
+          return {
+            ...user,
+            casino_registrations: counts.registrations,
+            casino_deposits: counts.deposits,
+          };
+        });
+
+        return {
+          data: usersWithCasinoActions || [],
+          pagination: this.buildPagination(
+            options.page,
+            options.limit,
+            users.total || 0,
+          ),
+        };
+      }
     } catch (error) {
       console.error('Get users list error:', error);
       return {

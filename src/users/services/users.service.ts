@@ -655,4 +655,75 @@ export class UsersService {
     }
     return result;
   }
+
+  /**
+   * Get casino actions counts for multiple users
+   * Returns unique counts of registrations and deposits per user
+   */
+  async getCasinoActionsCounts(
+    visitorIds: string[],
+  ): Promise<Map<string, { registrations: number; deposits: number }>> {
+    if (!visitorIds || visitorIds.length === 0) {
+      return new Map();
+    }
+
+    const result = await this.casinoActionRepository
+      .createQueryBuilder('action')
+      .select('action.visitor_id', 'visitor_id')
+      .addSelect(
+        'COUNT(DISTINCT CASE WHEN action.registration = true THEN CONCAT(action.casino_name, action.visitor_id) END)',
+        'registrations',
+      )
+      .addSelect(
+        'COUNT(DISTINCT CASE WHEN action.deposit = true THEN CONCAT(action.casino_name, action.visitor_id) END)',
+        'deposits',
+      )
+      .where('action.visitor_id IN (:...visitorIds)', { visitorIds })
+      .groupBy('action.visitor_id')
+      .getRawMany();
+
+    const countsMap = new Map<
+      string,
+      { registrations: number; deposits: number }
+    >();
+
+    result.forEach((row) => {
+      countsMap.set(row.visitor_id, {
+        registrations: parseInt(row.registrations || '0'),
+        deposits: parseInt(row.deposits || '0'),
+      });
+    });
+
+    return countsMap;
+  }
+
+  /**
+   * Get unique casino actions for a specific user
+   * Returns the list of unique casino actions (one per visitor+casino combination)
+   */
+  async getUserCasinoActions(visitorId: string): Promise<CasinoAction[]> {
+    if (!visitorId) {
+      return [];
+    }
+
+    // Get all casino actions for this visitor, ordered by date
+    const actions = await this.casinoActionRepository
+      .createQueryBuilder('action')
+      .where('action.visitor_id = :visitorId', { visitorId })
+      .orderBy('action.date_of_action', 'DESC')
+      .addOrderBy('action.created_at', 'DESC')
+      .getMany();
+
+    // Filter to get unique actions per casino (first action for each casino)
+    const uniqueActions = new Map<string, CasinoAction>();
+
+    actions.forEach((action) => {
+      const key = `${action.casino_name}`;
+      if (!uniqueActions.has(key)) {
+        uniqueActions.set(key, action);
+      }
+    });
+
+    return Array.from(uniqueActions.values());
+  }
 }
