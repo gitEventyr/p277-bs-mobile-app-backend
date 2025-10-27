@@ -161,7 +161,7 @@
 <!-- Block 3: Casino Actions -->
 <div class="row">
   <div class="col-lg-12">
-    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Analytics of casino registration and deposit actions">
+    <div class="card shadow mb-4">
       <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">
           <i class="bi bi-building"></i>
@@ -172,7 +172,7 @@
         <div class="row">
           <!-- All Deposits -->
           <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
+            <div class="text-center p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of all casino deposit actions recorded in the system">
               <div class="h3 mb-2 font-weight-bold text-info">{{stats.allDeposits}}</div>
               <div class="text-xs font-weight-bold text-info text-uppercase">All Deposits</div>
             </div>
@@ -180,7 +180,7 @@
 
           <!-- All Registrations -->
           <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
+            <div class="text-center p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of all casino registration actions recorded in the system">
               <div class="h3 mb-2 font-weight-bold text-primary">{{stats.allRegistrations}}</div>
               <div class="text-xs font-weight-bold text-primary text-uppercase">All Registrations</div>
             </div>
@@ -188,7 +188,7 @@
 
           <!-- Unique Deposits -->
           <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
+            <div class="text-center p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of unique deposit actions (counted once per visitor per casino)">
               <div class="h3 mb-2 font-weight-bold text-warning">{{stats.uniqueDeposits}}</div>
               <div class="text-xs font-weight-bold text-warning text-uppercase">Unique Deposits</div>
             </div>
@@ -196,7 +196,7 @@
 
           <!-- Unique Registrations -->
           <div class="col-md-3 col-sm-6 mb-3">
-            <div class="text-center p-3 border rounded">
+            <div class="text-center p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of unique registration actions (counted once per visitor per casino)">
               <div class="h3 mb-2 font-weight-bold text-success">{{stats.uniqueRegistrations}}</div>
               <div class="text-xs font-weight-bold text-success text-uppercase">Unique Registrations</div>
             </div>
