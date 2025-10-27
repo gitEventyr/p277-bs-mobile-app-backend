@@ -33,6 +33,8 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+const core_1 = require("@nestjs/core");
+const app_module_1 = require("../app.module");
 const typeorm_1 = require("typeorm");
 const bcrypt = __importStar(require("bcryptjs"));
 const crypto = __importStar(require("crypto"));
@@ -86,18 +88,9 @@ async function resetAdmin() {
     }
     console.log();
     console.log('⚙️  Connecting to database...');
-    const dataSource = new typeorm_1.DataSource({
-        type: 'postgres',
-        host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.DB_PORT || '5432'),
-        username: process.env.DB_USERNAME || 'postgres',
-        password: process.env.DB_PASSWORD || 'postgres',
-        database: process.env.DB_NAME || 'casino_db',
-        entities: [admin_user_entity_1.AdminUser],
-        synchronize: false,
-    });
+    const app = await core_1.NestFactory.createApplicationContext(app_module_1.AppModule);
+    const dataSource = app.get(typeorm_1.DataSource);
     try {
-        await dataSource.initialize();
         console.log('✅ Database connected');
         console.log();
         const adminRepository = dataSource.getRepository(admin_user_entity_1.AdminUser);
@@ -138,21 +131,24 @@ async function resetAdmin() {
         console.log('   This password will not be shown again.');
         console.log('='.repeat(60));
         console.log();
-        await dataSource.destroy();
         console.log('✅ Script completed successfully');
-        process.exit(0);
     }
     catch (error) {
         console.error();
         console.error('❌ Error:', error.message);
-        if (dataSource.isInitialized) {
-            await dataSource.destroy();
-        }
-        process.exit(1);
+        throw error;
+    }
+    finally {
+        await app.close();
     }
 }
-resetAdmin().catch((error) => {
-    console.error('Fatal error:', error);
+resetAdmin()
+    .then(() => {
+    console.log('✅ Process completed successfully!');
+    process.exit(0);
+})
+    .catch((error) => {
+    console.error('💥 Process failed:', error);
     process.exit(1);
 });
 //# sourceMappingURL=reset-admin.js.map

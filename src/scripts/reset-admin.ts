@@ -1,3 +1,5 @@
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from '../app.module';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
@@ -72,20 +74,11 @@ async function resetAdmin() {
   console.log();
   console.log('⚙️  Connecting to database...');
 
-  // Create database connection
-  const dataSource = new DataSource({
-    type: 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    username: process.env.DB_USERNAME || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    database: process.env.DB_NAME || 'casino_db',
-    entities: [AdminUser],
-    synchronize: false,
-  });
+  // Use NestJS application context to get configured DataSource
+  const app = await NestFactory.createApplicationContext(AppModule);
+  const dataSource = app.get(DataSource);
 
   try {
-    await dataSource.initialize();
     console.log('✅ Database connected');
     console.log();
 
@@ -137,21 +130,23 @@ async function resetAdmin() {
     console.log('='.repeat(60));
     console.log();
 
-    await dataSource.destroy();
     console.log('✅ Script completed successfully');
-    process.exit(0);
   } catch (error) {
     console.error();
     console.error('❌ Error:', error.message);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    process.exit(1);
+    throw error;
+  } finally {
+    await app.close();
   }
 }
 
 // Run the script
-resetAdmin().catch((error) => {
-  console.error('Fatal error:', error);
-  process.exit(1);
-});
+resetAdmin()
+  .then(() => {
+    console.log('✅ Process completed successfully!');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('💥 Process failed:', error);
+    process.exit(1);
+  });
