@@ -34,9 +34,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const storedState = localStorage.getItem('sidebarExpanded');
     const isSidebarExpanded = storedState === 'true';
 
+    // Apply saved state without transitions to prevent visual "reopening"
     if (isSidebarExpanded) {
+      sidebar.classList.add('no-transition');
+      mainContent.classList.add('no-transition');
       sidebar.classList.add('expanded');
       mainContent.classList.add('sidebar-expanded');
+
+      // Force reflow to ensure no-transition is applied
+      sidebar.offsetHeight;
+
+      // Remove no-transition class after state is applied
+      requestAnimationFrame(() => {
+        sidebar.classList.remove('no-transition');
+        mainContent.classList.remove('no-transition');
+      });
     }
 
     // Initialize tooltips based on initial state

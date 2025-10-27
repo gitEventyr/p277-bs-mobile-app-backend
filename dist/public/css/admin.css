@@ -38,6 +38,11 @@ main.sidebar-expanded {
   margin-left: 250px;
 }
 
+/* Disable transitions during page load to prevent visual "reopening" */
+main.no-transition {
+  transition: none !important;
+}
+
 /* Login Page Styles */
 .login-container {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
@@ -103,6 +108,15 @@ main.sidebar-expanded {
   transition: width 0.3s ease;
   overflow-x: hidden;
   width: 60px;
+}
+
+/* Disable transitions during page load to prevent visual "reopening" */
+.sidebar.no-transition {
+  transition: none !important;
+}
+
+.sidebar.no-transition * {
+  transition: none !important;
 }
 
 .sidebar.expanded {
