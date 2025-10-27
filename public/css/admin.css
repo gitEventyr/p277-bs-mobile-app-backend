@@ -27,7 +27,7 @@ body {
 main {
   background-color: var(--light-gray);
   min-height: calc(100vh - 72px);
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, opacity 0.2s ease;
   margin-left: 60px;
   flex: 1 !important;
   max-width: none !important;

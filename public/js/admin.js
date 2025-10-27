@@ -1,5 +1,148 @@
 // Admin Dashboard JavaScript
 
+// AJAX Navigation System for seamless page transitions
+(function() {
+  let isNavigating = false;
+
+  function initAjaxNavigation() {
+    // Intercept clicks on admin navigation links
+    document.addEventListener('click', function(e) {
+      const link = e.target.closest('a[href^="/admin/"]');
+
+      // Skip if not an admin link, or if it's logout, or if navigation is in progress
+      if (!link || link.href.includes('/admin/logout') || isNavigating) {
+        return;
+      }
+
+      // Skip if it's a link with special behavior (modals, external, etc.)
+      if (link.target === '_blank' || link.getAttribute('data-bs-toggle') || link.getAttribute('onclick')) {
+        return;
+      }
+
+      e.preventDefault();
+      navigateToPage(link.href);
+    });
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', function(e) {
+      if (e.state && e.state.url) {
+        navigateToPage(e.state.url, false);
+      }
+    });
+
+    // Store initial state
+    history.replaceState({ url: window.location.href }, '', window.location.href);
+  }
+
+  async function navigateToPage(url, pushState = true) {
+    if (isNavigating) return;
+    isNavigating = true;
+
+    const mainContent = document.querySelector('main');
+    if (!mainContent) {
+      isNavigating = false;
+      window.location.href = url;
+      return;
+    }
+
+    try {
+      // Add loading indicator
+      mainContent.style.opacity = '0.6';
+      mainContent.style.pointerEvents = 'none';
+
+      // Fetch the new page
+      const response = await fetch(url, {
+        credentials: 'same-origin',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Navigation failed');
+      }
+
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Extract the new main content
+      const newMain = doc.querySelector('main');
+      if (!newMain) {
+        throw new Error('No main content found');
+      }
+
+      // Replace main content
+      mainContent.innerHTML = newMain.innerHTML;
+
+      // Update page title
+      const newTitle = doc.querySelector('title');
+      if (newTitle) {
+        document.title = newTitle.textContent;
+      }
+
+      // Update active sidebar links
+      updateActiveLinks(url);
+
+      // Update browser history
+      if (pushState) {
+        history.pushState({ url: url }, '', url);
+      }
+
+      // Reinitialize tooltips
+      reinitializeTooltips();
+
+      // Scroll to top
+      window.scrollTo(0, 0);
+
+      // Remove loading indicator
+      mainContent.style.opacity = '1';
+      mainContent.style.pointerEvents = 'auto';
+
+    } catch (error) {
+      console.error('AJAX navigation error:', error);
+      // Fallback to regular navigation
+      window.location.href = url;
+    } finally {
+      isNavigating = false;
+    }
+  }
+
+  function updateActiveLinks(currentUrl) {
+    // Remove all active classes
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+      link.classList.remove('active');
+    });
+
+    // Add active class to current page link
+    const currentPath = new URL(currentUrl).pathname;
+    const matchingLink = document.querySelector(`.sidebar .nav-link[href="${currentPath}"]`);
+    if (matchingLink) {
+      matchingLink.classList.add('active');
+    }
+  }
+
+  function reinitializeTooltips() {
+    // Dispose existing tooltips
+    const existingTooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    existingTooltips.forEach(element => {
+      const tooltipInstance = bootstrap.Tooltip.getInstance(element);
+      if (tooltipInstance) {
+        tooltipInstance.dispose();
+      }
+    });
+
+    // Initialize new tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initAjaxNavigation);
+})();
+
 // Sidebar Toggle Functionality
 document.addEventListener('DOMContentLoaded', function() {
   const sidebar = document.getElementById('sidebar');
