@@ -140,20 +140,97 @@
   </div>
 </div>
 
-<!-- Block 3: Revenue -->
+<!-- Block 3: Revenue and Casino Actions -->
 <div class="row">
-  <div class="col-xl-12 col-md-12 mb-4">
+  <!-- In-app Revenue -->
+  <div class="col-md-6 col-xl mb-4">
     <div class="card border-left-success shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total revenue generated from all in-app purchases">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-              Total Purchase History Revenue
+              In-app Revenue
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">${{stats.totalRevenue}}</div>
           </div>
           <div class="col-auto">
             <i class="bi bi-currency-dollar fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Deposits -->
+  <div class="col-md-6 col-xl mb-4">
+    <div class="card border-left-info shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of all casino deposit actions">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              All Deposits
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.allDeposits}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-wallet2 fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Registrations -->
+  <div class="col-md-6 col-xl mb-4">
+    <div class="card border-left-primary shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of all casino registration actions">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+              All Registrations
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.allRegistrations}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-person-plus fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unique Deposits -->
+  <div class="col-md-6 col-xl mb-4">
+    <div class="card border-left-warning shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of unique deposit actions (unique by visitor per casino)">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+              Unique Deposits
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.uniqueDeposits}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-cash-coin fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unique Registrations -->
+  <div class="col-md-6 col-xl mb-4">
+    <div class="card border-left-secondary shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of unique registration actions (unique by visitor per casino)">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+              Unique Registrations
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.uniqueRegistrations}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-person-check fa-2x text-gray-300"></i>
           </div>
         </div>
       </div>

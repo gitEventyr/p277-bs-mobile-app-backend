@@ -453,6 +453,49 @@ async function viewUser(userId) {
         `
         : '<p class="text-muted">No purchase history</p>';
 
+      // Build casino actions table
+      const casinoActionsHTML = user.casino_actions && user.casino_actions.length > 0
+        ? `
+          <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+            <table class="table table-sm table-striped">
+              <thead class="sticky-top bg-light">
+                <tr>
+                  <th style="font-size: 0.85rem;">Casino</th>
+                  <th style="font-size: 0.85rem;">Action Date</th>
+                  <th style="font-size: 0.85rem;">Registration</th>
+                  <th style="font-size: 0.85rem;">Deposit</th>
+                  <th style="font-size: 0.85rem;">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${user.casino_actions.map(action => `
+                  <tr>
+                    <td style="font-size: 0.8rem; font-weight: 500;">${action.casino_name}</td>
+                    <td style="font-size: 0.8rem;">${formatDate(action.date_of_action)}</td>
+                    <td style="font-size: 0.8rem;">
+                      <span class="badge bg-${action.registration ? 'success' : 'secondary'}">
+                        ${action.registration ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                    <td style="font-size: 0.8rem;">
+                      <span class="badge bg-${action.deposit ? 'warning text-dark' : 'secondary'}">
+                        ${action.deposit ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                    <td style="font-size: 0.8rem;">${formatDate(action.created_at)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              Total: ${user.casino_actions.length} unique casino action${user.casino_actions.length !== 1 ? 's' : ''}
+            </small>
+          </div>
+        `
+        : '<p class="text-muted">No casino actions</p>';
+
       modalBody.innerHTML = `
         <div class="row">
           <!-- Left Column: User Information -->
@@ -507,12 +550,17 @@ async function viewUser(userId) {
             ` : ''}
           </div>
 
-          <!-- Right Column: Purchase History -->
+          <!-- Right Column: Purchase History and Casino Actions -->
           <div class="col-md-6">
             <h6 class="fw-bold mb-3">
               <i class="bi bi-receipt"></i> Purchase History
             </h6>
             ${purchaseHistoryHTML}
+
+            <h6 class="fw-bold mb-3 mt-4">
+              <i class="bi bi-building"></i> Casino Actions
+            </h6>
+            ${casinoActionsHTML}
           </div>
         </div>
       `;

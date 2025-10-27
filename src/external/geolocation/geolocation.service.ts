@@ -74,7 +74,6 @@ export class GeolocationService {
     }
   }
 
-
   private isLocalIp(ip: string): boolean {
     // Check for local/private IP ranges
     const localPatterns = [

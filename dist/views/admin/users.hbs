@@ -35,6 +35,8 @@
             <option value="email" {{#if (eq sortBy 'email')}}selected{{/if}}>Email</option>
             <option value="coins_balance" {{#if (eq sortBy 'coins_balance')}}selected{{/if}}>Coins Balance</option>
             <option value="rp_balance" {{#if (eq sortBy 'rp_balance')}}selected{{/if}}>RP Balance</option>
+            <option value="casino_registrations" {{#if (eq sortBy 'casino_registrations')}}selected{{/if}}>Casino Registrations</option>
+            <option value="casino_deposits" {{#if (eq sortBy 'casino_deposits')}}selected{{/if}}>Casino Deposits</option>
           </select>
         </div>
         <div class="col-md-2">
@@ -89,6 +91,7 @@
             <th>User</th>
             <th>Contact</th>
             <th>Balance</th>
+            <th>Casino Actions</th>
             <th>Verified</th>
             <th>Registered</th>
             <th>Actions</th>
@@ -123,6 +126,14 @@
               </div>
               <div class="mt-1">
                 <span class="badge bg-info">{{this.rp_balance}} RP</span>
+              </div>
+            </td>
+            <td>
+              <div>
+                <span class="badge bg-primary" title="Unique Casino Registrations">{{this.casino_registrations}} REG</span>
+              </div>
+              <div class="mt-1">
+                <span class="badge bg-warning text-dark" title="Unique Casino Deposits">{{this.casino_deposits}} DEP</span>
               </div>
             </td>
             <td>
