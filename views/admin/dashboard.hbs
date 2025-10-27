@@ -10,7 +10,7 @@
 
 <!-- Block 1: User Metrics -->
 <div class="row">
-  <div class="col-xl-4 col-md-6 mb-4">
+  <div class="col-xl-3 col-md-6 mb-4">
     <div class="card border-left-primary shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of registered active users in the system">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
@@ -28,12 +28,30 @@
     </div>
   </div>
 
-  <div class="col-xl-4 col-md-6 mb-4">
-    <div class="card border-left-success shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Active users are those who have logged in, played games, or made transactions in the last 30 days">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-success shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total revenue generated from all in-app purchases">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+              In-app Revenue
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">${{stats.totalRevenue}}</div>
+          </div>
+          <div class="col-auto">
+            <i class="bi bi-currency-dollar fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-info shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Active users are those who have logged in, played games, or made transactions in the last 30 days">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
               Active Users (30d)
             </div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.activeUsers}}</div>
@@ -46,7 +64,7 @@
     </div>
   </div>
 
-  <div class="col-xl-4 col-md-6 mb-4">
+  <div class="col-xl-3 col-md-6 mb-4">
     <div class="card border-left-warning shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of active users who registered in the last 24 hours">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
@@ -140,97 +158,48 @@
   </div>
 </div>
 
-<!-- Block 3: Revenue and Casino Actions -->
+<!-- Block 3: Casino Actions -->
 <div class="row">
-  <!-- In-app Revenue -->
-  <div class="col-md-6 col-xl mb-4">
-    <div class="card border-left-success shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total revenue generated from all in-app purchases">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-              In-app Revenue
-            </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">${{stats.totalRevenue}}</div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-currency-dollar fa-2x text-gray-300"></i>
-          </div>
-        </div>
+  <div class="col-lg-12">
+    <div class="card shadow mb-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Analytics of casino registration and deposit actions">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="bi bi-building"></i>
+          Casino Actions
+        </h6>
       </div>
-    </div>
-  </div>
-
-  <!-- All Deposits -->
-  <div class="col-md-6 col-xl mb-4">
-    <div class="card border-left-info shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of all casino deposit actions">
       <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-              All Deposits
+        <div class="row">
+          <!-- All Deposits -->
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-info">{{stats.allDeposits}}</div>
+              <div class="text-xs font-weight-bold text-info text-uppercase">All Deposits</div>
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.allDeposits}}</div>
           </div>
-          <div class="col-auto">
-            <i class="bi bi-wallet2 fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- All Registrations -->
-  <div class="col-md-6 col-xl mb-4">
-    <div class="card border-left-primary shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of all casino registration actions">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-              All Registrations
+          <!-- All Registrations -->
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-primary">{{stats.allRegistrations}}</div>
+              <div class="text-xs font-weight-bold text-primary text-uppercase">All Registrations</div>
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.allRegistrations}}</div>
           </div>
-          <div class="col-auto">
-            <i class="bi bi-person-plus fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Unique Deposits -->
-  <div class="col-md-6 col-xl mb-4">
-    <div class="card border-left-warning shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of unique deposit actions (unique by visitor per casino)">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-              Unique Deposits
+          <!-- Unique Deposits -->
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-warning">{{stats.uniqueDeposits}}</div>
+              <div class="text-xs font-weight-bold text-warning text-uppercase">Unique Deposits</div>
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.uniqueDeposits}}</div>
           </div>
-          <div class="col-auto">
-            <i class="bi bi-cash-coin fa-2x text-gray-300"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Unique Registrations -->
-  <div class="col-md-6 col-xl mb-4">
-    <div class="card border-left-secondary shadow h-100 py-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of unique registration actions (unique by visitor per casino)">
-      <div class="card-body">
-        <div class="row no-gutters align-items-center">
-          <div class="col mr-2">
-            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
-              Unique Registrations
+          <!-- Unique Registrations -->
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+              <div class="h3 mb-2 font-weight-bold text-success">{{stats.uniqueRegistrations}}</div>
+              <div class="text-xs font-weight-bold text-success text-uppercase">Unique Registrations</div>
             </div>
-            <div class="h5 mb-0 font-weight-bold text-gray-800">{{stats.uniqueRegistrations}}</div>
-          </div>
-          <div class="col-auto">
-            <i class="bi bi-person-check fa-2x text-gray-300"></i>
           </div>
         </div>
       </div>
