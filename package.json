@@ -24,7 +24,8 @@
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/config/typeorm.config.ts",
     "migration:show": "typeorm-ts-node-commonjs migration:show -d src/config/typeorm.config.ts",
     "schema:drop": "typeorm-ts-node-commonjs schema:drop -d src/config/typeorm.config.ts",
-    "db:cleanup": "ts-node -r tsconfig-paths/register src/scripts/cleanup-database.ts"
+    "db:cleanup": "ts-node -r tsconfig-paths/register src/scripts/cleanup-database.ts",
+    "admin:reset": "ts-node -r tsconfig-paths/register scripts/reset-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.864.0",
