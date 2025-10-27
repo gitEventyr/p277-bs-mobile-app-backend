@@ -14,8 +14,12 @@
         return;
       }
 
-      // Skip if it's a link with special behavior (modals, external, etc.)
-      if (link.target === '_blank' || link.getAttribute('data-bs-toggle') || link.getAttribute('onclick')) {
+      // Skip if it's a link with special behavior (modals, dropdowns, external, etc.)
+      // Note: tooltips are fine to intercept
+      const bsToggle = link.getAttribute('data-bs-toggle');
+      if (link.target === '_blank' ||
+          (bsToggle && bsToggle !== 'tooltip') ||
+          link.getAttribute('onclick')) {
         return;
       }
 
