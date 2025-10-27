@@ -777,33 +777,52 @@ export class AuthController {
     description: 'Password reset successfully',
     type: ResetPasswordResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Invalid or expired reset code' })
-  @ApiResponse({ status: 400, description: 'Email does not match reset code' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Invalid reset code, expired reset link, already used link, or email mismatch',
+  })
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponseDto> {
-    // Find valid reset code with user details
-    const resetToken = await this.passwordResetTokenRepository.findOne({
+    // First, try to find the token regardless of 'used' status to provide better error messages
+    const resetTokenAny = await this.passwordResetTokenRepository.findOne({
       where: {
         token: resetPasswordDto.code,
-        used: false,
       },
       relations: ['user'],
     });
 
-    if (!resetToken) {
-      throw new BadRequestException('Invalid or expired reset code');
+    // If token doesn't exist at all
+    if (!resetTokenAny) {
+      throw new BadRequestException(
+        'Invalid reset code. Please request a new password reset link.',
+      );
+    }
+
+    // Check if token has already been used
+    if (resetTokenAny.used) {
+      throw new BadRequestException(
+        'This reset link has already been used. Please request a new password reset link.',
+      );
     }
 
     // Check if code is expired
-    if (new Date() > resetToken.expires_at) {
-      throw new BadRequestException('Reset code has expired');
+    if (new Date() > resetTokenAny.expires_at) {
+      throw new BadRequestException(
+        'This reset link has expired. Please request a new password reset link.',
+      );
     }
 
     // Verify that the email matches the user associated with the code
-    if (resetToken.user.email !== resetPasswordDto.email) {
-      throw new BadRequestException('Email does not match the reset code');
+    if (resetTokenAny.user.email !== resetPasswordDto.email) {
+      throw new BadRequestException(
+        'The email address does not match this reset code.',
+      );
     }
+
+    // Now we know the token is valid, so use it
+    const resetToken = resetTokenAny;
 
     // Hash new password
     const hashedPassword = await this.authService.hashPassword(

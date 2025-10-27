@@ -510,22 +510,25 @@ let AuthController = AuthController_1 = class AuthController {
         };
     }
     async resetPassword(resetPasswordDto) {
-        const resetToken = await this.passwordResetTokenRepository.findOne({
+        const resetTokenAny = await this.passwordResetTokenRepository.findOne({
             where: {
                 token: resetPasswordDto.code,
-                used: false,
             },
             relations: ['user'],
         });
-        if (!resetToken) {
-            throw new common_1.BadRequestException('Invalid or expired reset code');
+        if (!resetTokenAny) {
+            throw new common_1.BadRequestException('Invalid reset code. Please request a new password reset link.');
         }
-        if (new Date() > resetToken.expires_at) {
-            throw new common_1.BadRequestException('Reset code has expired');
+        if (resetTokenAny.used) {
+            throw new common_1.BadRequestException('This reset link has already been used. Please request a new password reset link.');
         }
-        if (resetToken.user.email !== resetPasswordDto.email) {
-            throw new common_1.BadRequestException('Email does not match the reset code');
+        if (new Date() > resetTokenAny.expires_at) {
+            throw new common_1.BadRequestException('This reset link has expired. Please request a new password reset link.');
         }
+        if (resetTokenAny.user.email !== resetPasswordDto.email) {
+            throw new common_1.BadRequestException('The email address does not match this reset code.');
+        }
+        const resetToken = resetTokenAny;
         const hashedPassword = await this.authService.hashPassword(resetPasswordDto.newPassword);
         await this.passwordResetTokenRepository.update({ id: resetToken.id }, { used: true });
         await this.playerRepository.update({ id: resetToken.user_id }, { password: hashedPassword });
@@ -872,8 +875,10 @@ __decorate([
         description: 'Password reset successfully',
         type: password_recovery_dto_1.ResetPasswordResponseDto,
     }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid or expired reset code' }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: 'Email does not match reset code' }),
+    (0, swagger_1.ApiResponse)({
+        status: 400,
+        description: 'Invalid reset code, expired reset link, already used link, or email mismatch',
+    }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [password_recovery_dto_1.ResetPasswordDto]),
