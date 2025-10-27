@@ -6,6 +6,7 @@ import { PlayHistory } from '../../entities/play-history.entity';
 import { InAppPurchase } from '../../entities/in-app-purchase.entity';
 import { CoinsBalanceChange } from '../../entities/coins-balance-change.entity';
 import { RpBalanceTransaction } from '../../entities/rp-balance-transaction.entity';
+import { CasinoAction } from '../../entities/casino-action.entity';
 
 interface DateRange {
   startDate?: Date;
@@ -25,6 +26,8 @@ export class AnalyticsService {
     private readonly balanceChangeRepository: Repository<CoinsBalanceChange>,
     @InjectRepository(RpBalanceTransaction)
     private readonly rpBalanceRepository: Repository<RpBalanceTransaction>,
+    @InjectRepository(CasinoAction)
+    private readonly casinoActionRepository: Repository<CasinoAction>,
   ) {}
 
   async getOverviewStats(dateRange?: DateRange) {
@@ -38,6 +41,12 @@ export class AnalyticsService {
     const averageBalance = totalUsers > 0 ? totalBalance / totalUsers : 0;
     const averageRpBalance = totalUsers > 0 ? totalRpBalance / totalUsers : 0;
 
+    // Casino action statistics
+    const allDeposits = await this.getAllDeposits(dateRange);
+    const allRegistrations = await this.getAllRegistrations(dateRange);
+    const uniqueDeposits = await this.getUniqueDeposits(dateRange);
+    const uniqueRegistrations = await this.getUniqueRegistrations(dateRange);
+
     return {
       totalUsers,
       activeUsers,
@@ -48,6 +57,10 @@ export class AnalyticsService {
       newRegistrations,
       totalRevenue: Math.round(totalRevenue * 100) / 100,
       totalGamesPlayed,
+      allDeposits,
+      allRegistrations,
+      uniqueDeposits,
+      uniqueRegistrations,
     };
   }
 
@@ -560,5 +573,96 @@ export class AnalyticsService {
           : 0,
       totalGameRevenue: totalBets,
     };
+  }
+
+  // Casino action statistics methods
+  private async getAllDeposits(dateRange?: DateRange): Promise<number> {
+    let query = this.casinoActionRepository
+      .createQueryBuilder('action')
+      .where('action.deposit = :deposit', { deposit: true });
+
+    if (dateRange?.startDate) {
+      query = query.andWhere('action.date_of_action >= :startDate', {
+        startDate: dateRange.startDate,
+      });
+    }
+
+    if (dateRange?.endDate) {
+      query = query.andWhere('action.date_of_action <= :endDate', {
+        endDate: dateRange.endDate,
+      });
+    }
+
+    return await query.getCount();
+  }
+
+  private async getAllRegistrations(dateRange?: DateRange): Promise<number> {
+    let query = this.casinoActionRepository
+      .createQueryBuilder('action')
+      .where('action.registration = :registration', { registration: true });
+
+    if (dateRange?.startDate) {
+      query = query.andWhere('action.date_of_action >= :startDate', {
+        startDate: dateRange.startDate,
+      });
+    }
+
+    if (dateRange?.endDate) {
+      query = query.andWhere('action.date_of_action <= :endDate', {
+        endDate: dateRange.endDate,
+      });
+    }
+
+    return await query.getCount();
+  }
+
+  private async getUniqueDeposits(dateRange?: DateRange): Promise<number> {
+    let query = this.casinoActionRepository
+      .createQueryBuilder('action')
+      .select(
+        'COUNT(DISTINCT CONCAT(action.visitor_id, action.casino_name))',
+        'count',
+      )
+      .where('action.deposit = :deposit', { deposit: true });
+
+    if (dateRange?.startDate) {
+      query = query.andWhere('action.date_of_action >= :startDate', {
+        startDate: dateRange.startDate,
+      });
+    }
+
+    if (dateRange?.endDate) {
+      query = query.andWhere('action.date_of_action <= :endDate', {
+        endDate: dateRange.endDate,
+      });
+    }
+
+    const result = await query.getRawOne();
+    return parseInt(result?.count || '0');
+  }
+
+  private async getUniqueRegistrations(dateRange?: DateRange): Promise<number> {
+    let query = this.casinoActionRepository
+      .createQueryBuilder('action')
+      .select(
+        'COUNT(DISTINCT CONCAT(action.visitor_id, action.casino_name))',
+        'count',
+      )
+      .where('action.registration = :registration', { registration: true });
+
+    if (dateRange?.startDate) {
+      query = query.andWhere('action.date_of_action >= :startDate', {
+        startDate: dateRange.startDate,
+      });
+    }
+
+    if (dateRange?.endDate) {
+      query = query.andWhere('action.date_of_action <= :endDate', {
+        endDate: dateRange.endDate,
+      });
+    }
+
+    const result = await query.getRawOne();
+    return parseInt(result?.count || '0');
   }
 }
