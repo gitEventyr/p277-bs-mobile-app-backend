@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import * as readline from 'readline';
-import { AdminUser } from '../src/entities/admin-user.entity';
+import { AdminUser } from '../entities/admin-user.entity';
 
 // Generate a strong random password
 function generateStrongPassword(length: number = 16): string {
