@@ -76,6 +76,9 @@
         throw new Error('No main content found');
       }
 
+      // Extract scripts from new content before replacing
+      const scripts = Array.from(newMain.querySelectorAll('script'));
+
       // Replace main content
       mainContent.innerHTML = newMain.innerHTML;
 
@@ -92,6 +95,9 @@
       if (pushState) {
         history.pushState({ url: url }, '', url);
       }
+
+      // Execute scripts from the new content
+      executeScripts(scripts);
 
       // Reinitialize tooltips
       reinitializeTooltips();
@@ -140,6 +146,27 @@
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function(tooltipTriggerEl) {
       return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  }
+
+  function executeScripts(scripts) {
+    // Execute each script in order
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+
+      // Copy attributes
+      Array.from(oldScript.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+
+      // Copy script content
+      newScript.textContent = oldScript.textContent;
+
+      // Append to head to execute (will execute immediately for inline scripts)
+      document.head.appendChild(newScript);
+
+      // Remove after execution to keep DOM clean
+      document.head.removeChild(newScript);
     });
   }
 
@@ -1036,7 +1063,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Export functions for global access
 window.AdminDashboard = {
   togglePassword,
-  clearSearch,
   refreshUsers,
   viewUser,
   editUser,
