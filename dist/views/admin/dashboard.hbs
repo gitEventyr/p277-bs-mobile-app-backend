@@ -408,15 +408,20 @@
 </div>
 
 <style>
-  /* Truncate email on smaller screens */
-  @media (max-width: 1400px) {
+  /* Always truncate email to 20 characters */
+  .email-truncate {
+    display: inline-block;
+    max-width: 20ch; /* 20 characters */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  /* Truncate even more on smaller screens */
+  @media (max-width: 1200px) {
     .email-truncate {
-      display: inline-block;
-      max-width: 20ch; /* 20 characters */
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      vertical-align: bottom;
+      max-width: 12ch; /* 12 characters on smaller screens */
     }
   }
 </style>
