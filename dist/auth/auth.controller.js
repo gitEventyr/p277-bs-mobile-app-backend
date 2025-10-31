@@ -523,7 +523,7 @@ let AuthController = AuthController_1 = class AuthController {
             throw new common_1.BadRequestException('This reset link has already been used. Please request a new password reset link.');
         }
         if (new Date() > resetTokenAny.expires_at) {
-            throw new common_1.BadRequestException('This reset link has expired. Please request a new password reset link.');
+            throw new common_1.UnauthorizedException('This reset link has expired. Please request a new password reset link.');
         }
         if (resetTokenAny.user.email !== resetPasswordDto.email) {
             throw new common_1.BadRequestException('The email address does not match this reset code.');
@@ -877,7 +877,11 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({
         status: 400,
-        description: 'Invalid reset code, expired reset link, already used link, or email mismatch',
+        description: 'Invalid reset code, already used link, or email mismatch',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 401,
+        description: 'Reset link has expired',
     }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
