@@ -780,7 +780,11 @@ export class AuthController {
   @ApiResponse({
     status: 400,
     description:
-      'Invalid reset code, expired reset link, already used link, or email mismatch',
+      'Invalid reset code, already used link, or email mismatch',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Reset link has expired',
   })
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
@@ -809,7 +813,7 @@ export class AuthController {
 
     // Check if code is expired
     if (new Date() > resetTokenAny.expires_at) {
-      throw new BadRequestException(
+      throw new UnauthorizedException(
         'This reset link has expired. Please request a new password reset link.',
       );
     }

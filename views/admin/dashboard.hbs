@@ -269,7 +269,7 @@
               <tr>
                 <th>Level</th>
                 <th>Users</th>
-                <th>Percentage</th>
+                <th style="min-width: 200px;">Percentage</th>
               </tr>
             </thead>
             <tbody>
@@ -277,9 +277,9 @@
               <tr>
                 <td><span class="badge bg-info">Level {{this.level}}</span></td>
                 <td>{{this.userCount}}</td>
-                <td>
+                <td style="min-width: 200px;">
                   <div class="progress" style="height: 20px;">
-                    <div class="progress-bar" role="progressbar" style="width: {{this.percentage}}%" aria-valuenow="{{this.percentage}}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" role="progressbar" style="width: {{this.percentage}}%; min-width: 30px;" aria-valuenow="{{this.percentage}}" aria-valuemin="0" aria-valuemax="100">
                       {{this.percentage}}%
                     </div>
                   </div>
@@ -331,7 +331,7 @@
                     </div>
                     <div>
                       <div>{{this.name}}</div>
-                      <small class="text-muted">{{this.email}}</small>
+                      <small class="text-muted email-truncate" title="{{this.email}}">{{this.email}}</small>
                     </div>
                   </div>
                 </td>
@@ -382,7 +382,7 @@
                     </div>
                     <div>
                       <div>{{this.userName}}</div>
-                      <small class="text-muted">{{this.userEmail}}</small>
+                      <small class="text-muted email-truncate" title="{{this.userEmail}}">{{this.userEmail}}</small>
                     </div>
                   </div>
                 </td>
@@ -406,6 +406,20 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* Truncate email on smaller screens */
+  @media (max-width: 1400px) {
+    .email-truncate {
+      display: inline-block;
+      max-width: 20ch; /* 20 characters */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: bottom;
+    }
+  }
+</style>
 
 <!-- Initialize Bootstrap Tooltips -->
 <script>
