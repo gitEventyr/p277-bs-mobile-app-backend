@@ -23,7 +23,7 @@ __decorate([
     }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.Matches)(/^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/]+=*$/, {
+    (0, class_validator_1.Matches)(/^data:image\/(jpeg|jpg|png|webp);base64,/, {
         message: 'Avatar must be a valid base64 encoded image (JPEG, PNG, or WebP)',
     }),
     __metadata("design:type", String)

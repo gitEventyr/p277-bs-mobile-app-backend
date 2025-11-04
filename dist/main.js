@@ -11,6 +11,7 @@ const config_1 = require("@nestjs/config");
 const express_session_1 = __importDefault(require("express-session"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const helmet_1 = __importDefault(require("helmet"));
+const express_1 = require("express");
 const global_exception_filter_1 = require("./common/filters/global-exception.filter");
 const response_interceptor_1 = require("./common/interceptors/response.interceptor");
 const validation_pipe_1 = require("./common/pipes/validation.pipe");
@@ -24,6 +25,7 @@ async function bootstrap() {
     app.setViewEngine('hbs');
     (0, handlebars_config_1.configureHandlebars)();
     app.useStaticAssets((0, path_1.join)(__dirname, '..', 'public'));
+    app.use((0, express_1.json)({ limit: '10mb' }));
     app
         .getHttpAdapter()
         .get('/apple-app-site-association', (req, res) => {
