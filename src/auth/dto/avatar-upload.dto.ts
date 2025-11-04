@@ -9,7 +9,7 @@ export class UploadAvatarDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/]+=*$/, {
+  @Matches(/^data:image\/(jpeg|jpg|png|webp);base64,/, {
     message: 'Avatar must be a valid base64 encoded image (JPEG, PNG, or WebP)',
   })
   avatar: string;

@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { json } from 'express';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ValidationPipe } from './common/pipes/validation.pipe';
@@ -25,6 +26,9 @@ async function bootstrap() {
 
   // Serve static assets
   app.useStaticAssets(join(__dirname, '..', 'public'));
+
+  // Increase JSON body size limit to handle large base64 avatar uploads (10MB)
+  app.use(json({ limit: '10mb' }));
 
   // Serve apple-app-site-association with correct content type
   app
