@@ -163,6 +163,12 @@ export class MobileUserProfileDto {
   phone_verified_at?: Date;
 
   @ApiProperty({
+    description: 'Whether age is verified',
+    example: false,
+  })
+  age_verified: boolean;
+
+  @ApiProperty({
     description: 'Daily spin wheel day count',
     example: 0,
   })

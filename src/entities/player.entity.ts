@@ -152,6 +152,21 @@ export class Player {
   @IsBoolean()
   age_checkbox?: boolean;
 
+  // Age verification fields
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @IsOptional()
+  age_verified_at?: Date;
+
+  @Column({ type: 'text', nullable: true })
+  @IsOptional()
+  @IsString()
+  age_verified_ip?: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  @IsOptional()
+  @IsNumber()
+  age_verification_device?: number;
+
   @Column({ type: 'integer', default: 0 })
   @IsNumber()
   @Min(0)

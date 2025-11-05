@@ -69,6 +69,7 @@ import {
   UpdateDailyCoinsDto,
   UpdateDailyCoinsResponseDto,
 } from './dto/update-daily-coins.dto';
+import { ConfirmAgeResponseDto } from './dto/confirm-age.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
@@ -416,6 +417,7 @@ export class AuthController {
         avatar: savedPlayer.avatar,
         email_verified: savedPlayer.email_verified,
         phone_verified: savedPlayer.phone_verified,
+        age_verified: savedPlayer.age_verified_at !== null,
         daily_spin_wheel_day_count: savedPlayer.daily_spin_wheel_day_count,
         daily_spin_wheel_last_spin: savedPlayer.daily_spin_wheel_last_spin,
         lucky_wheel_count: savedPlayer.lucky_wheel_count,
@@ -556,6 +558,7 @@ export class AuthController {
         avatar: updatedPlayer.avatar,
         email_verified: updatedPlayer.email_verified,
         phone_verified: updatedPlayer.phone_verified,
+        age_verified: updatedPlayer.age_verified_at !== null,
         daily_spin_wheel_day_count: updatedPlayer.daily_spin_wheel_day_count,
         daily_spin_wheel_last_spin: updatedPlayer.daily_spin_wheel_last_spin,
         lucky_wheel_count: updatedPlayer.lucky_wheel_count,
@@ -648,6 +651,7 @@ export class AuthController {
         email_verified_at: fullUser.email_verified_at,
         phone_verified: fullUser.phone_verified,
         phone_verified_at: fullUser.phone_verified_at,
+        age_verified: fullUser.age_verified_at !== null,
         daily_spin_wheel_day_count: fullUser.daily_spin_wheel_day_count,
         daily_spin_wheel_last_spin: fullUser.daily_spin_wheel_last_spin,
         lucky_wheel_count: fullUser.lucky_wheel_count,
@@ -665,6 +669,56 @@ export class AuthController {
       type: 'admin',
       display_name: (user as AuthenticatedAdmin).display_name,
       is_active: (user as AuthenticatedAdmin).is_active,
+    };
+  }
+
+  @Post('confirm-age')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Confirm age verification for mobile users' })
+  @ApiResponse({
+    status: 200,
+    description: 'Age verified successfully',
+    type: ConfirmAgeResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async confirmAge(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ): Promise<ConfirmAgeResponseDto> {
+    // Get user info
+    const userId = user.id as number;
+    const clientIp = this.getClientIp(req);
+    const userAgent = req.headers['user-agent'] || '';
+
+    // Generate a unique device ID for this age verification
+    // Using timestamp + random string to ensure uniqueness
+    const deviceUdid = `age-verification-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+    // Create/update device
+    const device = await this.devicesService.createOrUpdateDevice(
+      userId,
+      deviceUdid,
+      userAgent,
+      clientIp,
+    );
+
+    // Update user's age verification fields
+    const ageVerifiedAt = new Date();
+    await this.playerRepository.update(userId, {
+      age_verified_at: ageVerifiedAt,
+      age_verified_ip: clientIp,
+      age_verification_device: device.id,
+    });
+
+    this.logger.log(
+      `Age verified for user ${userId} from IP ${clientIp} using device ${device.id}`,
+    );
+
+    return {
+      message: 'Age verified successfully',
+      age_verified: true,
+      age_verified_at: ageVerifiedAt,
     };
   }
 

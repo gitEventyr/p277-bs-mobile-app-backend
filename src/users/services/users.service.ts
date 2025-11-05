@@ -122,6 +122,7 @@ export class UsersService {
       email_verified_at: fullProfile.email_verified_at,
       phone_verified: fullProfile.phone_verified,
       phone_verified_at: fullProfile.phone_verified_at,
+      age_verified: player.age_verified_at !== null,
       // Daily spin, lucky wheel, and daily coins fields
       daily_spin_wheel_day_count: player.daily_spin_wheel_day_count,
       daily_spin_wheel_last_spin: player.daily_spin_wheel_last_spin,
