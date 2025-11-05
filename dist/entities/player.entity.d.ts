@@ -28,6 +28,9 @@ export declare class Player {
     updated_at: Date;
     auth_user_id?: string;
     age_checkbox?: boolean;
+    age_verified_at?: Date;
+    age_verified_ip?: string;
+    age_verification_device?: number;
     scratch_cards: number;
     daily_spin_wheel_day_count: number;
     daily_spin_wheel_last_spin?: Date;

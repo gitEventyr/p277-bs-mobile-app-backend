@@ -29,6 +29,7 @@ export declare class MobileUserProfileDto {
     email_verified_at?: Date;
     phone_verified: boolean;
     phone_verified_at?: Date;
+    age_verified: boolean;
     daily_spin_wheel_day_count: number;
     daily_spin_wheel_last_spin?: Date;
     lucky_wheel_count: number;

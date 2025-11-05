@@ -39,6 +39,7 @@ const verify_phone_dto_1 = require("./dto/verify-phone.dto");
 const update_daily_spin_dto_1 = require("./dto/update-daily-spin.dto");
 const update_lucky_wheel_dto_1 = require("./dto/update-lucky-wheel.dto");
 const update_daily_coins_dto_1 = require("./dto/update-daily-coins.dto");
+const confirm_age_dto_1 = require("./dto/confirm-age.dto");
 const player_entity_1 = require("../entities/player.entity");
 const password_reset_token_entity_1 = require("../entities/password-reset-token.entity");
 const email_verification_token_entity_1 = require("../entities/email-verification-token.entity");
@@ -281,6 +282,7 @@ let AuthController = AuthController_1 = class AuthController {
                 avatar: savedPlayer.avatar,
                 email_verified: savedPlayer.email_verified,
                 phone_verified: savedPlayer.phone_verified,
+                age_verified: savedPlayer.age_verified_at !== null,
                 daily_spin_wheel_day_count: savedPlayer.daily_spin_wheel_day_count,
                 daily_spin_wheel_last_spin: savedPlayer.daily_spin_wheel_last_spin,
                 lucky_wheel_count: savedPlayer.lucky_wheel_count,
@@ -369,6 +371,7 @@ let AuthController = AuthController_1 = class AuthController {
                 avatar: updatedPlayer.avatar,
                 email_verified: updatedPlayer.email_verified,
                 phone_verified: updatedPlayer.phone_verified,
+                age_verified: updatedPlayer.age_verified_at !== null,
                 daily_spin_wheel_day_count: updatedPlayer.daily_spin_wheel_day_count,
                 daily_spin_wheel_last_spin: updatedPlayer.daily_spin_wheel_last_spin,
                 lucky_wheel_count: updatedPlayer.lucky_wheel_count,
@@ -439,6 +442,7 @@ let AuthController = AuthController_1 = class AuthController {
                 email_verified_at: fullUser.email_verified_at,
                 phone_verified: fullUser.phone_verified,
                 phone_verified_at: fullUser.phone_verified_at,
+                age_verified: fullUser.age_verified_at !== null,
                 daily_spin_wheel_day_count: fullUser.daily_spin_wheel_day_count,
                 daily_spin_wheel_last_spin: fullUser.daily_spin_wheel_last_spin,
                 lucky_wheel_count: fullUser.lucky_wheel_count,
@@ -454,6 +458,25 @@ let AuthController = AuthController_1 = class AuthController {
             type: 'admin',
             display_name: user.display_name,
             is_active: user.is_active,
+        };
+    }
+    async confirmAge(user, req) {
+        const userId = user.id;
+        const clientIp = this.getClientIp(req);
+        const userAgent = req.headers['user-agent'] || '';
+        const deviceUdid = `age-verification-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        const device = await this.devicesService.createOrUpdateDevice(userId, deviceUdid, userAgent, clientIp);
+        const ageVerifiedAt = new Date();
+        await this.playerRepository.update(userId, {
+            age_verified_at: ageVerifiedAt,
+            age_verified_ip: clientIp,
+            age_verification_device: device.id,
+        });
+        this.logger.log(`Age verified for user ${userId} from IP ${clientIp} using device ${device.id}`);
+        return {
+            message: 'Age verified successfully',
+            age_verified: true,
+            age_verified_at: ageVerifiedAt,
         };
     }
     async getAdminData(admin) {
@@ -826,6 +849,23 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getCurrentUser", null);
+__decorate([
+    (0, common_1.Post)('confirm-age'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)('access-token'),
+    (0, swagger_1.ApiOperation)({ summary: 'Confirm age verification for mobile users' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Age verified successfully',
+        type: confirm_age_dto_1.ConfirmAgeResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "confirmAge", null);
 __decorate([
     (0, common_1.Get)('admin-only'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard),

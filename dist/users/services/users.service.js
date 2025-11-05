@@ -136,6 +136,7 @@ let UsersService = class UsersService {
             email_verified_at: fullProfile.email_verified_at,
             phone_verified: fullProfile.phone_verified,
             phone_verified_at: fullProfile.phone_verified_at,
+            age_verified: player.age_verified_at !== null,
             daily_spin_wheel_day_count: player.daily_spin_wheel_day_count,
             daily_spin_wheel_last_spin: player.daily_spin_wheel_last_spin,
             lucky_wheel_count: player.lucky_wheel_count,

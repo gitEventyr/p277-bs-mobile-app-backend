@@ -42,6 +42,9 @@ let Player = class Player {
     updated_at;
     auth_user_id;
     age_checkbox;
+    age_verified_at;
+    age_verified_ip;
+    age_verification_device;
     scratch_cards;
     daily_spin_wheel_day_count;
     daily_spin_wheel_last_spin;
@@ -231,6 +234,23 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], Player.prototype, "age_checkbox", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp with time zone', nullable: true }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Date)
+], Player.prototype, "age_verified_at", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], Player.prototype, "age_verified_ip", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bigint', nullable: true }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], Player.prototype, "age_verification_device", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'integer', default: 0 }),
     (0, class_validator_1.IsNumber)(),

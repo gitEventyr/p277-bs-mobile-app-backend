@@ -21,6 +21,7 @@ export declare class LoginResponseDto {
         avatar?: string;
         email_verified: boolean;
         phone_verified: boolean;
+        age_verified: boolean;
         daily_spin_wheel_day_count: number;
         daily_spin_wheel_last_spin?: Date;
         lucky_wheel_count: number;

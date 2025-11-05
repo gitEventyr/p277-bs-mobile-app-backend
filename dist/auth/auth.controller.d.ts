@@ -14,6 +14,7 @@ import { VerifyPhoneDto, VerifyPhoneResponseDto } from './dto/verify-phone.dto';
 import { UpdateDailySpinDto, UpdateDailySpinResponseDto } from './dto/update-daily-spin.dto';
 import { UpdateLuckyWheelDto, UpdateLuckyWheelResponseDto } from './dto/update-lucky-wheel.dto';
 import { UpdateDailyCoinsDto, UpdateDailyCoinsResponseDto } from './dto/update-daily-coins.dto';
+import { ConfirmAgeResponseDto } from './dto/confirm-age.dto';
 import { Player } from '../entities/player.entity';
 import { PasswordResetToken } from '../entities/password-reset-token.entity';
 import { EmailVerificationToken } from '../entities/email-verification-token.entity';
@@ -90,6 +91,7 @@ export declare class AuthController {
         email_verified_at: Date | undefined;
         phone_verified: boolean;
         phone_verified_at: Date | undefined;
+        age_verified: boolean;
         daily_spin_wheel_day_count: number;
         daily_spin_wheel_last_spin: Date | undefined;
         lucky_wheel_count: number;
@@ -141,6 +143,7 @@ export declare class AuthController {
         email_verified_at?: undefined;
         phone_verified?: undefined;
         phone_verified_at?: undefined;
+        age_verified?: undefined;
         daily_spin_wheel_day_count?: undefined;
         daily_spin_wheel_last_spin?: undefined;
         lucky_wheel_count?: undefined;
@@ -148,6 +151,7 @@ export declare class AuthController {
         daily_coins_last_reward?: undefined;
         ipaddress?: undefined;
     }>;
+    confirmAge(user: AuthenticatedUser, req: Request): Promise<ConfirmAgeResponseDto>;
     getAdminData(admin: AuthenticatedAdmin): Promise<{
         message: string;
         admin: {

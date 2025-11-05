@@ -128,6 +128,7 @@ class MobileUserProfileDto {
     email_verified_at;
     phone_verified;
     phone_verified_at;
+    age_verified;
     daily_spin_wheel_day_count;
     daily_spin_wheel_last_spin;
     lucky_wheel_count;
@@ -235,6 +236,13 @@ __decorate([
     }),
     __metadata("design:type", Date)
 ], MobileUserProfileDto.prototype, "phone_verified_at", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Whether age is verified',
+        example: false,
+    }),
+    __metadata("design:type", Boolean)
+], MobileUserProfileDto.prototype, "age_verified", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Daily spin wheel day count',
