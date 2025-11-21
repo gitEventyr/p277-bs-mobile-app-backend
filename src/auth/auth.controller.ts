@@ -687,7 +687,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ConfirmAgeResponseDto> {
     // Get user info
-    const userId = user.id as number;
+    const userId = user.id;
     const clientIp = this.getClientIp(req);
     const userAgent = req.headers['user-agent'] || '';
 
@@ -833,8 +833,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 400,
-    description:
-      'Invalid reset code, already used link, or email mismatch',
+    description: 'Invalid reset code, already used link, or email mismatch',
   })
   @ApiResponse({
     status: 401,

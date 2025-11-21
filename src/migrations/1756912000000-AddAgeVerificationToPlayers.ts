@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddAgeVerificationToPlayers1756912000000 implements MigrationInterface {
+export class AddAgeVerificationToPlayers1756912000000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Check if columns exist before adding (idempotent)
     const table = await queryRunner.getTable('players');

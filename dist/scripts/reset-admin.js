@@ -54,7 +54,10 @@ function generateStrongPassword(length = 16) {
     for (let i = password.length; i < length; i++) {
         password += allChars[crypto.randomInt(allChars.length)];
     }
-    return password.split('').sort(() => crypto.randomInt(3) - 1).join('');
+    return password
+        .split('')
+        .sort(() => crypto.randomInt(3) - 1)
+        .join('');
 }
 function promptForEmail() {
     const rl = readline.createInterface({

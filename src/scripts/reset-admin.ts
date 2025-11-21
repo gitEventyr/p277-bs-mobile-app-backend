@@ -28,7 +28,10 @@ function generateStrongPassword(length: number = 16): string {
   }
 
   // Shuffle the password
-  return password.split('').sort(() => crypto.randomInt(3) - 1).join('');
+  return password
+    .split('')
+    .sort(() => crypto.randomInt(3) - 1)
+    .join('');
 }
 
 // Prompt for email input
