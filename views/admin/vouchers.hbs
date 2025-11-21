@@ -268,11 +268,13 @@ function deleteVoucher(id, name) {
       headers: {
         'Authorization': `Bearer {{admin.token}}`
       }
-    }).then(response => {
+    }).then(async response => {
       if (response.ok) {
         location.reload();
       } else {
-        alert('Error deleting voucher');
+        const errorData = await response.json();
+        const errorMessage = errorData.message || 'Error deleting voucher';
+        alert(errorMessage);
       }
     }).catch(error => {
       alert('Error deleting voucher: ' + error.message);
