@@ -48,6 +48,12 @@ let VoucherService = class VoucherService {
     }
     async removeVoucher(id) {
         await this.findVoucherById(id);
+        const requestCount = await this.voucherRequestRepository.count({
+            where: { voucher_id: id },
+        });
+        if (requestCount > 0) {
+            throw new common_1.BadRequestException(`Cannot delete voucher with ID ${id} because it has ${requestCount} associated voucher request(s). Please delete or reassign the requests first.`);
+        }
         await this.voucherRepository.delete(id);
     }
     async findAllVoucherRequests(status) {

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Voucher } from '../../entities/voucher.entity';
@@ -47,6 +51,18 @@ export class VoucherService {
 
   async removeVoucher(id: number): Promise<void> {
     await this.findVoucherById(id); // Check if exists
+
+    // Check if voucher has any associated requests
+    const requestCount = await this.voucherRequestRepository.count({
+      where: { voucher_id: id },
+    });
+
+    if (requestCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete voucher with ID ${id} because it has ${requestCount} associated voucher request(s). Please delete or reassign the requests first.`,
+      );
+    }
+
     await this.voucherRepository.delete(id);
   }
 
