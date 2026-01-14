@@ -441,11 +441,11 @@ async function clearSearch() {
 async function syncCasinos() {
   const syncBtn = document.getElementById('syncCasinosBtn');
   const originalHtml = syncBtn.innerHTML;
-  
+
   // Show loading state
   syncBtn.disabled = true;
   syncBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Syncing...';
-  
+
   try {
     const response = await fetch('/admin/casinos/api/sync', {
       method: 'POST',
@@ -454,21 +454,36 @@ async function syncCasinos() {
         'Content-Type': 'application/json',
       }
     });
-    
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to sync casinos');
+      const errorResponse = await response.json();
+
+      // Handle detailed error message (could be string or object)
+      let errorMessage = 'Failed to sync casinos';
+      const errorData = errorResponse.message;
+
+      if (typeof errorData === 'string') {
+        // Simple string error
+        errorMessage = errorData;
+      } else if (typeof errorData === 'object' && errorData !== null) {
+        // Detailed error object with duplicate information
+        errorMessage = formatDetailedSyncError(errorData);
+      }
+
+      console.error('Sync error details:', errorResponse);
+      throw new Error(errorMessage);
     }
-    
+
     const result = await response.json();
     const data = result.data || result;
-    
+
     // Show success message with sync details
     let message = `Sync completed successfully!\n\n`;
     message += `• Synced: ${data.syncedCount} casinos\n`;
+    message += `• Added: ${data.addedCount} casinos\n`;
     message += `• Total internal casinos: ${data.totalCasinos}\n`;
     message += `• External casinos found: ${data.externalCasinosFound}\n\n`;
-    
+
     if (data.results && data.results.length > 0) {
       message += `Details:\n`;
       data.results.forEach(result => {
@@ -479,19 +494,65 @@ async function syncCasinos() {
         }
       });
     }
-    
+
     alert(message);
-    
+
     // Refresh the page to show updated casino IDs
     location.reload();
   } catch (error) {
     console.error('Error syncing casinos:', error);
-    alert('Error syncing casinos: ' + error.message);
+    alert('Error syncing casinos:\n\n' + error.message);
   } finally {
     // Restore button state
     syncBtn.disabled = false;
     syncBtn.innerHTML = originalHtml;
   }
+}
+
+/**
+ * Formats a detailed sync error object into a readable message
+ */
+function formatDetailedSyncError(errorData) {
+  let message = errorData.message || 'Sync failed';
+  message += '\n\n';
+
+  // Show duplicate IDs if present
+  if (errorData.duplicateIds && errorData.duplicateIds.length > 0) {
+    message += '🔴 DUPLICATE IDs FOUND:\n';
+    errorData.duplicateIds.forEach(dup => {
+      message += `  • ID ${dup.id} appears ${dup.count} times:\n`;
+      dup.casinos.forEach(name => {
+        message += `    - ${name}\n`;
+      });
+    });
+    message += '\n';
+  }
+
+  // Show duplicate names if present
+  if (errorData.duplicateNames && errorData.duplicateNames.length > 0) {
+    message += '🔴 DUPLICATE NAMES FOUND:\n';
+    errorData.duplicateNames.forEach(dup => {
+      message += `  • "${dup.name}" appears ${dup.count} times with IDs: ${dup.ids.join(', ')}\n`;
+    });
+    message += '\n';
+  }
+
+  // Show failed casino if present
+  if (errorData.failedCasino) {
+    message += '🔴 FAILED TO CREATE:\n';
+    message += `  • Casino: ${errorData.failedCasino.name}\n`;
+    message += `  • ID: ${errorData.failedCasino.id}\n\n`;
+  }
+
+  // Show full list of external casinos
+  if (errorData.externalCasinos && errorData.externalCasinos.length > 0) {
+    message += `📋 FULL EXTERNAL CASINO LIST (${errorData.externalCasinos.length} casinos):\n`;
+    errorData.externalCasinos.forEach((casino, index) => {
+      message += `  ${index + 1}. ID ${casino.id}: ${casino.name}\n`;
+    });
+  }
+
+  return message;
 }
 
 // Form submissions

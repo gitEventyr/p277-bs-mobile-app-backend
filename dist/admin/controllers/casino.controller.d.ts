@@ -39,6 +39,7 @@ export declare class CasinoController {
             externalId?: number;
         }[];
     }>;
+    private validateExternalCasinos;
     private buildQueryString;
 }
 export {};
