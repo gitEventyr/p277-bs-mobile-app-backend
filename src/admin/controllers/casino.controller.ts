@@ -301,8 +301,42 @@ export class CasinoController {
       // Fetch external casinos
       const externalCasinos = await this.casinoApiService.getCasinos();
 
+      console.log(
+        `[Casino Sync] Fetched ${externalCasinos.length} casinos from external API`,
+      );
+
+      // STEP 1: Validate external API response for duplicates
+      const duplicateValidation = this.validateExternalCasinos(externalCasinos);
+
+      if (!duplicateValidation.isValid) {
+        // Log detailed error for debugging
+        console.error('[Casino Sync] Duplicate validation failed:', {
+          duplicateIds: duplicateValidation.duplicateIds,
+          duplicateNames: duplicateValidation.duplicateNames,
+          allExternalCasinos: externalCasinos.map((c) => ({
+            id: c.id,
+            admin_name: c.admin_name,
+          })),
+        });
+
+        // Throw detailed error with full context
+        throw new BadRequestException({
+          message: 'External API returned duplicate casinos',
+          duplicateIds: duplicateValidation.duplicateIds,
+          duplicateNames: duplicateValidation.duplicateNames,
+          externalCasinos: externalCasinos.map((c) => ({
+            id: c.id,
+            name: c.admin_name,
+          })),
+        });
+      }
+
       // Fetch internal casinos
       const internalCasinos = await this.casinoService.findAllForSync();
+
+      console.log(
+        `[Casino Sync] Found ${internalCasinos.length} casinos in database`,
+      );
 
       let syncedCount = 0;
       const syncResults: Array<{
@@ -331,11 +365,17 @@ export class CasinoController {
             matched: true,
             externalId: matchingExternal.id,
           });
+          console.log(
+            `[Casino Sync] Updated casino: ${internalCasino.casino_name} (ID: ${matchingExternal.id})`,
+          );
         } else {
           syncResults.push({
             casinoName: internalCasino.casino_name,
             matched: false,
           });
+          console.log(
+            `[Casino Sync] No match found for: ${internalCasino.casino_name}`,
+          );
         }
       }
 
@@ -349,19 +389,57 @@ export class CasinoController {
           );
 
           if (!existingCasino) {
-            await this.casinoService.create({
-              casino_name: externalCasino.admin_name,
-              casino_id: externalCasino.id.toString(),
-            });
-            addedCount++;
-            syncResults.push({
-              casinoName: externalCasino.admin_name,
-              matched: true,
-              externalId: externalCasino.id,
-            });
+            try {
+              await this.casinoService.create({
+                casino_name: externalCasino.admin_name,
+                casino_id: externalCasino.id.toString(),
+              });
+              addedCount++;
+              syncResults.push({
+                casinoName: externalCasino.admin_name,
+                matched: true,
+                externalId: externalCasino.id,
+              });
+              console.log(
+                `[Casino Sync] Added new casino: ${externalCasino.admin_name} (ID: ${externalCasino.id})`,
+              );
+            } catch (createError: any) {
+              // Catch and provide detailed error for database constraint violations
+              console.error(
+                `[Casino Sync] Failed to create casino: ${externalCasino.admin_name} (ID: ${externalCasino.id})`,
+                createError.message,
+              );
+
+              // Check if it's a duplicate key error
+              if (createError.message?.includes('duplicate key')) {
+                throw new BadRequestException({
+                  message: `Duplicate entry detected when creating casino "${externalCasino.admin_name}"`,
+                  failedCasino: {
+                    id: externalCasino.id,
+                    name: externalCasino.admin_name,
+                  },
+                  allExternalCasinos: externalCasinos.map((c) => ({
+                    id: c.id,
+                    name: c.admin_name,
+                  })),
+                  error: createError.message,
+                });
+              }
+
+              // Re-throw original error if not a duplicate
+              throw createError;
+            }
+          } else {
+            console.log(
+              `[Casino Sync] Casino already exists: ${externalCasino.admin_name}`,
+            );
           }
         }
       }
+
+      console.log(
+        `[Casino Sync] Completed: ${syncedCount} synced, ${addedCount} added`,
+      );
 
       return {
         success: true,
@@ -373,9 +451,71 @@ export class CasinoController {
         results: syncResults,
       };
     } catch (error: any) {
-      console.error('Sync casinos error:', error);
+      console.error('[Casino Sync] Error:', error);
       throw error;
     }
+  }
+
+  /**
+   * Validates external casinos for duplicate IDs and names
+   * Returns validation result with details about duplicates
+   */
+  private validateExternalCasinos(
+    externalCasinos: Array<{ id: number; admin_name: string }>,
+  ): {
+    isValid: boolean;
+    duplicateIds: Array<{ id: number; count: number; casinos: string[] }>;
+    duplicateNames: Array<{ name: string; count: number; ids: number[] }>;
+  } {
+    const idMap = new Map<number, string[]>();
+    const nameMap = new Map<string, number[]>();
+
+    // Track all occurrences
+    for (const casino of externalCasinos) {
+      // Track IDs
+      if (!idMap.has(casino.id)) {
+        idMap.set(casino.id, []);
+      }
+      idMap.get(casino.id)!.push(casino.admin_name);
+
+      // Track names
+      if (!nameMap.has(casino.admin_name)) {
+        nameMap.set(casino.admin_name, []);
+      }
+      nameMap.get(casino.admin_name)!.push(casino.id);
+    }
+
+    // Find duplicates
+    const duplicateIds: Array<{ id: number; count: number; casinos: string[] }> =
+      [];
+    const duplicateNames: Array<{ name: string; count: number; ids: number[] }> =
+      [];
+
+    for (const [id, names] of idMap.entries()) {
+      if (names.length > 1) {
+        duplicateIds.push({
+          id,
+          count: names.length,
+          casinos: names,
+        });
+      }
+    }
+
+    for (const [name, ids] of nameMap.entries()) {
+      if (ids.length > 1) {
+        duplicateNames.push({
+          name,
+          count: ids.length,
+          ids,
+        });
+      }
+    }
+
+    return {
+      isValid: duplicateIds.length === 0 && duplicateNames.length === 0,
+      duplicateIds,
+      duplicateNames,
+    };
   }
 
   // Helper Methods
