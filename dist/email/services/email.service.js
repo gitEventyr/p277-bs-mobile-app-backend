@@ -18,20 +18,23 @@ const email_template_service_1 = require("./email-template.service");
 const aws_ses_provider_1 = require("./aws-ses.provider");
 const smtp_provider_1 = require("./smtp.provider");
 const sendgrid_provider_1 = require("./sendgrid.provider");
+const onesignal_service_1 = require("../../external/onesignal/onesignal.service");
 let EmailService = EmailService_1 = class EmailService {
     configService;
     templateService;
     awsSESProvider;
     smtpProvider;
     sendGridProvider;
+    oneSignalService;
     logger = new common_1.Logger(EmailService_1.name);
     emailProvider;
-    constructor(configService, templateService, awsSESProvider, smtpProvider, sendGridProvider) {
+    constructor(configService, templateService, awsSESProvider, smtpProvider, sendGridProvider, oneSignalService) {
         this.configService = configService;
         this.templateService = templateService;
         this.awsSESProvider = awsSESProvider;
         this.smtpProvider = smtpProvider;
         this.sendGridProvider = sendGridProvider;
+        this.oneSignalService = oneSignalService;
         this.initializeProvider();
     }
     initializeProvider() {
@@ -45,6 +48,10 @@ let EmailService = EmailService_1 = class EmailService {
             case 'sendgrid':
                 this.emailProvider = this.sendGridProvider;
                 this.logger.log('Using SendGrid email provider');
+                break;
+            case 'onesignal':
+                this.emailProvider = this.smtpProvider;
+                this.logger.log('Using OneSignal email provider');
                 break;
             case 'smtp':
             default:
@@ -105,6 +112,13 @@ let EmailService = EmailService_1 = class EmailService {
     }
     async sendEmailVerification(to, userData) {
         const provider = this.configService.get('EMAIL_PROVIDER', 'smtp');
+        if (provider.toLowerCase() === 'onesignal') {
+            if (!userData.resetCode) {
+                throw new Error('Verification code is required for OneSignal email');
+            }
+            await this.oneSignalService.sendEmailVerificationCode(to, userData.resetCode);
+            return;
+        }
         if (provider.toLowerCase() === 'sendgrid') {
             const templateId = this.configService.get('SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID');
             if (templateId) {
@@ -123,6 +137,14 @@ let EmailService = EmailService_1 = class EmailService {
     }
     async sendPasswordReset(to, userData) {
         const provider = this.configService.get('EMAIL_PROVIDER', 'smtp');
+        if (provider.toLowerCase() === 'onesignal') {
+            const resetLink = userData.resetLink || userData.resetUrl;
+            if (!resetLink) {
+                throw new Error('Reset link is required for OneSignal email');
+            }
+            await this.oneSignalService.sendPasswordResetEmail(to, resetLink);
+            return;
+        }
         if (provider.toLowerCase() === 'sendgrid') {
             const templateId = this.configService.get('SENDGRID_PASSWORD_RESET_TEMPLATE_ID');
             if (templateId) {
@@ -165,6 +187,7 @@ exports.EmailService = EmailService = EmailService_1 = __decorate([
         email_template_service_1.EmailTemplateService,
         aws_ses_provider_1.AWSSESProvider,
         smtp_provider_1.SMTPProvider,
-        sendgrid_provider_1.SendGridProvider])
+        sendgrid_provider_1.SendGridProvider,
+        onesignal_service_1.OneSignalService])
 ], EmailService);
 //# sourceMappingURL=email.service.js.map

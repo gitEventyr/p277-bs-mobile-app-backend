@@ -4,15 +4,17 @@ import { EmailTemplateService } from './email-template.service';
 import { AWSSESProvider } from './aws-ses.provider';
 import { SMTPProvider } from './smtp.provider';
 import { SendGridProvider } from './sendgrid.provider';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 export declare class EmailService {
     private configService;
     private templateService;
     private awsSESProvider;
     private smtpProvider;
     private sendGridProvider;
+    private oneSignalService;
     private readonly logger;
     private emailProvider;
-    constructor(configService: ConfigService, templateService: EmailTemplateService, awsSESProvider: AWSSESProvider, smtpProvider: SMTPProvider, sendGridProvider: SendGridProvider);
+    constructor(configService: ConfigService, templateService: EmailTemplateService, awsSESProvider: AWSSESProvider, smtpProvider: SMTPProvider, sendGridProvider: SendGridProvider, oneSignalService: OneSignalService);
     private initializeProvider;
     sendEmail(options: EmailOptions): Promise<void>;
     sendTemplatedEmail(type: EmailTemplateType, to: string | string[], data: EmailTemplateData, options?: Partial<EmailOptions>): Promise<void>;

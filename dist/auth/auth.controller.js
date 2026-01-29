@@ -701,7 +701,7 @@ let AuthController = AuthController_1 = class AuthController {
             }
         }
         try {
-            await this.twilioService.sendVerificationCode(phoneToVerify);
+            await this.twilioService.sendVerificationCode(phoneToVerify, player.id);
         }
         catch (error) {
             this.logger.error('Failed to send phone verification:', error);
@@ -728,7 +728,7 @@ let AuthController = AuthController_1 = class AuthController {
         if (!isNewPhone && player.phone_verified) {
             throw new common_1.BadRequestException('Phone is already verified');
         }
-        const isValid = await this.twilioService.verifyCode(phoneToVerify, verifyPhoneDto.code);
+        const isValid = await this.twilioService.verifyCode(phoneToVerify, verifyPhoneDto.code, player.id);
         if (!isValid) {
             throw new common_1.BadRequestException('Invalid or expired verification code');
         }

@@ -14,12 +14,13 @@ const email_template_service_1 = require("./services/email-template.service");
 const aws_ses_provider_1 = require("./services/aws-ses.provider");
 const smtp_provider_1 = require("./services/smtp.provider");
 const sendgrid_provider_1 = require("./services/sendgrid.provider");
+const onesignal_module_1 = require("../external/onesignal/onesignal.module");
 let EmailModule = class EmailModule {
 };
 exports.EmailModule = EmailModule;
 exports.EmailModule = EmailModule = __decorate([
     (0, common_1.Module)({
-        imports: [config_1.ConfigModule],
+        imports: [config_1.ConfigModule, onesignal_module_1.OneSignalModule],
         providers: [
             email_service_1.EmailService,
             email_template_service_1.EmailTemplateService,

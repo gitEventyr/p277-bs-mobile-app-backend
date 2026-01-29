@@ -9,13 +9,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SmsModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const typeorm_1 = require("@nestjs/typeorm");
 const twilio_service_1 = require("./services/twilio.service");
+const phone_verification_token_entity_1 = require("../entities/phone-verification-token.entity");
+const onesignal_module_1 = require("../external/onesignal/onesignal.module");
 let SmsModule = class SmsModule {
 };
 exports.SmsModule = SmsModule;
 exports.SmsModule = SmsModule = __decorate([
     (0, common_1.Module)({
-        imports: [config_1.ConfigModule],
+        imports: [
+            config_1.ConfigModule,
+            typeorm_1.TypeOrmModule.forFeature([phone_verification_token_entity_1.PhoneVerificationToken]),
+            onesignal_module_1.OneSignalModule,
+        ],
         providers: [twilio_service_1.TwilioService],
         exports: [twilio_service_1.TwilioService],
     })
