@@ -5,9 +5,10 @@ import { EmailTemplateService } from './services/email-template.service';
 import { AWSSESProvider } from './services/aws-ses.provider';
 import { SMTPProvider } from './services/smtp.provider';
 import { SendGridProvider } from './services/sendgrid.provider';
+import { OneSignalModule } from '../external/onesignal/onesignal.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, OneSignalModule],
   providers: [
     EmailService,
     EmailTemplateService,

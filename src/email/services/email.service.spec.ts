@@ -5,6 +5,7 @@ import { EmailTemplateService } from './email-template.service';
 import { AWSSESProvider } from './aws-ses.provider';
 import { SMTPProvider } from './smtp.provider';
 import { SendGridProvider } from './sendgrid.provider';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 import { EmailTemplateType } from '../interfaces/email.interface';
 
 describe('EmailService', () => {
@@ -39,6 +40,14 @@ describe('EmailService', () => {
     verifyConnection: jest.fn().mockResolvedValue(true),
   };
 
+  const mockOneSignalService = {
+    sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+    sendEmailVerificationCode: jest.fn().mockResolvedValue(undefined),
+    sendPhoneVerificationCode: jest.fn().mockResolvedValue(undefined),
+    verifyConnection: jest.fn().mockResolvedValue(true),
+    isConfigured: jest.fn().mockReturnValue(true),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -48,6 +57,7 @@ describe('EmailService', () => {
         { provide: AWSSESProvider, useValue: mockAWSSESProvider },
         { provide: SMTPProvider, useValue: mockSMTPProvider },
         { provide: SendGridProvider, useValue: mockSendGridProvider },
+        { provide: OneSignalService, useValue: mockOneSignalService },
       ],
     }).compile();
 

@@ -10,6 +10,7 @@ import { EmailTemplateService } from './email-template.service';
 import { AWSSESProvider } from './aws-ses.provider';
 import { SMTPProvider } from './smtp.provider';
 import { SendGridProvider } from './sendgrid.provider';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 
 @Injectable()
 export class EmailService {
@@ -22,6 +23,7 @@ export class EmailService {
     private awsSESProvider: AWSSESProvider,
     private smtpProvider: SMTPProvider,
     private sendGridProvider: SendGridProvider,
+    private oneSignalService: OneSignalService,
   ) {
     this.initializeProvider();
   }
@@ -38,6 +40,11 @@ export class EmailService {
       case 'sendgrid':
         this.emailProvider = this.sendGridProvider;
         this.logger.log('Using SendGrid email provider');
+        break;
+      case 'onesignal':
+        // OneSignal uses direct service calls, not the EmailProvider interface
+        this.emailProvider = this.smtpProvider; // Fallback for generic emails
+        this.logger.log('Using OneSignal email provider');
         break;
       case 'smtp':
       default:
@@ -146,6 +153,17 @@ export class EmailService {
   ): Promise<void> {
     const provider = this.configService.get<string>('EMAIL_PROVIDER', 'smtp');
 
+    if (provider.toLowerCase() === 'onesignal') {
+      if (!userData.resetCode) {
+        throw new Error('Verification code is required for OneSignal email');
+      }
+      await this.oneSignalService.sendEmailVerificationCode(
+        to,
+        userData.resetCode,
+      );
+      return;
+    }
+
     if (provider.toLowerCase() === 'sendgrid') {
       const templateId = this.configService.get<string>(
         'SENDGRID_EMAIL_VERIFICATION_TEMPLATE_ID',
@@ -183,6 +201,15 @@ export class EmailService {
     },
   ): Promise<void> {
     const provider = this.configService.get<string>('EMAIL_PROVIDER', 'smtp');
+
+    if (provider.toLowerCase() === 'onesignal') {
+      const resetLink = userData.resetLink || userData.resetUrl;
+      if (!resetLink) {
+        throw new Error('Reset link is required for OneSignal email');
+      }
+      await this.oneSignalService.sendPasswordResetEmail(to, resetLink);
+      return;
+    }
 
     if (provider.toLowerCase() === 'sendgrid') {
       const templateId = this.configService.get<string>(

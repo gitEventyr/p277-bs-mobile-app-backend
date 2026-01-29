@@ -1253,7 +1253,7 @@ export class AuthController {
 
     // Send verification code via Twilio Verify
     try {
-      await this.twilioService.sendVerificationCode(phoneToVerify);
+      await this.twilioService.sendVerificationCode(phoneToVerify, player.id);
     } catch (error) {
       this.logger.error('Failed to send phone verification:', error);
       throw error; // Twilio service already converts to BadRequestException
@@ -1320,6 +1320,7 @@ export class AuthController {
     const isValid = await this.twilioService.verifyCode(
       phoneToVerify,
       verifyPhoneDto.code,
+      player.id,
     );
 
     if (!isValid) {
