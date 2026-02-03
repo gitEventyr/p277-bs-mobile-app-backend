@@ -6,6 +6,8 @@ export interface OneSignalNotificationRequest {
   };
   target_channel: 'email' | 'sms';
   custom_data?: Record<string, any>;
+  email_subject?: string;
+  contents?: { en: string };
 }
 
 export interface OneSignalNotificationResponse {

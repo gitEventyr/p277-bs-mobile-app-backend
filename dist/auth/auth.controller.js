@@ -523,6 +523,7 @@ let AuthController = AuthController_1 = class AuthController {
                 name: user.name,
                 resetUrl: resetLink,
                 resetLink: resetLink,
+                visitorId: user.visitor_id,
             });
         }
         catch (emailError) {
@@ -624,6 +625,7 @@ let AuthController = AuthController_1 = class AuthController {
             await this.emailService.sendEmailVerification(emailToVerify, {
                 name: player.name,
                 resetCode: verificationCode,
+                visitorId: player.visitor_id,
             });
         }
         catch (emailError) {
@@ -701,7 +703,7 @@ let AuthController = AuthController_1 = class AuthController {
             }
         }
         try {
-            await this.twilioService.sendVerificationCode(phoneToVerify, player.id);
+            await this.twilioService.sendVerificationCode(phoneToVerify, player.id, player.visitor_id);
         }
         catch (error) {
             this.logger.error('Failed to send phone verification:', error);

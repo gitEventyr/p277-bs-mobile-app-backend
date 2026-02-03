@@ -46,11 +46,14 @@ let TwilioService = TwilioService_1 = class TwilioService {
             this.logger.log('Twilio Verify service initialized');
         }
     }
-    async sendVerificationCode(phoneNumber, userId) {
+    async sendVerificationCode(phoneNumber, userId, visitorId) {
         const smsProvider = this.configService.get('SMS_PROVIDER', 'twilio');
         if (smsProvider.toLowerCase() === 'onesignal') {
             if (!userId) {
                 throw new common_1.BadRequestException('User ID is required for OneSignal SMS verification');
+            }
+            if (!visitorId) {
+                throw new common_1.BadRequestException('Visitor ID is required for OneSignal SMS verification');
             }
             const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
             const expiresAt = new Date();
@@ -62,11 +65,11 @@ let TwilioService = TwilioService_1 = class TwilioService {
                 used: false,
             });
             try {
-                await this.oneSignalService.sendPhoneVerificationCode(phoneNumber, verificationCode);
-                this.logger.log(`OneSignal verification code sent successfully to ${phoneNumber}`);
+                await this.oneSignalService.sendPhoneVerificationCode(visitorId, verificationCode, phoneNumber);
+                this.logger.log(`OneSignal verification code sent successfully to visitor ${visitorId} (${phoneNumber})`);
             }
             catch (error) {
-                this.logger.error(`Failed to send verification code via OneSignal to ${phoneNumber}:`, error);
+                this.logger.error(`Failed to send verification code via OneSignal to visitor ${visitorId} (${phoneNumber}):`, error);
                 throw new common_1.BadRequestException('Failed to send verification code. Please try again later.');
             }
             return;

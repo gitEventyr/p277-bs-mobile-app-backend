@@ -19,7 +19,7 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
     configService;
     httpService;
     logger = new common_1.Logger(OneSignalService_1.name);
-    apiUrl = 'https://onesignal.com/api/v1/notifications';
+    apiBaseUrl = 'https://api.onesignal.com/notifications';
     appId;
     apiKey;
     constructor(configService, httpService) {
@@ -31,7 +31,7 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             this.logger.warn('OneSignal API configuration is incomplete. OneSignal notifications will be disabled.');
         }
     }
-    async sendTemplateEmail(templateId, email, customData) {
+    async sendTemplateEmail(templateId, visitorId, emailSubject, customData) {
         if (!this.isConfigured()) {
             throw new common_1.BadRequestException('OneSignal API is not configured');
         }
@@ -39,14 +39,15 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             app_id: this.appId,
             template_id: templateId,
             include_aliases: {
-                external_id: [email],
+                external_id: [visitorId],
             },
             target_channel: 'email',
+            email_subject: emailSubject,
             custom_data: customData,
         };
         await this.sendNotification(payload, 'email');
     }
-    async sendTemplateSMS(templateId, phoneNumber, customData) {
+    async sendTemplateSMS(templateId, visitorId, customData) {
         if (!this.isConfigured()) {
             throw new common_1.BadRequestException('OneSignal API is not configured');
         }
@@ -54,40 +55,41 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             app_id: this.appId,
             template_id: templateId,
             include_aliases: {
-                external_id: [phoneNumber],
+                external_id: [visitorId],
             },
             target_channel: 'sms',
             custom_data: customData,
+            contents: { en: 'SMS notification' },
         };
         await this.sendNotification(payload, 'SMS');
     }
-    async sendPasswordResetEmail(email, resetLink) {
+    async sendPasswordResetEmail(visitorId, resetLink, email) {
         const templateId = this.configService.get('EMAIL_PASSWORD_RESET_TEMPLATE_ID');
         if (!templateId) {
             throw new common_1.BadRequestException('EMAIL_PASSWORD_RESET_TEMPLATE_ID is not configured');
         }
-        this.logger.log(`Sending password reset email to ${email}`);
-        await this.sendTemplateEmail(templateId, email, {
+        this.logger.log(`Sending password reset email to visitor ${visitorId}${email ? ` (${email})` : ''}`);
+        await this.sendTemplateEmail(templateId, visitorId, 'Reset Your Password', {
             reset_link: resetLink,
         });
     }
-    async sendEmailVerificationCode(email, verificationCode) {
+    async sendEmailVerificationCode(visitorId, verificationCode, email) {
         const templateId = this.configService.get('EMAIL_VALIDATION_OTP_TEMPLATE_ID');
         if (!templateId) {
             throw new common_1.BadRequestException('EMAIL_VALIDATION_OTP_TEMPLATE_ID is not configured');
         }
-        this.logger.log(`Sending email verification code to ${email}`);
-        await this.sendTemplateEmail(templateId, email, {
+        this.logger.log(`Sending email verification code to visitor ${visitorId}${email ? ` (${email})` : ''}`);
+        await this.sendTemplateEmail(templateId, visitorId, 'Verify Your Email Address', {
             verification_code: verificationCode,
         });
     }
-    async sendPhoneVerificationCode(phoneNumber, verificationCode) {
+    async sendPhoneVerificationCode(visitorId, verificationCode, phoneNumber) {
         const templateId = this.configService.get('SMS_BONUS_SPINS_OTP_TEMPLATE_ID');
         if (!templateId) {
             throw new common_1.BadRequestException('SMS_BONUS_SPINS_OTP_TEMPLATE_ID is not configured');
         }
-        this.logger.log(`Sending phone verification code to ${phoneNumber}`);
-        await this.sendTemplateSMS(templateId, phoneNumber, {
+        this.logger.log(`Sending phone verification code to visitor ${visitorId}${phoneNumber ? ` (${phoneNumber})` : ''}`);
+        await this.sendTemplateSMS(templateId, visitorId, {
             verification_code: verificationCode,
         });
     }
@@ -99,18 +101,19 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
     }
     async sendNotification(payload, type) {
         try {
+            const apiUrl = `${this.apiBaseUrl}?c=${payload.target_channel}`;
             const maskedApiKey = this.apiKey
                 ? `${this.apiKey.substring(0, 10)}...`
                 : 'not configured';
-            this.logger.debug(`Calling OneSignal API: ${this.apiUrl} (API Key: ${maskedApiKey})`, {
+            this.logger.debug(`Calling OneSignal API: ${apiUrl} (API Key: ${maskedApiKey})`, {
                 template_id: payload.template_id,
                 target_channel: payload.target_channel,
                 recipient_count: payload.include_aliases.external_id.length,
             });
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(this.apiUrl, payload, {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(apiUrl, payload, {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.apiKey}`,
+                    Authorization: `Key ${this.apiKey}`,
                 },
                 timeout: 10000,
             }));

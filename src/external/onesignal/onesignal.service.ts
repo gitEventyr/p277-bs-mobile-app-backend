@@ -11,7 +11,7 @@ import {
 @Injectable()
 export class OneSignalService {
   private readonly logger = new Logger(OneSignalService.name);
-  private readonly apiUrl = 'https://onesignal.com/api/v1/notifications';
+  private readonly apiBaseUrl = 'https://api.onesignal.com/notifications';
   private readonly appId: string | undefined;
   private readonly apiKey: string | undefined;
 
@@ -34,7 +34,8 @@ export class OneSignalService {
    */
   async sendTemplateEmail(
     templateId: string,
-    email: string,
+    visitorId: string,
+    emailSubject: string,
     customData: Record<string, any>,
   ): Promise<void> {
     if (!this.isConfigured()) {
@@ -45,9 +46,10 @@ export class OneSignalService {
       app_id: this.appId!,
       template_id: templateId,
       include_aliases: {
-        external_id: [email],
+        external_id: [visitorId],
       },
       target_channel: 'email',
+      email_subject: emailSubject,
       custom_data: customData,
     };
 
@@ -59,7 +61,7 @@ export class OneSignalService {
    */
   async sendTemplateSMS(
     templateId: string,
-    phoneNumber: string,
+    visitorId: string,
     customData: Record<string, any>,
   ): Promise<void> {
     if (!this.isConfigured()) {
@@ -70,10 +72,13 @@ export class OneSignalService {
       app_id: this.appId!,
       template_id: templateId,
       include_aliases: {
-        external_id: [phoneNumber],
+        external_id: [visitorId],
       },
       target_channel: 'sms',
       custom_data: customData,
+      // Note: contents field may be required by OneSignal API even when using templates
+      // The template will override this placeholder content
+      contents: { en: 'SMS notification' },
     };
 
     await this.sendNotification(payload, 'SMS');
@@ -83,8 +88,9 @@ export class OneSignalService {
    * High-level business method to send password reset email
    */
   async sendPasswordResetEmail(
-    email: string,
+    visitorId: string,
     resetLink: string,
+    email?: string,
   ): Promise<void> {
     const templateId = this.configService.get<string>(
       'EMAIL_PASSWORD_RESET_TEMPLATE_ID',
@@ -96,19 +102,27 @@ export class OneSignalService {
       );
     }
 
-    this.logger.log(`Sending password reset email to ${email}`);
+    this.logger.log(
+      `Sending password reset email to visitor ${visitorId}${email ? ` (${email})` : ''}`,
+    );
 
-    await this.sendTemplateEmail(templateId, email, {
-      reset_link: resetLink,
-    });
+    await this.sendTemplateEmail(
+      templateId,
+      visitorId,
+      'Reset Your Password',
+      {
+        reset_link: resetLink,
+      },
+    );
   }
 
   /**
    * High-level business method to send email verification code
    */
   async sendEmailVerificationCode(
-    email: string,
+    visitorId: string,
     verificationCode: string,
+    email?: string,
   ): Promise<void> {
     const templateId = this.configService.get<string>(
       'EMAIL_VALIDATION_OTP_TEMPLATE_ID',
@@ -120,19 +134,27 @@ export class OneSignalService {
       );
     }
 
-    this.logger.log(`Sending email verification code to ${email}`);
+    this.logger.log(
+      `Sending email verification code to visitor ${visitorId}${email ? ` (${email})` : ''}`,
+    );
 
-    await this.sendTemplateEmail(templateId, email, {
-      verification_code: verificationCode,
-    });
+    await this.sendTemplateEmail(
+      templateId,
+      visitorId,
+      'Verify Your Email Address',
+      {
+        verification_code: verificationCode,
+      },
+    );
   }
 
   /**
    * High-level business method to send phone verification code
    */
   async sendPhoneVerificationCode(
-    phoneNumber: string,
+    visitorId: string,
     verificationCode: string,
+    phoneNumber?: string,
   ): Promise<void> {
     const templateId = this.configService.get<string>(
       'SMS_BONUS_SPINS_OTP_TEMPLATE_ID',
@@ -144,9 +166,11 @@ export class OneSignalService {
       );
     }
 
-    this.logger.log(`Sending phone verification code to ${phoneNumber}`);
+    this.logger.log(
+      `Sending phone verification code to visitor ${visitorId}${phoneNumber ? ` (${phoneNumber})` : ''}`,
+    );
 
-    await this.sendTemplateSMS(templateId, phoneNumber, {
+    await this.sendTemplateSMS(templateId, visitorId, {
       verification_code: verificationCode,
     });
   }
@@ -173,13 +197,16 @@ export class OneSignalService {
     type: string,
   ): Promise<void> {
     try {
+      // Build API URL with channel query parameter
+      const apiUrl = `${this.apiBaseUrl}?c=${payload.target_channel}`;
+
       // Only log first 10 chars of API key for security
       const maskedApiKey = this.apiKey
         ? `${this.apiKey.substring(0, 10)}...`
         : 'not configured';
 
       this.logger.debug(
-        `Calling OneSignal API: ${this.apiUrl} (API Key: ${maskedApiKey})`,
+        `Calling OneSignal API: ${apiUrl} (API Key: ${maskedApiKey})`,
         {
           template_id: payload.template_id,
           target_channel: payload.target_channel,
@@ -190,10 +217,10 @@ export class OneSignalService {
       const response = await firstValueFrom(
         this.httpService.post<
           OneSignalNotificationResponse | OneSignalErrorResponse
-        >(this.apiUrl, payload, {
+        >(apiUrl, payload, {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.apiKey}`,
+            Authorization: `Key ${this.apiKey}`,
           },
           timeout: 10000, // 10 seconds timeout
         }),

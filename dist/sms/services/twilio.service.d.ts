@@ -10,6 +10,6 @@ export declare class TwilioService {
     private client;
     private verifyServiceSid;
     constructor(configService: ConfigService, phoneVerificationTokenRepository: Repository<PhoneVerificationToken>, oneSignalService: OneSignalService);
-    sendVerificationCode(phoneNumber: string, userId?: number): Promise<void>;
+    sendVerificationCode(phoneNumber: string, userId?: number, visitorId?: string): Promise<void>;
     verifyCode(phoneNumber: string, code: string, userId?: number): Promise<boolean>;
 }

@@ -116,7 +116,10 @@ let EmailService = EmailService_1 = class EmailService {
             if (!userData.resetCode) {
                 throw new Error('Verification code is required for OneSignal email');
             }
-            await this.oneSignalService.sendEmailVerificationCode(to, userData.resetCode);
+            if (!userData.visitorId) {
+                throw new Error('Visitor ID is required for OneSignal email');
+            }
+            await this.oneSignalService.sendEmailVerificationCode(userData.visitorId, userData.resetCode, to);
             return;
         }
         if (provider.toLowerCase() === 'sendgrid') {
@@ -142,7 +145,10 @@ let EmailService = EmailService_1 = class EmailService {
             if (!resetLink) {
                 throw new Error('Reset link is required for OneSignal email');
             }
-            await this.oneSignalService.sendPasswordResetEmail(to, resetLink);
+            if (!userData.visitorId) {
+                throw new Error('Visitor ID is required for OneSignal email');
+            }
+            await this.oneSignalService.sendPasswordResetEmail(userData.visitorId, resetLink, to);
             return;
         }
         if (provider.toLowerCase() === 'sendgrid') {

@@ -149,6 +149,7 @@ export class EmailService {
       name?: string;
       verificationUrl?: string;
       resetCode?: string;
+      visitorId?: string;
     },
   ): Promise<void> {
     const provider = this.configService.get<string>('EMAIL_PROVIDER', 'smtp');
@@ -157,9 +158,13 @@ export class EmailService {
       if (!userData.resetCode) {
         throw new Error('Verification code is required for OneSignal email');
       }
+      if (!userData.visitorId) {
+        throw new Error('Visitor ID is required for OneSignal email');
+      }
       await this.oneSignalService.sendEmailVerificationCode(
-        to,
+        userData.visitorId,
         userData.resetCode,
+        to,
       );
       return;
     }
@@ -198,6 +203,7 @@ export class EmailService {
       name?: string;
       resetUrl?: string;
       resetLink?: string;
+      visitorId?: string;
     },
   ): Promise<void> {
     const provider = this.configService.get<string>('EMAIL_PROVIDER', 'smtp');
@@ -207,7 +213,14 @@ export class EmailService {
       if (!resetLink) {
         throw new Error('Reset link is required for OneSignal email');
       }
-      await this.oneSignalService.sendPasswordResetEmail(to, resetLink);
+      if (!userData.visitorId) {
+        throw new Error('Visitor ID is required for OneSignal email');
+      }
+      await this.oneSignalService.sendPasswordResetEmail(
+        userData.visitorId,
+        resetLink,
+        to,
+      );
       return;
     }
 

@@ -38,6 +38,7 @@ export class TwilioService {
   async sendVerificationCode(
     phoneNumber: string,
     userId?: number,
+    visitorId?: string,
   ): Promise<void> {
     const smsProvider = this.configService.get<string>('SMS_PROVIDER', 'twilio');
 
@@ -46,6 +47,12 @@ export class TwilioService {
       if (!userId) {
         throw new BadRequestException(
           'User ID is required for OneSignal SMS verification',
+        );
+      }
+
+      if (!visitorId) {
+        throw new BadRequestException(
+          'Visitor ID is required for OneSignal SMS verification',
         );
       }
 
@@ -68,15 +75,16 @@ export class TwilioService {
       // Send via OneSignal
       try {
         await this.oneSignalService.sendPhoneVerificationCode(
-          phoneNumber,
+          visitorId,
           verificationCode,
+          phoneNumber,
         );
         this.logger.log(
-          `OneSignal verification code sent successfully to ${phoneNumber}`,
+          `OneSignal verification code sent successfully to visitor ${visitorId} (${phoneNumber})`,
         );
       } catch (error) {
         this.logger.error(
-          `Failed to send verification code via OneSignal to ${phoneNumber}:`,
+          `Failed to send verification code via OneSignal to visitor ${visitorId} (${phoneNumber}):`,
           error,
         );
         throw new BadRequestException(

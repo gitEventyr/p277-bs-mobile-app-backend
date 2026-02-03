@@ -30,11 +30,13 @@ export declare class EmailService {
         name?: string;
         verificationUrl?: string;
         resetCode?: string;
+        visitorId?: string;
     }): Promise<void>;
     sendPasswordReset(to: string, userData: {
         name?: string;
         resetUrl?: string;
         resetLink?: string;
+        visitorId?: string;
     }): Promise<void>;
     verifyConnection(): Promise<boolean>;
     healthCheck(): Promise<{

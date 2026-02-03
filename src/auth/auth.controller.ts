@@ -812,6 +812,7 @@ export class AuthController {
         name: user.name,
         resetUrl: resetLink, // For backward compatibility
         resetLink: resetLink, // This is what the SendGrid template expects
+        visitorId: user.visitor_id,
       });
     } catch (emailError) {
       this.logger.error('Failed to send password reset email:', emailError);
@@ -1090,6 +1091,7 @@ export class AuthController {
       await this.emailService.sendEmailVerification(emailToVerify, {
         name: player.name,
         resetCode: verificationCode,
+        visitorId: player.visitor_id,
       });
     } catch (emailError) {
       this.logger.error('Failed to send email verification:', emailError);
@@ -1253,7 +1255,11 @@ export class AuthController {
 
     // Send verification code via Twilio Verify
     try {
-      await this.twilioService.sendVerificationCode(phoneToVerify, player.id);
+      await this.twilioService.sendVerificationCode(
+        phoneToVerify,
+        player.id,
+        player.visitor_id,
+      );
     } catch (error) {
       this.logger.error('Failed to send phone verification:', error);
       throw error; // Twilio service already converts to BadRequestException
