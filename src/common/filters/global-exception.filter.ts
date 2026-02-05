@@ -43,8 +43,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             details: validationErrors,
           };
         } else if (typeof responseObj.message === 'string') {
-          // Extract the string message from the nested structure
-          message = responseObj.message;
+          // Check if there are additional properties besides 'message' and 'statusCode'
+          const additionalProps = Object.keys(responseObj).filter(
+            (key) => key !== 'message' && key !== 'statusCode' && key !== 'error',
+          );
+
+          if (additionalProps.length > 0) {
+            // Preserve the entire object with all properties
+            message = responseObj;
+          } else {
+            // Extract just the string message
+            message = responseObj.message;
+          }
         } else {
           message =
             typeof exceptionResponse === 'string'

@@ -33,7 +33,13 @@ let GlobalExceptionFilter = GlobalExceptionFilter_1 = class GlobalExceptionFilte
                     };
                 }
                 else if (typeof responseObj.message === 'string') {
-                    message = responseObj.message;
+                    const additionalProps = Object.keys(responseObj).filter((key) => key !== 'message' && key !== 'statusCode' && key !== 'error');
+                    if (additionalProps.length > 0) {
+                        message = responseObj;
+                    }
+                    else {
+                        message = responseObj.message;
+                    }
                 }
                 else {
                     message =
