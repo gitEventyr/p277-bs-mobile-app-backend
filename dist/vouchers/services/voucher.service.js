@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var VoucherService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoucherService = void 0;
 const common_1 = require("@nestjs/common");
@@ -20,18 +21,22 @@ const voucher_entity_1 = require("../../entities/voucher.entity");
 const voucher_request_entity_1 = require("../../entities/voucher-request.entity");
 const player_entity_1 = require("../../entities/player.entity");
 const rp_balance_transaction_entity_1 = require("../../entities/rp-balance-transaction.entity");
-let VoucherService = class VoucherService {
+const onesignal_service_1 = require("../../external/onesignal/onesignal.service");
+let VoucherService = VoucherService_1 = class VoucherService {
     voucherRepository;
     voucherRequestRepository;
     playerRepository;
     rpTransactionRepository;
     dataSource;
-    constructor(voucherRepository, voucherRequestRepository, playerRepository, rpTransactionRepository, dataSource) {
+    oneSignalService;
+    logger = new common_1.Logger(VoucherService_1.name);
+    constructor(voucherRepository, voucherRequestRepository, playerRepository, rpTransactionRepository, dataSource, oneSignalService) {
         this.voucherRepository = voucherRepository;
         this.voucherRequestRepository = voucherRequestRepository;
         this.playerRepository = playerRepository;
         this.rpTransactionRepository = rpTransactionRepository;
         this.dataSource = dataSource;
+        this.oneSignalService = oneSignalService;
     }
     async findAllVouchers() {
         return this.voucherRepository.find({
@@ -84,6 +89,7 @@ let VoucherService = class VoucherService {
             });
             const savedVoucherRequest = await queryRunner.manager.save(voucherRequest);
             await queryRunner.commitTransaction();
+            await this.sendRpBalanceTag(player.visitor_id, balanceAfter);
             const requestWithRelations = await this.voucherRequestRepository.findOne({
                 where: { id: savedVoucherRequest.id },
                 relations: ['user', 'voucher'],
@@ -110,9 +116,25 @@ let VoucherService = class VoucherService {
             await queryRunner.release();
         }
     }
+    async sendRpBalanceTag(visitorId, newBalance) {
+        try {
+            if (!visitorId) {
+                this.logger.warn('Cannot send RP balance tag: visitor_id not found');
+                return;
+            }
+            const tags = {
+                RP_points_2500: newBalance >= 2500 ? 'true' : 'false',
+            };
+            this.logger.log(`Sending RP balance tag for visitor ${visitorId} after voucher purchase: balance=${newBalance}, RP_points_2500=${tags.RP_points_2500}`);
+            await this.oneSignalService.updateUserTags(visitorId, tags);
+        }
+        catch (error) {
+            this.logger.error(`Failed to send RP balance tag for visitor ${visitorId}`, error);
+        }
+    }
 };
 exports.VoucherService = VoucherService;
-exports.VoucherService = VoucherService = __decorate([
+exports.VoucherService = VoucherService = VoucherService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(voucher_entity_1.Voucher)),
     __param(1, (0, typeorm_1.InjectRepository)(voucher_request_entity_1.VoucherRequest)),
@@ -122,6 +144,7 @@ exports.VoucherService = VoucherService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.DataSource])
+        typeorm_2.DataSource,
+        onesignal_service_1.OneSignalService])
 ], VoucherService);
 //# sourceMappingURL=voucher.service.js.map

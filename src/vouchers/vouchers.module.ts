@@ -6,6 +6,7 @@ import { Player } from '../entities/player.entity';
 import { RpBalanceTransaction } from '../entities/rp-balance-transaction.entity';
 import { VoucherService } from './services/voucher.service';
 import { VouchersController } from './controllers/vouchers.controller';
+import { OneSignalModule } from '../external/onesignal/onesignal.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { VouchersController } from './controllers/vouchers.controller';
       Player,
       RpBalanceTransaction,
     ]),
+    OneSignalModule, // Import OneSignalModule to get access to OneSignalService
   ],
   controllers: [VouchersController],
   providers: [VoucherService],

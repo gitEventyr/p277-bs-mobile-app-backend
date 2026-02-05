@@ -2,22 +2,27 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Voucher } from '../../entities/voucher.entity';
-import { VoucherRequest } from '../../entities/voucher-request.entity';
+import { VoucherRequest, VoucherRequestStatus } from '../../entities/voucher-request.entity';
 import { CreateVoucherDto } from '../dto/create-voucher.dto';
 import { UpdateVoucherDto } from '../dto/update-voucher.dto';
 import { UpdateVoucherRequestDto } from '../dto/update-voucher-request.dto';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 
 @Injectable()
 export class VoucherService {
+  private readonly logger = new Logger(VoucherService.name);
+
   constructor(
     @InjectRepository(Voucher)
     private voucherRepository: Repository<Voucher>,
     @InjectRepository(VoucherRequest)
     private voucherRequestRepository: Repository<VoucherRequest>,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   // Voucher CRUD operations
@@ -135,9 +140,69 @@ export class VoucherService {
     id: number,
     updateVoucherRequestDto: UpdateVoucherRequestDto,
   ): Promise<VoucherRequest> {
-    await this.findVoucherRequestById(id); // Check if exists
+    const existingRequest = await this.findVoucherRequestById(id); // Check if exists
     await this.voucherRequestRepository.update(id, updateVoucherRequestDto);
-    return this.findVoucherRequestById(id);
+    const updatedRequest = await this.findVoucherRequestById(id);
+
+    // Send OneSignal tags if voucher is marked as SENT
+    if (
+      updateVoucherRequestDto.status === VoucherRequestStatus.SENT &&
+      existingRequest.status !== VoucherRequestStatus.SENT
+    ) {
+      await this.sendVoucherSentTags(updatedRequest);
+    }
+
+    return updatedRequest;
+  }
+
+  /**
+   * Send OneSignal tags when voucher is marked as sent
+   */
+  private async sendVoucherSentTags(
+    voucherRequest: VoucherRequest,
+  ): Promise<void> {
+    try {
+      const visitorId = voucherRequest.user?.visitor_id;
+      if (!visitorId) {
+        this.logger.warn(
+          `Cannot send voucher tags: visitor_id not found for user ${voucherRequest.user_id}`,
+        );
+        return;
+      }
+
+      // Count previous SENT vouchers for this user to determine N
+      const previousSentCount = await this.voucherRequestRepository.count({
+        where: {
+          user_id: voucherRequest.user_id,
+          status: VoucherRequestStatus.SENT,
+        },
+      });
+
+      const voucherNumber = previousSentCount; // This is the Nth voucher (1, 2, 3, etc.)
+
+      // Get voucher details
+      const realValue =
+        voucherRequest.voucher?.amazon_vouchers_equivalent?.toString() || '0';
+      const voucherType = voucherRequest.voucher?.type || 'Unknown';
+
+      // Prepare tags
+      const tags: Record<string, string> = {
+        [`voucher_${voucherNumber}_date`]: new Date().toISOString(),
+        [`voucher_${voucherNumber}_Real_Value`]: realValue,
+        [`voucher_${voucherNumber}_Type`]: voucherType,
+      };
+
+      this.logger.log(
+        `Sending voucher tags for user ${voucherRequest.user_id} (visitor: ${visitorId}): voucher #${voucherNumber}`,
+      );
+
+      await this.oneSignalService.updateUserTags(visitorId, tags);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send voucher tags for request ${voucherRequest.id}`,
+        error,
+      );
+    }
   }
 
   async removeVoucherRequest(id: number): Promise<void> {

@@ -176,6 +176,74 @@ export class OneSignalService {
   }
 
   /**
+   * Update user tags in OneSignal
+   * @param visitorId - The visitor ID (external_id in OneSignal)
+   * @param tags - Key-value pairs of tags to update (all values must be strings)
+   * @returns Promise<boolean> - Returns true if successful, false if failed (non-blocking)
+   */
+  async updateUserTags(
+    visitorId: string,
+    tags: Record<string, string>,
+  ): Promise<boolean> {
+    if (!this.isConfigured()) {
+      this.logger.warn(
+        'OneSignal API is not configured. Skipping tag update.',
+      );
+      return false;
+    }
+
+    try {
+      const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}`;
+
+      const payload = {
+        properties: {
+          tags,
+        },
+      };
+
+      this.logger.debug(
+        `Updating OneSignal tags for visitor ${visitorId}`,
+        {
+          tagCount: Object.keys(tags).length,
+          tags,
+        },
+      );
+
+      const response = await firstValueFrom(
+        this.httpService.patch(apiUrl, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Key ${this.apiKey}`,
+          },
+          timeout: 10000, // 10 seconds timeout
+        }),
+      );
+
+      this.logger.log(
+        `Successfully updated OneSignal tags for visitor ${visitorId}`,
+        {
+          statusCode: response.status,
+          tagCount: Object.keys(tags).length,
+        },
+      );
+
+      return true;
+    } catch (error) {
+      // Non-blocking: log error but don't throw
+      this.logger.error(
+        `Failed to update OneSignal tags for visitor ${visitorId}`,
+        {
+          error: error.message,
+          statusCode: error.response?.status,
+          response: error.response?.data,
+          tags,
+        },
+      );
+      return false;
+    }
+  }
+
+  /**
    * Verify OneSignal connection by checking configuration
    */
   async verifyConnection(): Promise<boolean> {

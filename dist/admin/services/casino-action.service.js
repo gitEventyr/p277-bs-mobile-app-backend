@@ -22,19 +22,22 @@ const casino_entity_1 = require("../../entities/casino.entity");
 const player_entity_1 = require("../../entities/player.entity");
 const casino_api_service_1 = require("../../external/casino/casino-api.service");
 const rp_balance_service_1 = require("../../users/services/rp-balance.service");
+const onesignal_service_1 = require("../../external/onesignal/onesignal.service");
 let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
     casinoActionRepository;
     casinoRepository;
     playerRepository;
     casinoApiService;
     rpBalanceService;
+    oneSignalService;
     logger = new common_1.Logger(CasinoActionService_1.name);
-    constructor(casinoActionRepository, casinoRepository, playerRepository, casinoApiService, rpBalanceService) {
+    constructor(casinoActionRepository, casinoRepository, playerRepository, casinoApiService, rpBalanceService, oneSignalService) {
         this.casinoActionRepository = casinoActionRepository;
         this.casinoRepository = casinoRepository;
         this.playerRepository = playerRepository;
         this.casinoApiService = casinoApiService;
         this.rpBalanceService = rpBalanceService;
+        this.oneSignalService = oneSignalService;
     }
     async findAll(options) {
         const { page, limit, search, casinoName, registration, deposit, sortBy } = options;
@@ -139,6 +142,7 @@ let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
         const casinoAction = this.casinoActionRepository.create(createData);
         const savedCasinoAction = await this.casinoActionRepository.save(casinoAction);
         await this.processRpRewards(createData);
+        await this.sendCasinoActionTags(createData);
         return savedCasinoAction;
     }
     async processRpRewards(actionData) {
@@ -230,6 +234,64 @@ let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
         }
         else {
             this.logger.log(`User ${userId} already received deposit reward for casino ${casinoName}`);
+        }
+    }
+    async sendCasinoActionTags(actionData) {
+        try {
+            const user = await this.playerRepository.findOne({
+                where: { visitor_id: actionData.visitor_id, is_deleted: false },
+            });
+            if (!user || !user.visitor_id) {
+                this.logger.warn(`Cannot send casino action tags: user not found for visitor_id ${actionData.visitor_id}`);
+                return;
+            }
+            const tags = {};
+            const actionDateISO = actionData.date_of_action.toISOString();
+            if (actionData.registration) {
+                const uniqueRegistrations = await this.casinoActionRepository
+                    .createQueryBuilder('action')
+                    .select('DISTINCT action.casino_name')
+                    .where('action.visitor_id = :visitorId', {
+                    visitorId: actionData.visitor_id,
+                })
+                    .andWhere('action.registration = :registration', { registration: true })
+                    .getRawMany();
+                const registrationCount = uniqueRegistrations.length;
+                if (registrationCount === 1) {
+                    tags['first_reg_casino_date'] = actionDateISO;
+                    tags['first_reg_casino_name'] = actionData.casino_name;
+                }
+                else if (registrationCount === 2) {
+                    tags['second_reg_casino_date'] = actionDateISO;
+                    tags['second_reg_casino_name'] = actionData.casino_name;
+                }
+                else if (registrationCount >= 3) {
+                    tags[`${registrationCount}_reg_casino_name`] = actionData.casino_name;
+                }
+            }
+            if (actionData.deposit) {
+                const totalDeposits = await this.casinoActionRepository.count({
+                    where: {
+                        visitor_id: actionData.visitor_id,
+                        deposit: true,
+                    },
+                });
+                if (totalDeposits === 1) {
+                    tags['ftd_casino_date'] = actionDateISO;
+                    tags['ftd_casino_name'] = actionData.casino_name;
+                }
+                else if (totalDeposits === 2) {
+                    tags['second_deposit_casino_date'] = actionDateISO;
+                    tags['second_deposit_casino_name'] = actionData.casino_name;
+                }
+            }
+            if (Object.keys(tags).length > 0) {
+                this.logger.log(`Sending casino action tags for visitor ${actionData.visitor_id}: ${Object.keys(tags).join(', ')}`);
+                await this.oneSignalService.updateUserTags(user.visitor_id, tags);
+            }
+        }
+        catch (error) {
+            this.logger.error(`Failed to send casino action tags for visitor ${actionData.visitor_id}`, error);
         }
     }
     async update(id, updateData) {
@@ -421,6 +483,7 @@ let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
                 const createdAction = this.casinoActionRepository.create(finalActionData);
                 await this.casinoActionRepository.save(createdAction);
                 await this.processRpRewards(finalActionData);
+                await this.sendCasinoActionTags(finalActionData);
                 results.successfulRows++;
             }
             catch (error) {
@@ -538,6 +601,7 @@ exports.CasinoActionService = CasinoActionService = CasinoActionService_1 = __de
         typeorm_2.Repository,
         typeorm_2.Repository,
         casino_api_service_1.CasinoApiService,
-        rp_balance_service_1.RpBalanceService])
+        rp_balance_service_1.RpBalanceService,
+        onesignal_service_1.OneSignalService])
 ], CasinoActionService);
 //# sourceMappingURL=casino-action.service.js.map

@@ -35,6 +35,7 @@ const voucher_controller_1 = require("./controllers/voucher.controller");
 const auth_module_1 = require("../auth/auth.module");
 const users_module_1 = require("../users/users.module");
 const casino_api_module_1 = require("../external/casino/casino-api.module");
+const onesignal_module_1 = require("../external/onesignal/onesignal.module");
 let AdminModule = class AdminModule {
 };
 exports.AdminModule = AdminModule;
@@ -66,6 +67,7 @@ exports.AdminModule = AdminModule = __decorate([
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             casino_api_module_1.CasinoApiModule,
+            onesignal_module_1.OneSignalModule,
         ],
         controllers: [
             admin_controller_1.AdminController,

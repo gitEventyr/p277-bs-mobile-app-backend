@@ -2,21 +2,26 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Player } from '../../entities/player.entity';
 import { RpBalanceTransaction } from '../../entities/rp-balance-transaction.entity';
 import { ModifyRpBalanceDto } from '../dto/rp-balance.dto';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 
 @Injectable()
 export class RpBalanceService {
+  private readonly logger = new Logger(RpBalanceService.name);
+
   constructor(
     @InjectRepository(Player)
     private readonly playerRepository: Repository<Player>,
     @InjectRepository(RpBalanceTransaction)
     private readonly rpTransactionRepository: Repository<RpBalanceTransaction>,
     private readonly dataSource: DataSource,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   async modifyRpBalance(
@@ -104,6 +109,11 @@ export class RpBalanceService {
 
       await queryRunner.commitTransaction();
 
+      // Send OneSignal tags for RP balance changes (exclude admin adjustments)
+      if (mode === 'increase' || mode === 'decrease') {
+        await this.sendRpBalanceTags(player.visitor_id, balanceAfter);
+      }
+
       return {
         balance_before: balanceBefore,
         balance_after: balanceAfter,
@@ -116,6 +126,39 @@ export class RpBalanceService {
       throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  /**
+   * Send OneSignal tags for RP balance changes
+   */
+  private async sendRpBalanceTags(
+    visitorId: string,
+    newBalance: number,
+  ): Promise<void> {
+    try {
+      if (!visitorId) {
+        this.logger.warn(
+          'Cannot send RP balance tags: visitor_id not found',
+        );
+        return;
+      }
+
+      const tags: Record<string, string> = {
+        last_time_received_rp: new Date().toISOString(),
+        RP_points_2500: newBalance >= 2500 ? 'true' : 'false',
+      };
+
+      this.logger.log(
+        `Sending RP balance tags for visitor ${visitorId}: balance=${newBalance}, RP_points_2500=${tags.RP_points_2500}`,
+      );
+
+      await this.oneSignalService.updateUserTags(visitorId, tags);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send RP balance tags for visitor ${visitorId}`,
+        error,
+      );
     }
   }
 

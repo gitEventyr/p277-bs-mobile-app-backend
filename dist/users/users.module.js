@@ -23,6 +23,7 @@ const casino_offers_service_1 = require("./services/casino-offers.service");
 const users_controller_1 = require("./controllers/users.controller");
 const auth_module_1 = require("../auth/auth.module");
 const casino_api_module_1 = require("../external/casino/casino-api.module");
+const onesignal_module_1 = require("../external/onesignal/onesignal.module");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
@@ -39,6 +40,7 @@ exports.UsersModule = UsersModule = __decorate([
             ]),
             (0, common_1.forwardRef)(() => auth_module_1.AuthModule),
             casino_api_module_1.CasinoApiModule,
+            onesignal_module_1.OneSignalModule,
         ],
         controllers: [users_controller_1.UsersController],
         providers: [

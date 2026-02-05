@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var RpBalanceService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RpBalanceService = void 0;
 const common_1 = require("@nestjs/common");
@@ -18,14 +19,18 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const player_entity_1 = require("../../entities/player.entity");
 const rp_balance_transaction_entity_1 = require("../../entities/rp-balance-transaction.entity");
-let RpBalanceService = class RpBalanceService {
+const onesignal_service_1 = require("../../external/onesignal/onesignal.service");
+let RpBalanceService = RpBalanceService_1 = class RpBalanceService {
     playerRepository;
     rpTransactionRepository;
     dataSource;
-    constructor(playerRepository, rpTransactionRepository, dataSource) {
+    oneSignalService;
+    logger = new common_1.Logger(RpBalanceService_1.name);
+    constructor(playerRepository, rpTransactionRepository, dataSource, oneSignalService) {
         this.playerRepository = playerRepository;
         this.rpTransactionRepository = rpTransactionRepository;
         this.dataSource = dataSource;
+        this.oneSignalService = oneSignalService;
     }
     async modifyRpBalance(userId, modifyRpBalanceDto, adminId) {
         if (modifyRpBalanceDto.amount === 0) {
@@ -72,6 +77,9 @@ let RpBalanceService = class RpBalanceService {
             });
             await queryRunner.manager.save(rpTransaction);
             await queryRunner.commitTransaction();
+            if (mode === 'increase' || mode === 'decrease') {
+                await this.sendRpBalanceTags(player.visitor_id, balanceAfter);
+            }
             return {
                 balance_before: balanceBefore,
                 balance_after: balanceAfter,
@@ -86,6 +94,23 @@ let RpBalanceService = class RpBalanceService {
         }
         finally {
             await queryRunner.release();
+        }
+    }
+    async sendRpBalanceTags(visitorId, newBalance) {
+        try {
+            if (!visitorId) {
+                this.logger.warn('Cannot send RP balance tags: visitor_id not found');
+                return;
+            }
+            const tags = {
+                last_time_received_rp: new Date().toISOString(),
+                RP_points_2500: newBalance >= 2500 ? 'true' : 'false',
+            };
+            this.logger.log(`Sending RP balance tags for visitor ${visitorId}: balance=${newBalance}, RP_points_2500=${tags.RP_points_2500}`);
+            await this.oneSignalService.updateUserTags(visitorId, tags);
+        }
+        catch (error) {
+            this.logger.error(`Failed to send RP balance tags for visitor ${visitorId}`, error);
         }
     }
     async getRpTransactionHistory(userId, page = 1, limit = 10) {
@@ -131,12 +156,13 @@ let RpBalanceService = class RpBalanceService {
     }
 };
 exports.RpBalanceService = RpBalanceService;
-exports.RpBalanceService = RpBalanceService = __decorate([
+exports.RpBalanceService = RpBalanceService = RpBalanceService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(player_entity_1.Player)),
     __param(1, (0, typeorm_1.InjectRepository)(rp_balance_transaction_entity_1.RpBalanceTransaction)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.DataSource])
+        typeorm_2.DataSource,
+        onesignal_service_1.OneSignalService])
 ], RpBalanceService);
 //# sourceMappingURL=rp-balance.service.js.map

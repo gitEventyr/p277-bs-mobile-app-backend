@@ -26,6 +26,7 @@ import { VoucherController } from './controllers/voucher.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 import { CasinoApiModule } from '../external/casino/casino-api.module';
+import { OneSignalModule } from '../external/onesignal/onesignal.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { CasinoApiModule } from '../external/casino/casino-api.module';
     AuthModule, // Import AuthModule to get access to guards
     UsersModule, // Import UsersModule to get access to UsersService
     CasinoApiModule, // Import CasinoApiModule to get access to CasinoApiService
+    OneSignalModule, // Import OneSignalModule to get access to OneSignalService
   ],
   controllers: [
     AdminController,

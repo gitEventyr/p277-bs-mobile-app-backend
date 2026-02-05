@@ -14,6 +14,7 @@ import { CasinoOffersService } from './services/casino-offers.service';
 import { UsersController } from './controllers/users.controller';
 import { AuthModule } from '../auth/auth.module';
 import { CasinoApiModule } from '../external/casino/casino-api.module';
+import { OneSignalModule } from '../external/onesignal/onesignal.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CasinoApiModule } from '../external/casino/casino-api.module';
     ]),
     forwardRef(() => AuthModule), // Import AuthModule to get access to guards
     CasinoApiModule, // Import CasinoApiModule for external casino API calls
+    OneSignalModule, // Import OneSignalModule to get access to OneSignalService
   ],
   controllers: [UsersController],
   providers: [

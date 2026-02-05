@@ -15,6 +15,7 @@ const player_entity_1 = require("../entities/player.entity");
 const rp_balance_transaction_entity_1 = require("../entities/rp-balance-transaction.entity");
 const voucher_service_1 = require("./services/voucher.service");
 const vouchers_controller_1 = require("./controllers/vouchers.controller");
+const onesignal_module_1 = require("../external/onesignal/onesignal.module");
 let VouchersModule = class VouchersModule {
 };
 exports.VouchersModule = VouchersModule;
@@ -27,6 +28,7 @@ exports.VouchersModule = VouchersModule = __decorate([
                 player_entity_1.Player,
                 rp_balance_transaction_entity_1.RpBalanceTransaction,
             ]),
+            onesignal_module_1.OneSignalModule,
         ],
         controllers: [vouchers_controller_1.VouchersController],
         providers: [voucher_service_1.VoucherService],

@@ -6,6 +6,7 @@ import { Casino } from '../../entities/casino.entity';
 import { Player } from '../../entities/player.entity';
 import { CasinoApiService } from '../../external/casino/casino-api.service';
 import { RpBalanceService } from '../../users/services/rp-balance.service';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 
 @Injectable()
 export class CasinoActionService {
@@ -20,6 +21,7 @@ export class CasinoActionService {
     private playerRepository: Repository<Player>,
     private readonly casinoApiService: CasinoApiService,
     private readonly rpBalanceService: RpBalanceService,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   async findAll(options: {
@@ -164,6 +166,9 @@ export class CasinoActionService {
 
     // Process RP rewards after saving the casino action
     await this.processRpRewards(createData);
+
+    // Send OneSignal tags for casino action
+    await this.sendCasinoActionTags(createData);
 
     return savedCasinoAction;
   }
@@ -320,6 +325,98 @@ export class CasinoActionService {
     } else {
       this.logger.log(
         `User ${userId} already received deposit reward for casino ${casinoName}`,
+      );
+    }
+  }
+
+  /**
+   * Send OneSignal tags for casino actions (registrations and deposits)
+   * Handles tags for 1st, 2nd registration, FTD, 2nd deposit, and 3rd+ registrations
+   */
+  private async sendCasinoActionTags(actionData: {
+    casino_name: string;
+    visitor_id: string;
+    date_of_action: Date;
+    registration: boolean;
+    deposit: boolean;
+  }): Promise<void> {
+    try {
+      // Find the user by visitor_id
+      const user = await this.playerRepository.findOne({
+        where: { visitor_id: actionData.visitor_id, is_deleted: false },
+      });
+
+      if (!user || !user.visitor_id) {
+        this.logger.warn(
+          `Cannot send casino action tags: user not found for visitor_id ${actionData.visitor_id}`,
+        );
+        return;
+      }
+
+      const tags: Record<string, string> = {};
+      const actionDateISO = actionData.date_of_action.toISOString();
+
+      // Process registration tags
+      if (actionData.registration) {
+        // Count total unique casino registrations for this user
+        const uniqueRegistrations = await this.casinoActionRepository
+          .createQueryBuilder('action')
+          .select('DISTINCT action.casino_name')
+          .where('action.visitor_id = :visitorId', {
+            visitorId: actionData.visitor_id,
+          })
+          .andWhere('action.registration = :registration', { registration: true })
+          .getRawMany();
+
+        const registrationCount = uniqueRegistrations.length;
+
+        if (registrationCount === 1) {
+          // First registration
+          tags['first_reg_casino_date'] = actionDateISO;
+          tags['first_reg_casino_name'] = actionData.casino_name;
+        } else if (registrationCount === 2) {
+          // Second registration
+          tags['second_reg_casino_date'] = actionDateISO;
+          tags['second_reg_casino_name'] = actionData.casino_name;
+        } else if (registrationCount >= 3) {
+          // Third+ registration (only send casino name)
+          tags[`${registrationCount}_reg_casino_name`] = actionData.casino_name;
+        }
+      }
+
+      // Process deposit tags
+      if (actionData.deposit) {
+        // Count total deposits for this user across all casinos
+        const totalDeposits = await this.casinoActionRepository.count({
+          where: {
+            visitor_id: actionData.visitor_id,
+            deposit: true,
+          },
+        });
+
+        if (totalDeposits === 1) {
+          // First deposit (FTD)
+          tags['ftd_casino_date'] = actionDateISO;
+          tags['ftd_casino_name'] = actionData.casino_name;
+        } else if (totalDeposits === 2) {
+          // Second deposit
+          tags['second_deposit_casino_date'] = actionDateISO;
+          tags['second_deposit_casino_name'] = actionData.casino_name;
+        }
+      }
+
+      // Send tags if we have any
+      if (Object.keys(tags).length > 0) {
+        this.logger.log(
+          `Sending casino action tags for visitor ${actionData.visitor_id}: ${Object.keys(tags).join(', ')}`,
+        );
+
+        await this.oneSignalService.updateUserTags(user.visitor_id, tags);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to send casino action tags for visitor ${actionData.visitor_id}`,
+        error,
       );
     }
   }
@@ -627,6 +724,9 @@ export class CasinoActionService {
 
         // Process RP rewards for the bulk created action
         await this.processRpRewards(finalActionData);
+
+        // Send OneSignal tags for the bulk created action
+        await this.sendCasinoActionTags(finalActionData);
 
         results.successfulRows++;
       } catch (error) {

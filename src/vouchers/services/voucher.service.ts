@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -12,9 +13,12 @@ import {
 } from '../../entities/voucher-request.entity';
 import { Player } from '../../entities/player.entity';
 import { RpBalanceTransaction } from '../../entities/rp-balance-transaction.entity';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 
 @Injectable()
 export class VoucherService {
+  private readonly logger = new Logger(VoucherService.name);
+
   constructor(
     @InjectRepository(Voucher)
     private readonly voucherRepository: Repository<Voucher>,
@@ -25,6 +29,7 @@ export class VoucherService {
     @InjectRepository(RpBalanceTransaction)
     private readonly rpTransactionRepository: Repository<RpBalanceTransaction>,
     private readonly dataSource: DataSource,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   async findAllVouchers(): Promise<Voucher[]> {
@@ -108,6 +113,9 @@ export class VoucherService {
 
       await queryRunner.commitTransaction();
 
+      // Send OneSignal tags for RP balance change (only RP_points_2500, not last_time_received_rp since this is a deduction)
+      await this.sendRpBalanceTag(player.visitor_id, balanceAfter);
+
       // Load the relations for the response
       const requestWithRelations = await this.voucherRequestRepository.findOne({
         where: { id: savedVoucherRequest.id },
@@ -133,6 +141,39 @@ export class VoucherService {
       throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  /**
+   * Send OneSignal RP_points_2500 tag after voucher purchase
+   * Note: We only send RP_points_2500 (not last_time_received_rp) because voucher purchase is a deduction, not receipt
+   */
+  private async sendRpBalanceTag(
+    visitorId: string,
+    newBalance: number,
+  ): Promise<void> {
+    try {
+      if (!visitorId) {
+        this.logger.warn(
+          'Cannot send RP balance tag: visitor_id not found',
+        );
+        return;
+      }
+
+      const tags: Record<string, string> = {
+        RP_points_2500: newBalance >= 2500 ? 'true' : 'false',
+      };
+
+      this.logger.log(
+        `Sending RP balance tag for visitor ${visitorId} after voucher purchase: balance=${newBalance}, RP_points_2500=${tags.RP_points_2500}`,
+      );
+
+      await this.oneSignalService.updateUserTags(visitorId, tags);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send RP balance tag for visitor ${visitorId}`,
+        error,
+      );
     }
   }
 }

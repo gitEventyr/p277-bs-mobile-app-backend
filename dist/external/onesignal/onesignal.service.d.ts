@@ -13,6 +13,7 @@ export declare class OneSignalService {
     sendPasswordResetEmail(visitorId: string, resetLink: string, email?: string): Promise<void>;
     sendEmailVerificationCode(visitorId: string, verificationCode: string, email?: string): Promise<void>;
     sendPhoneVerificationCode(visitorId: string, verificationCode: string, phoneNumber?: string): Promise<void>;
+    updateUserTags(visitorId: string, tags: Record<string, string>): Promise<boolean>;
     verifyConnection(): Promise<boolean>;
     isConfigured(): boolean;
     private sendNotification;

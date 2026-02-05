@@ -4,14 +4,16 @@ import { Casino } from '../../entities/casino.entity';
 import { Player } from '../../entities/player.entity';
 import { CasinoApiService } from '../../external/casino/casino-api.service';
 import { RpBalanceService } from '../../users/services/rp-balance.service';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 export declare class CasinoActionService {
     private casinoActionRepository;
     private casinoRepository;
     private playerRepository;
     private readonly casinoApiService;
     private readonly rpBalanceService;
+    private readonly oneSignalService;
     private readonly logger;
-    constructor(casinoActionRepository: Repository<CasinoAction>, casinoRepository: Repository<Casino>, playerRepository: Repository<Player>, casinoApiService: CasinoApiService, rpBalanceService: RpBalanceService);
+    constructor(casinoActionRepository: Repository<CasinoAction>, casinoRepository: Repository<Casino>, playerRepository: Repository<Player>, casinoApiService: CasinoApiService, rpBalanceService: RpBalanceService, oneSignalService: OneSignalService);
     findAll(options: {
         page: number;
         limit: number;
@@ -62,6 +64,7 @@ export declare class CasinoActionService {
     private processRpRewards;
     private processRegistrationReward;
     private processDepositReward;
+    private sendCasinoActionTags;
     update(id: number, updateData: Partial<{
         casino_name: string;
         date_of_action: Date;

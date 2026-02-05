@@ -93,6 +93,45 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             verification_code: verificationCode,
         });
     }
+    async updateUserTags(visitorId, tags) {
+        if (!this.isConfigured()) {
+            this.logger.warn('OneSignal API is not configured. Skipping tag update.');
+            return false;
+        }
+        try {
+            const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}`;
+            const payload = {
+                properties: {
+                    tags,
+                },
+            };
+            this.logger.debug(`Updating OneSignal tags for visitor ${visitorId}`, {
+                tagCount: Object.keys(tags).length,
+                tags,
+            });
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.patch(apiUrl, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Key ${this.apiKey}`,
+                },
+                timeout: 10000,
+            }));
+            this.logger.log(`Successfully updated OneSignal tags for visitor ${visitorId}`, {
+                statusCode: response.status,
+                tagCount: Object.keys(tags).length,
+            });
+            return true;
+        }
+        catch (error) {
+            this.logger.error(`Failed to update OneSignal tags for visitor ${visitorId}`, {
+                error: error.message,
+                statusCode: error.response?.status,
+                response: error.response?.data,
+                tags,
+            });
+            return false;
+        }
+    }
     async verifyConnection() {
         return this.isConfigured();
     }

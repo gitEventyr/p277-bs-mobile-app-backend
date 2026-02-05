@@ -2,11 +2,14 @@ import { Repository, DataSource } from 'typeorm';
 import { Player } from '../../entities/player.entity';
 import { RpBalanceTransaction } from '../../entities/rp-balance-transaction.entity';
 import { ModifyRpBalanceDto } from '../dto/rp-balance.dto';
+import { OneSignalService } from '../../external/onesignal/onesignal.service';
 export declare class RpBalanceService {
     private readonly playerRepository;
     private readonly rpTransactionRepository;
     private readonly dataSource;
-    constructor(playerRepository: Repository<Player>, rpTransactionRepository: Repository<RpBalanceTransaction>, dataSource: DataSource);
+    private readonly oneSignalService;
+    private readonly logger;
+    constructor(playerRepository: Repository<Player>, rpTransactionRepository: Repository<RpBalanceTransaction>, dataSource: DataSource, oneSignalService: OneSignalService);
     modifyRpBalance(userId: number, modifyRpBalanceDto: ModifyRpBalanceDto, adminId?: string): Promise<{
         balance_before: number;
         balance_after: number;
@@ -22,6 +25,7 @@ export declare class RpBalanceService {
         transaction_id: number;
     }>;
     private updateRpBalance;
+    private sendRpBalanceTags;
     getRpTransactionHistory(userId: number, page?: number, limit?: number): Promise<{
         data: RpBalanceTransaction[];
         total: number;
