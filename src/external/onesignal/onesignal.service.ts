@@ -78,7 +78,7 @@ export class OneSignalService {
       custom_data: customData,
       // Note: contents field may be required by OneSignal API even when using templates
       // The template will override this placeholder content
-      contents: { en: 'SMS notification' },
+      // contents: { en: 'SMS notification' },
     };
 
     await this.sendNotification(payload, 'SMS');

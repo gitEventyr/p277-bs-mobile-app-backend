@@ -192,7 +192,7 @@ describe('OneSignal Integration Test', () => {
         custom_data: {
           verification_code: '654321',
         },
-        contents: { en: 'SMS notification' },
+        // contents: { en: 'SMS notification' },
       });
 
       // Verify headers

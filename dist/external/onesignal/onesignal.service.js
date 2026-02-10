@@ -59,7 +59,6 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             },
             target_channel: 'sms',
             custom_data: customData,
-            contents: { en: 'SMS notification' },
         };
         await this.sendNotification(payload, 'SMS');
     }
