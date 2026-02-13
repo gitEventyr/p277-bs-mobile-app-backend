@@ -1,0 +1,47 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RequestPhoneVerificationResponseDto = exports.RequestPhoneVerificationDto = void 0;
+const swagger_1 = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
+class RequestPhoneVerificationDto {
+    newPhone;
+}
+exports.RequestPhoneVerificationDto = RequestPhoneVerificationDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'New phone number to verify and update to (optional)',
+        example: '+1234567890',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], RequestPhoneVerificationDto.prototype, "newPhone", void 0);
+class RequestPhoneVerificationResponseDto {
+    message;
+    expiresIn;
+}
+exports.RequestPhoneVerificationResponseDto = RequestPhoneVerificationResponseDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'Verification code sent to your phone number',
+        description: 'Success message',
+    }),
+    __metadata("design:type", String)
+], RequestPhoneVerificationResponseDto.prototype, "message", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 600,
+        description: 'Code expiration time in seconds',
+    }),
+    __metadata("design:type", Number)
+], RequestPhoneVerificationResponseDto.prototype, "expiresIn", void 0);
+//# sourceMappingURL=request-phone-verification.dto.js.map

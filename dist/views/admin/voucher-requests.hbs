@@ -1,0 +1,281 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="bi bi-clipboard-check"></i>
+    Voucher Requests Management
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshPage()">
+        <i class="bi bi-arrow-clockwise"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-funnel"></i>
+    Search & Filter Voucher Requests
+  </div>
+  <div class="card-body">
+    <form id="voucherRequestsFilterForm">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status" name="status">
+            <option value="">All Statuses</option>
+            <option value="requested" {{#if (eq statusFilter 'requested')}}selected{{/if}}>Pending</option>
+            <option value="sent" {{#if (eq statusFilter 'sent')}}selected{{/if}}>Sent</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check2-square"></i>
+            Apply
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" onclick="clearFilter()">
+            <i class="bi bi-x-circle"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Voucher Requests Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>
+      <i class="bi bi-table"></i>
+      Voucher Requests List ({{voucherRequests.length}} total)
+    </span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Request Date</th>
+            <th>Voucher</th>
+            <th>RP Value</th>
+            <th>Real Value</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each voucherRequests}}
+          <tr>
+            <td>
+              <span class="badge bg-info">{{this.id}}</span>
+            </td>
+            <td>
+              <div>
+                <div class="fw-bold">{{this.user.name}}</div>
+                <small class="text-muted">{{this.user.email}}</small>
+              </div>
+            </td>
+            <td>
+              <small class="text-muted">{{formatDate this.request_date}}</small>
+            </td>
+            <td>{{this.voucher.name}}</td>
+            <td><span class="badge bg-info">{{this.voucher.rp_price}} RP</span></td>
+            <td><span class="badge bg-success">£{{this.voucher.amazon_vouchers_equivalent}}</span></td>
+            <td>
+              {{#if (eq this.status "requested")}}
+                <span class="badge bg-warning">Requested</span>
+              {{else if (eq this.status "sent")}}
+                <span class="badge bg-success">Sent</span>
+              {{else if (eq this.status "canceled")}}
+                <span class="badge bg-danger">Canceled</span>
+              {{/if}}
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group">
+                {{#if (eq this.status "requested")}}
+                  <button type="button" class="btn btn-outline-success"
+                          onclick="updateVoucherRequestStatus({{this.id}}, 'sent')"
+                          title="Mark as Sent">
+                    <i class="bi bi-check-circle"></i>
+                  </button>
+                {{else}}
+                  <span class="text-muted">-</span>
+                {{/if}}
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+          {{#unless voucherRequests.length}}
+          <tr>
+            <td colspan="8" class="text-center text-muted">No voucher requests found matching your filters</td>
+          </tr>
+          {{/unless}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle"></i>
+          Confirm Action
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmationMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Form submission handler with AJAX table reload
+document.addEventListener('DOMContentLoaded', function() {
+  const filterForm = document.getElementById('voucherRequestsFilterForm');
+  if (filterForm) {
+    filterForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const status = document.getElementById('status').value;
+      const params = new URLSearchParams();
+
+      if (status) params.append('status', status);
+
+      const tableCard = document.querySelector('.card:has(table)');
+      if (tableCard) {
+        tableCard.style.position = 'relative';
+        const overlay = document.createElement('div');
+        overlay.id = 'table-loading-overlay';
+        overlay.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+        overlay.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        tableCard.appendChild(overlay);
+      }
+
+      try {
+        const response = await fetch('/admin/voucher-requests?' + params.toString(), { credentials: 'same-origin' });
+        if (response.ok) {
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const newTableCard = doc.querySelector('.card:has(table)');
+          const oldTableCard = document.querySelector('.card:has(table)');
+          if (newTableCard && oldTableCard) {
+            oldTableCard.innerHTML = newTableCard.innerHTML;
+          }
+          window.history.pushState({}, '', '/admin/voucher-requests?' + params.toString());
+        } else {
+          window.location.href = '/admin/voucher-requests?' + params.toString();
+        }
+      } catch (error) {
+        console.error('Error reloading table:', error);
+        window.location.href = '/admin/voucher-requests?' + params.toString();
+      } finally {
+        const overlay = document.getElementById('table-loading-overlay');
+        if (overlay) overlay.remove();
+      }
+    });
+  }
+});
+
+// Clear Filter
+async function clearFilter() {
+  document.getElementById('status').value = '';
+
+  // Use AJAX reload instead of window.location to avoid page reload
+  const tableCard = document.querySelector('.card:has(table)');
+  if (tableCard) {
+    tableCard.style.position = 'relative';
+    const overlay = document.createElement('div');
+    overlay.id = 'table-loading-overlay';
+    overlay.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+    overlay.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+    tableCard.appendChild(overlay);
+  }
+
+  try {
+    const response = await fetch('/admin/voucher-requests', { credentials: 'same-origin' });
+    if (response.ok) {
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const newTableCard = doc.querySelector('.card:has(table)');
+      const oldTableCard = document.querySelector('.card:has(table)');
+      if (newTableCard && oldTableCard) {
+        oldTableCard.innerHTML = newTableCard.innerHTML;
+      }
+      window.history.pushState({}, '', '/admin/voucher-requests');
+    }
+  } catch (error) {
+    console.error('Error clearing filters:', error);
+  }
+}
+
+// Refresh Page
+function refreshPage() {
+  window.location.reload();
+}
+
+// Update Voucher Request Status
+function updateVoucherRequestStatus(id, status) {
+  const message = 'Are you sure you want to mark this voucher request as sent?';
+
+  // Set up confirmation modal
+  document.getElementById('confirmationMessage').textContent = message;
+  const confirmBtn = document.getElementById('confirmActionBtn');
+
+  // Update button style
+  confirmBtn.className = 'btn btn-success';
+  confirmBtn.textContent = 'Confirm';
+
+  // Remove existing event listeners
+  const newConfirmBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+  // Add new event listener
+  newConfirmBtn.addEventListener('click', function() {
+    // Hide modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+    modal.hide();
+
+    // Make API call
+    fetch(`/admin/vouchers/requests/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer {{admin.token}}`
+      },
+      body: JSON.stringify({ status })
+    }).then(response => {
+      if (response.ok) {
+        location.reload();
+      } else {
+        alert('Error updating voucher request status');
+      }
+    }).catch(error => {
+      alert('Error updating voucher request status: ' + error.message);
+    });
+  });
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+  modal.show();
+}
+</script>

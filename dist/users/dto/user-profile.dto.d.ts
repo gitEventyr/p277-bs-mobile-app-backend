@@ -1,0 +1,37 @@
+export declare class UserProfileDto {
+    id: number;
+    visitor_id: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+    coins_balance: number;
+    rp_balance: number;
+    level: number;
+    experience: number;
+    scratch_cards: number;
+    device_udid?: string;
+    subscription_agreement?: boolean;
+    tnc_agreement?: boolean;
+    os?: string;
+    device?: string;
+    created_at: Date;
+    updated_at: Date;
+    pid?: string;
+    c?: string;
+    af_channel?: string;
+    af_adset?: string;
+    af_ad?: string;
+    af_keywords?: string[];
+    is_retargeting?: boolean;
+    af_click_lookback?: number;
+    af_viewthrough_lookback?: number;
+    af_sub1?: string;
+    af_sub2?: string;
+    af_sub3?: string;
+    af_sub4?: string;
+    af_sub5?: string;
+    email_verified: boolean;
+    email_verified_at?: Date;
+    phone_verified: boolean;
+    phone_verified_at?: Date;
+}
