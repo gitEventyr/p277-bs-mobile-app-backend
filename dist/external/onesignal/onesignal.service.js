@@ -31,9 +31,57 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             this.logger.warn('OneSignal API configuration is incomplete. OneSignal notifications will be disabled.');
         }
     }
+    async createEmailSubscription(visitorId, email) {
+        if (!this.isConfigured()) {
+            this.logger.warn('OneSignal API is not configured. Skipping email subscription creation.');
+            return false;
+        }
+        try {
+            const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}/subscriptions`;
+            const payload = {
+                subscription: {
+                    type: 'Email',
+                    token: email,
+                },
+            };
+            this.logger.debug(`Creating email subscription for visitor ${visitorId}: ${email}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(apiUrl, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Key ${this.apiKey}`,
+                },
+                timeout: 10000,
+            }));
+            this.logger.log(`Successfully created email subscription for visitor ${visitorId}: ${email}`, {
+                statusCode: response.status,
+            });
+            return true;
+        }
+        catch (error) {
+            this.logger.error(`Failed to create email subscription for visitor ${visitorId}: ${email}`, {
+                error: error.message,
+                statusCode: error.response?.status,
+                response: error.response?.data,
+            });
+            return false;
+        }
+    }
     async sendTemplateEmail(templateId, visitorId, emailSubject, customData, email) {
         if (!this.isConfigured()) {
             throw new common_1.BadRequestException('OneSignal API is not configured');
+        }
+        if (email) {
+            this.logger.debug(`Checking if email subscription already exists for visitor ${visitorId}: ${email}`);
+            const userData = await this.getUserSubscriptions(visitorId);
+            const emailSubscriptionExists = userData?.subscriptions?.some((sub) => sub.type === 'Email' &&
+                sub.token?.toLowerCase() === email.toLowerCase());
+            if (emailSubscriptionExists) {
+                this.logger.debug(`Email subscription already exists for visitor ${visitorId}: ${email}`);
+            }
+            else {
+                this.logger.debug(`Creating new email subscription for visitor ${visitorId}: ${email}`);
+                await this.createEmailSubscription(visitorId, email);
+            }
         }
         const payload = {
             app_id: this.appId,
@@ -41,39 +89,74 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             target_channel: 'email',
             email_subject: emailSubject,
             custom_data: customData,
-        };
-        if (email) {
-            payload.include_email_tokens = [email];
-            this.logger.debug(`Sending email to specific address: ${email} (auto-creates subscription if needed)`);
-        }
-        else {
-            payload.include_aliases = {
+            include_aliases: {
                 external_id: [visitorId],
-            };
-            this.logger.debug(`Sending email via visitor_id: ${visitorId} (uses existing subscriptions)`);
-        }
+            },
+        };
+        this.logger.debug(`Sending email via visitor_id: ${visitorId}${email ? ` (to ${email})` : ''}`);
         await this.sendNotification(payload, 'email');
+    }
+    async createSMSSubscription(visitorId, phoneNumber) {
+        if (!this.isConfigured()) {
+            this.logger.warn('OneSignal API is not configured. Skipping SMS subscription creation.');
+            return false;
+        }
+        try {
+            const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}/subscriptions`;
+            const payload = {
+                subscription: {
+                    type: 'SMS',
+                    token: phoneNumber,
+                },
+            };
+            this.logger.debug(`Creating SMS subscription for visitor ${visitorId}: ${phoneNumber}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(apiUrl, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Key ${this.apiKey}`,
+                },
+                timeout: 10000,
+            }));
+            this.logger.log(`Successfully created SMS subscription for visitor ${visitorId}: ${phoneNumber}`, {
+                statusCode: response.status,
+            });
+            return true;
+        }
+        catch (error) {
+            this.logger.error(`Failed to create SMS subscription for visitor ${visitorId}: ${phoneNumber}`, {
+                error: error.message,
+                statusCode: error.response?.status,
+                response: error.response?.data,
+            });
+            return false;
+        }
     }
     async sendTemplateSMS(templateId, visitorId, customData, phoneNumber) {
         if (!this.isConfigured()) {
             throw new common_1.BadRequestException('OneSignal API is not configured');
+        }
+        if (phoneNumber) {
+            this.logger.debug(`Checking if SMS subscription already exists for visitor ${visitorId}: ${phoneNumber}`);
+            const userData = await this.getUserSubscriptions(visitorId);
+            const smsSubscriptionExists = userData?.subscriptions?.some((sub) => sub.type === 'SMS' && sub.token === phoneNumber);
+            if (smsSubscriptionExists) {
+                this.logger.debug(`SMS subscription already exists for visitor ${visitorId}: ${phoneNumber}`);
+            }
+            else {
+                this.logger.debug(`Creating new SMS subscription for visitor ${visitorId}: ${phoneNumber}`);
+                await this.createSMSSubscription(visitorId, phoneNumber);
+            }
         }
         const payload = {
             app_id: this.appId,
             template_id: templateId,
             target_channel: 'sms',
             custom_data: customData,
-        };
-        if (phoneNumber) {
-            payload.include_phone_numbers = [phoneNumber];
-            this.logger.debug(`Sending SMS to specific number: ${phoneNumber} (auto-creates subscription if needed)`);
-        }
-        else {
-            payload.include_aliases = {
+            include_aliases: {
                 external_id: [visitorId],
-            };
-            this.logger.debug(`Sending SMS via visitor_id: ${visitorId} (uses existing subscriptions)`);
-        }
+            },
+        };
+        this.logger.debug(`Sending SMS via visitor_id: ${visitorId}${phoneNumber ? ` (to ${phoneNumber})` : ''}`);
         await this.sendNotification(payload, 'SMS');
     }
     async sendPasswordResetEmail(visitorId, resetLink, email) {

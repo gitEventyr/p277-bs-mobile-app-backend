@@ -31,12 +31,75 @@ export class OneSignalService {
   }
 
   /**
+   * Create an email subscription for a user
+   * @param visitorId - User's visitor ID (external_id)
+   * @param email - Email address to subscribe
+   * @returns Promise<boolean> - Returns true if successful, false if failed (non-blocking)
+   */
+  async createEmailSubscription(
+    visitorId: string,
+    email: string,
+  ): Promise<boolean> {
+    if (!this.isConfigured()) {
+      this.logger.warn(
+        'OneSignal API is not configured. Skipping email subscription creation.',
+      );
+      return false;
+    }
+
+    try {
+      const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}/subscriptions`;
+
+      const payload = {
+        subscription: {
+          type: 'Email',
+          token: email,
+        },
+      };
+
+      this.logger.debug(
+        `Creating email subscription for visitor ${visitorId}: ${email}`,
+      );
+
+      const response = await firstValueFrom(
+        this.httpService.post(apiUrl, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Key ${this.apiKey}`,
+          },
+          timeout: 10000,
+        }),
+      );
+
+      this.logger.log(
+        `Successfully created email subscription for visitor ${visitorId}: ${email}`,
+        {
+          statusCode: response.status,
+        },
+      );
+
+      return true;
+    } catch (error) {
+      // Non-blocking: log error but don't throw
+      this.logger.error(
+        `Failed to create email subscription for visitor ${visitorId}: ${email}`,
+        {
+          error: error.message,
+          statusCode: error.response?.status,
+          response: error.response?.data,
+        },
+      );
+      return false;
+    }
+  }
+
+  /**
    * Low-level API method to send a templated email
    * @param templateId - OneSignal template ID
    * @param visitorId - User's visitor ID (external_id)
    * @param emailSubject - Email subject line
    * @param customData - Template variables
-   * @param email - Optional: specific email address to send to (will auto-create subscription)
+   * @param email - Optional: specific email address to send to (creates subscription and links to user)
    */
   async sendTemplateEmail(
     templateId: string,
@@ -49,30 +112,114 @@ export class OneSignalService {
       throw new BadRequestException('OneSignal API is not configured');
     }
 
+    // If email is provided, check if subscription already exists before creating
+    if (email) {
+      this.logger.debug(
+        `Checking if email subscription already exists for visitor ${visitorId}: ${email}`,
+      );
+
+      // Get user's current subscriptions
+      const userData = await this.getUserSubscriptions(visitorId);
+
+      // Check if email subscription already exists
+      const emailSubscriptionExists = userData?.subscriptions?.some(
+        (sub) =>
+          sub.type === 'Email' &&
+          sub.token?.toLowerCase() === email.toLowerCase(),
+      );
+
+      if (emailSubscriptionExists) {
+        this.logger.debug(
+          `Email subscription already exists for visitor ${visitorId}: ${email}`,
+        );
+      } else {
+        this.logger.debug(
+          `Creating new email subscription for visitor ${visitorId}: ${email}`,
+        );
+        await this.createEmailSubscription(visitorId, email);
+      }
+    }
+
     const payload: OneSignalNotificationRequest = {
       app_id: this.appId!,
       template_id: templateId,
       target_channel: 'email',
       email_subject: emailSubject,
       custom_data: customData,
+      // Always send via external_id to ensure we use the correct subscription
+      include_aliases: {
+        external_id: [visitorId],
+      },
     };
 
-    // Use direct email targeting if email is provided, otherwise use visitor_id
-    if (email) {
-      payload.include_email_tokens = [email];
-      this.logger.debug(
-        `Sending email to specific address: ${email} (auto-creates subscription if needed)`,
-      );
-    } else {
-      payload.include_aliases = {
-        external_id: [visitorId],
-      };
-      this.logger.debug(
-        `Sending email via visitor_id: ${visitorId} (uses existing subscriptions)`,
-      );
-    }
+    this.logger.debug(
+      `Sending email via visitor_id: ${visitorId}${email ? ` (to ${email})` : ''}`,
+    );
 
     await this.sendNotification(payload, 'email');
+  }
+
+  /**
+   * Create an SMS subscription for a user
+   * @param visitorId - User's visitor ID (external_id)
+   * @param phoneNumber - Phone number to subscribe in E.164 format
+   * @returns Promise<boolean> - Returns true if successful, false if failed (non-blocking)
+   */
+  async createSMSSubscription(
+    visitorId: string,
+    phoneNumber: string,
+  ): Promise<boolean> {
+    if (!this.isConfigured()) {
+      this.logger.warn(
+        'OneSignal API is not configured. Skipping SMS subscription creation.',
+      );
+      return false;
+    }
+
+    try {
+      const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}/subscriptions`;
+
+      const payload = {
+        subscription: {
+          type: 'SMS',
+          token: phoneNumber,
+        },
+      };
+
+      this.logger.debug(
+        `Creating SMS subscription for visitor ${visitorId}: ${phoneNumber}`,
+      );
+
+      const response = await firstValueFrom(
+        this.httpService.post(apiUrl, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Key ${this.apiKey}`,
+          },
+          timeout: 10000,
+        }),
+      );
+
+      this.logger.log(
+        `Successfully created SMS subscription for visitor ${visitorId}: ${phoneNumber}`,
+        {
+          statusCode: response.status,
+        },
+      );
+
+      return true;
+    } catch (error) {
+      // Non-blocking: log error but don't throw
+      this.logger.error(
+        `Failed to create SMS subscription for visitor ${visitorId}: ${phoneNumber}`,
+        {
+          error: error.message,
+          statusCode: error.response?.status,
+          response: error.response?.data,
+        },
+      );
+      return false;
+    }
   }
 
   /**
@@ -80,7 +227,7 @@ export class OneSignalService {
    * @param templateId - OneSignal template ID
    * @param visitorId - User's visitor ID (external_id)
    * @param customData - Template variables
-   * @param phoneNumber - Optional: specific phone number to send to in E.164 format (will auto-create subscription)
+   * @param phoneNumber - Optional: specific phone number to send to in E.164 format (creates subscription and links to user)
    */
   async sendTemplateSMS(
     templateId: string,
@@ -92,30 +239,49 @@ export class OneSignalService {
       throw new BadRequestException('OneSignal API is not configured');
     }
 
+    // If phoneNumber is provided, check if subscription already exists before creating
+    if (phoneNumber) {
+      this.logger.debug(
+        `Checking if SMS subscription already exists for visitor ${visitorId}: ${phoneNumber}`,
+      );
+
+      // Get user's current subscriptions
+      const userData = await this.getUserSubscriptions(visitorId);
+
+      // Check if SMS subscription already exists
+      const smsSubscriptionExists = userData?.subscriptions?.some(
+        (sub) => sub.type === 'SMS' && sub.token === phoneNumber,
+      );
+
+      if (smsSubscriptionExists) {
+        this.logger.debug(
+          `SMS subscription already exists for visitor ${visitorId}: ${phoneNumber}`,
+        );
+      } else {
+        this.logger.debug(
+          `Creating new SMS subscription for visitor ${visitorId}: ${phoneNumber}`,
+        );
+        await this.createSMSSubscription(visitorId, phoneNumber);
+      }
+    }
+
     const payload: OneSignalNotificationRequest = {
       app_id: this.appId!,
       template_id: templateId,
       target_channel: 'sms',
       custom_data: customData,
+      // Always send via external_id to ensure we use the correct subscription
+      include_aliases: {
+        external_id: [visitorId],
+      },
       // Note: contents field may be required by OneSignal API even when using templates
       // The template will override this placeholder content
       // contents: { en: 'SMS notification' },
     };
 
-    // Use direct phone targeting if phoneNumber is provided, otherwise use visitor_id
-    if (phoneNumber) {
-      payload.include_phone_numbers = [phoneNumber];
-      this.logger.debug(
-        `Sending SMS to specific number: ${phoneNumber} (auto-creates subscription if needed)`,
-      );
-    } else {
-      payload.include_aliases = {
-        external_id: [visitorId],
-      };
-      this.logger.debug(
-        `Sending SMS via visitor_id: ${visitorId} (uses existing subscriptions)`,
-      );
-    }
+    this.logger.debug(
+      `Sending SMS via visitor_id: ${visitorId}${phoneNumber ? ` (to ${phoneNumber})` : ''}`,
+    );
 
     await this.sendNotification(payload, 'SMS');
   }
