@@ -6,6 +6,7 @@ export interface OneSignalNotificationRequest {
     };
     include_email_tokens?: string[];
     include_phone_numbers?: string[];
+    include_subscription_ids?: string[];
     target_channel: 'email' | 'sms';
     custom_data?: Record<string, any>;
     email_subject?: string;

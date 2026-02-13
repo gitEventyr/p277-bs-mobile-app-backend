@@ -112,49 +112,74 @@ export class OneSignalService {
       throw new BadRequestException('OneSignal API is not configured');
     }
 
-    // If email is provided, check if subscription already exists before creating
-    if (email) {
-      this.logger.debug(
-        `Checking if email subscription already exists for visitor ${visitorId}: ${email}`,
-      );
-
-      // Get user's current subscriptions
-      const userData = await this.getUserSubscriptions(visitorId);
-
-      // Check if email subscription already exists
-      const emailSubscriptionExists = userData?.subscriptions?.some(
-        (sub) =>
-          sub.type === 'Email' &&
-          sub.token?.toLowerCase() === email.toLowerCase(),
-      );
-
-      if (emailSubscriptionExists) {
-        this.logger.debug(
-          `Email subscription already exists for visitor ${visitorId}: ${email}`,
-        );
-      } else {
-        this.logger.debug(
-          `Creating new email subscription for visitor ${visitorId}: ${email}`,
-        );
-        await this.createEmailSubscription(visitorId, email);
-      }
-    }
-
     const payload: OneSignalNotificationRequest = {
       app_id: this.appId!,
       template_id: templateId,
       target_channel: 'email',
       email_subject: emailSubject,
       custom_data: customData,
-      // Always send via external_id to ensure we use the correct subscription
-      include_aliases: {
-        external_id: [visitorId],
-      },
     };
 
-    this.logger.debug(
-      `Sending email via visitor_id: ${visitorId}${email ? ` (to ${email})` : ''}`,
-    );
+    // If email is provided, send to specific subscription ID to avoid sending to all subscriptions
+    if (email) {
+      this.logger.debug(
+        `Finding email subscription for visitor ${visitorId}: ${email}`,
+      );
+
+      // Get user's current subscriptions
+      const userData = await this.getUserSubscriptions(visitorId);
+
+      // Find the subscription for the specific email
+      const emailSubscription = userData?.subscriptions?.find(
+        (sub) =>
+          sub.type === 'Email' &&
+          sub.token?.toLowerCase() === email.toLowerCase() &&
+          sub.enabled,
+      );
+
+      if (emailSubscription) {
+        this.logger.debug(
+          `Sending to specific email subscription ID: ${emailSubscription.id} for ${email}`,
+        );
+        payload.include_subscription_ids = [emailSubscription.id];
+      } else {
+        // Subscription doesn't exist, create it first
+        this.logger.debug(
+          `Email subscription not found, creating for visitor ${visitorId}: ${email}`,
+        );
+        await this.createEmailSubscription(visitorId, email);
+
+        // Retry fetching to get the new subscription ID
+        const updatedUserData = await this.getUserSubscriptions(visitorId);
+        const newEmailSubscription = updatedUserData?.subscriptions?.find(
+          (sub) =>
+            sub.type === 'Email' &&
+            sub.token?.toLowerCase() === email.toLowerCase() &&
+            sub.enabled,
+        );
+
+        if (newEmailSubscription) {
+          this.logger.debug(
+            `Sending to newly created email subscription ID: ${newEmailSubscription.id} for ${email}`,
+          );
+          payload.include_subscription_ids = [newEmailSubscription.id];
+        } else {
+          // Fallback: if we still can't find the subscription, use external_id
+          this.logger.warn(
+            `Could not find email subscription after creation, falling back to external_id for visitor ${visitorId}`,
+          );
+          payload.include_aliases = {
+            external_id: [visitorId],
+          };
+        }
+      }
+    } else {
+      // No specific email provided, use external_id (legacy behavior)
+      this.logger.debug(`Sending email via external_id to visitor ${visitorId}`);
+      payload.include_aliases = {
+        external_id: [visitorId],
+      };
+    }
 
     await this.sendNotification(payload, 'email');
   }
@@ -239,49 +264,76 @@ export class OneSignalService {
       throw new BadRequestException('OneSignal API is not configured');
     }
 
-    // If phoneNumber is provided, check if subscription already exists before creating
-    if (phoneNumber) {
-      this.logger.debug(
-        `Checking if SMS subscription already exists for visitor ${visitorId}: ${phoneNumber}`,
-      );
-
-      // Get user's current subscriptions
-      const userData = await this.getUserSubscriptions(visitorId);
-
-      // Check if SMS subscription already exists
-      const smsSubscriptionExists = userData?.subscriptions?.some(
-        (sub) => sub.type === 'SMS' && sub.token === phoneNumber,
-      );
-
-      if (smsSubscriptionExists) {
-        this.logger.debug(
-          `SMS subscription already exists for visitor ${visitorId}: ${phoneNumber}`,
-        );
-      } else {
-        this.logger.debug(
-          `Creating new SMS subscription for visitor ${visitorId}: ${phoneNumber}`,
-        );
-        await this.createSMSSubscription(visitorId, phoneNumber);
-      }
-    }
-
     const payload: OneSignalNotificationRequest = {
       app_id: this.appId!,
       template_id: templateId,
       target_channel: 'sms',
       custom_data: customData,
-      // Always send via external_id to ensure we use the correct subscription
-      include_aliases: {
-        external_id: [visitorId],
-      },
       // Note: contents field may be required by OneSignal API even when using templates
       // The template will override this placeholder content
       // contents: { en: 'SMS notification' },
     };
 
-    this.logger.debug(
-      `Sending SMS via visitor_id: ${visitorId}${phoneNumber ? ` (to ${phoneNumber})` : ''}`,
-    );
+    // If phoneNumber is provided, send to specific subscription ID to avoid sending to all subscriptions
+    if (phoneNumber) {
+      this.logger.debug(
+        `Finding SMS subscription for visitor ${visitorId}: ${phoneNumber}`,
+      );
+
+      // Get user's current subscriptions
+      const userData = await this.getUserSubscriptions(visitorId);
+
+      // Find the subscription for the specific phone number
+      const smsSubscription = userData?.subscriptions?.find(
+        (sub) =>
+          sub.type === 'SMS' &&
+          sub.token === phoneNumber &&
+          sub.enabled,
+      );
+
+      if (smsSubscription) {
+        this.logger.debug(
+          `Sending to specific SMS subscription ID: ${smsSubscription.id} for ${phoneNumber}`,
+        );
+        payload.include_subscription_ids = [smsSubscription.id];
+      } else {
+        // Subscription doesn't exist, create it first
+        this.logger.debug(
+          `SMS subscription not found, creating for visitor ${visitorId}: ${phoneNumber}`,
+        );
+        await this.createSMSSubscription(visitorId, phoneNumber);
+
+        // Retry fetching to get the new subscription ID
+        const updatedUserData = await this.getUserSubscriptions(visitorId);
+        const newSmsSubscription = updatedUserData?.subscriptions?.find(
+          (sub) =>
+            sub.type === 'SMS' &&
+            sub.token === phoneNumber &&
+            sub.enabled,
+        );
+
+        if (newSmsSubscription) {
+          this.logger.debug(
+            `Sending to newly created SMS subscription ID: ${newSmsSubscription.id} for ${phoneNumber}`,
+          );
+          payload.include_subscription_ids = [newSmsSubscription.id];
+        } else {
+          // Fallback: if we still can't find the subscription, use external_id
+          this.logger.warn(
+            `Could not find SMS subscription after creation, falling back to external_id for visitor ${visitorId}`,
+          );
+          payload.include_aliases = {
+            external_id: [visitorId],
+          };
+        }
+      }
+    } else {
+      // No specific phone number provided, use external_id (legacy behavior)
+      this.logger.debug(`Sending SMS via external_id to visitor ${visitorId}`);
+      payload.include_aliases = {
+        external_id: [visitorId],
+      };
+    }
 
     await this.sendNotification(payload, 'SMS');
   }
@@ -611,18 +663,22 @@ export class OneSignalService {
         {
           template_id: payload.template_id,
           target_channel: payload.target_channel,
-          recipient_count: payload.include_aliases
-            ? payload.include_aliases.external_id.length
+          recipient_count: payload.include_subscription_ids
+            ? payload.include_subscription_ids.length
+            : payload.include_aliases
+              ? payload.include_aliases.external_id.length
+              : payload.include_email_tokens
+                ? payload.include_email_tokens.length
+                : payload.include_phone_numbers
+                  ? payload.include_phone_numbers.length
+                  : 0,
+          targeting_method: payload.include_subscription_ids
+            ? 'subscription_ids'
             : payload.include_email_tokens
-              ? payload.include_email_tokens.length
+              ? 'email_tokens'
               : payload.include_phone_numbers
-                ? payload.include_phone_numbers.length
-                : 0,
-          targeting_method: payload.include_email_tokens
-            ? 'email_tokens'
-            : payload.include_phone_numbers
-              ? 'phone_numbers'
-              : 'external_id',
+                ? 'phone_numbers'
+                : 'external_id',
         },
       );
 
