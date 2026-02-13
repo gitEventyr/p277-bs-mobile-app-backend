@@ -31,35 +31,49 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             this.logger.warn('OneSignal API configuration is incomplete. OneSignal notifications will be disabled.');
         }
     }
-    async sendTemplateEmail(templateId, visitorId, emailSubject, customData) {
+    async sendTemplateEmail(templateId, visitorId, emailSubject, customData, email) {
         if (!this.isConfigured()) {
             throw new common_1.BadRequestException('OneSignal API is not configured');
         }
         const payload = {
             app_id: this.appId,
             template_id: templateId,
-            include_aliases: {
-                external_id: [visitorId],
-            },
             target_channel: 'email',
             email_subject: emailSubject,
             custom_data: customData,
         };
+        if (email) {
+            payload.include_email_tokens = [email];
+            this.logger.debug(`Sending email to specific address: ${email} (auto-creates subscription if needed)`);
+        }
+        else {
+            payload.include_aliases = {
+                external_id: [visitorId],
+            };
+            this.logger.debug(`Sending email via visitor_id: ${visitorId} (uses existing subscriptions)`);
+        }
         await this.sendNotification(payload, 'email');
     }
-    async sendTemplateSMS(templateId, visitorId, customData) {
+    async sendTemplateSMS(templateId, visitorId, customData, phoneNumber) {
         if (!this.isConfigured()) {
             throw new common_1.BadRequestException('OneSignal API is not configured');
         }
         const payload = {
             app_id: this.appId,
             template_id: templateId,
-            include_aliases: {
-                external_id: [visitorId],
-            },
             target_channel: 'sms',
             custom_data: customData,
         };
+        if (phoneNumber) {
+            payload.include_phone_numbers = [phoneNumber];
+            this.logger.debug(`Sending SMS to specific number: ${phoneNumber} (auto-creates subscription if needed)`);
+        }
+        else {
+            payload.include_aliases = {
+                external_id: [visitorId],
+            };
+            this.logger.debug(`Sending SMS via visitor_id: ${visitorId} (uses existing subscriptions)`);
+        }
         await this.sendNotification(payload, 'SMS');
     }
     async sendPasswordResetEmail(visitorId, resetLink, email) {
@@ -70,7 +84,7 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
         this.logger.log(`Sending password reset email to visitor ${visitorId}${email ? ` (${email})` : ''}`);
         await this.sendTemplateEmail(templateId, visitorId, 'Reset Your Password', {
             reset_link: resetLink,
-        });
+        }, email);
     }
     async sendEmailVerificationCode(visitorId, verificationCode, email) {
         const templateId = this.configService.get('EMAIL_VALIDATION_OTP_TEMPLATE_ID');
@@ -80,7 +94,7 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
         this.logger.log(`Sending email verification code to visitor ${visitorId}${email ? ` (${email})` : ''}`);
         await this.sendTemplateEmail(templateId, visitorId, 'Verify Your Email Address', {
             verification_code: verificationCode,
-        });
+        }, email);
     }
     async sendPhoneVerificationCode(visitorId, verificationCode, phoneNumber) {
         const templateId = this.configService.get('SMS_BONUS_SPINS_OTP_TEMPLATE_ID');
@@ -90,7 +104,7 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
         this.logger.log(`Sending phone verification code to visitor ${visitorId}${phoneNumber ? ` (${phoneNumber})` : ''}`);
         await this.sendTemplateSMS(templateId, visitorId, {
             verification_code: verificationCode,
-        });
+        }, phoneNumber);
     }
     async updateUserTags(visitorId, tags) {
         if (!this.isConfigured()) {
@@ -131,6 +145,78 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             return false;
         }
     }
+    async getUserSubscriptions(visitorId) {
+        if (!this.isConfigured()) {
+            this.logger.warn('OneSignal API is not configured. Cannot fetch user subscriptions.');
+            return null;
+        }
+        try {
+            const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}`;
+            this.logger.debug(`Fetching OneSignal subscriptions for visitor ${visitorId}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(apiUrl, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Key ${this.apiKey}`,
+                },
+                timeout: 10000,
+            }));
+            this.logger.log(`Successfully fetched OneSignal user data for visitor ${visitorId}`, {
+                subscriptionCount: response.data.subscriptions?.length || 0,
+            });
+            return response.data;
+        }
+        catch (error) {
+            if (error.response?.status === 404) {
+                this.logger.warn(`User not found in OneSignal: visitor ${visitorId}`);
+                return null;
+            }
+            this.logger.error(`Failed to fetch OneSignal subscriptions for visitor ${visitorId}`, {
+                error: error.message,
+                statusCode: error.response?.status,
+                response: error.response?.data,
+            });
+            return null;
+        }
+    }
+    async disableSubscription(tokenType, token) {
+        if (!this.isConfigured()) {
+            this.logger.warn('OneSignal API is not configured. Skipping subscription disable.');
+            return false;
+        }
+        try {
+            const apiUrl = `https://api.onesignal.com/apps/${this.appId}/subscriptions_by_token/${tokenType}/${encodeURIComponent(token)}`;
+            const payload = {
+                subscription: {
+                    enabled: false,
+                    notification_types: -31,
+                },
+            };
+            this.logger.debug(`Disabling OneSignal ${tokenType} subscription for: ${token}`);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.patch(apiUrl, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Key ${this.apiKey}`,
+                },
+                timeout: 10000,
+            }));
+            this.logger.log(`Successfully disabled OneSignal ${tokenType} subscription for: ${token}`, {
+                statusCode: response.status,
+            });
+            return true;
+        }
+        catch (error) {
+            if (error.response?.status === 404) {
+                this.logger.debug(`Subscription not found in OneSignal (may not exist yet): ${tokenType} ${token}`);
+                return false;
+            }
+            this.logger.error(`Failed to disable OneSignal ${tokenType} subscription for: ${token}`, {
+                error: error.message,
+                statusCode: error.response?.status,
+                response: error.response?.data,
+            });
+            return false;
+        }
+    }
     async verifyConnection() {
         return this.isConfigured();
     }
@@ -146,7 +232,18 @@ let OneSignalService = OneSignalService_1 = class OneSignalService {
             this.logger.debug(`Calling OneSignal API: ${apiUrl} (API Key: ${maskedApiKey})`, {
                 template_id: payload.template_id,
                 target_channel: payload.target_channel,
-                recipient_count: payload.include_aliases.external_id.length,
+                recipient_count: payload.include_aliases
+                    ? payload.include_aliases.external_id.length
+                    : payload.include_email_tokens
+                        ? payload.include_email_tokens.length
+                        : payload.include_phone_numbers
+                            ? payload.include_phone_numbers.length
+                            : 0,
+                targeting_method: payload.include_email_tokens
+                    ? 'email_tokens'
+                    : payload.include_phone_numbers
+                        ? 'phone_numbers'
+                        : 'external_id',
             });
             const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(apiUrl, payload, {
                 headers: {

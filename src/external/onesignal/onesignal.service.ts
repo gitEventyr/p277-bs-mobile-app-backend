@@ -6,6 +6,7 @@ import {
   OneSignalNotificationRequest,
   OneSignalNotificationResponse,
   OneSignalErrorResponse,
+  OneSignalUserResponse,
 } from './interfaces/onesignal.interface';
 
 @Injectable()
@@ -31,12 +32,18 @@ export class OneSignalService {
 
   /**
    * Low-level API method to send a templated email
+   * @param templateId - OneSignal template ID
+   * @param visitorId - User's visitor ID (external_id)
+   * @param emailSubject - Email subject line
+   * @param customData - Template variables
+   * @param email - Optional: specific email address to send to (will auto-create subscription)
    */
   async sendTemplateEmail(
     templateId: string,
     visitorId: string,
     emailSubject: string,
     customData: Record<string, any>,
+    email?: string,
   ): Promise<void> {
     if (!this.isConfigured()) {
       throw new BadRequestException('OneSignal API is not configured');
@@ -45,24 +52,41 @@ export class OneSignalService {
     const payload: OneSignalNotificationRequest = {
       app_id: this.appId!,
       template_id: templateId,
-      include_aliases: {
-        external_id: [visitorId],
-      },
       target_channel: 'email',
       email_subject: emailSubject,
       custom_data: customData,
     };
+
+    // Use direct email targeting if email is provided, otherwise use visitor_id
+    if (email) {
+      payload.include_email_tokens = [email];
+      this.logger.debug(
+        `Sending email to specific address: ${email} (auto-creates subscription if needed)`,
+      );
+    } else {
+      payload.include_aliases = {
+        external_id: [visitorId],
+      };
+      this.logger.debug(
+        `Sending email via visitor_id: ${visitorId} (uses existing subscriptions)`,
+      );
+    }
 
     await this.sendNotification(payload, 'email');
   }
 
   /**
    * Low-level API method to send a templated SMS
+   * @param templateId - OneSignal template ID
+   * @param visitorId - User's visitor ID (external_id)
+   * @param customData - Template variables
+   * @param phoneNumber - Optional: specific phone number to send to in E.164 format (will auto-create subscription)
    */
   async sendTemplateSMS(
     templateId: string,
     visitorId: string,
     customData: Record<string, any>,
+    phoneNumber?: string,
   ): Promise<void> {
     if (!this.isConfigured()) {
       throw new BadRequestException('OneSignal API is not configured');
@@ -71,15 +95,27 @@ export class OneSignalService {
     const payload: OneSignalNotificationRequest = {
       app_id: this.appId!,
       template_id: templateId,
-      include_aliases: {
-        external_id: [visitorId],
-      },
       target_channel: 'sms',
       custom_data: customData,
       // Note: contents field may be required by OneSignal API even when using templates
       // The template will override this placeholder content
       // contents: { en: 'SMS notification' },
     };
+
+    // Use direct phone targeting if phoneNumber is provided, otherwise use visitor_id
+    if (phoneNumber) {
+      payload.include_phone_numbers = [phoneNumber];
+      this.logger.debug(
+        `Sending SMS to specific number: ${phoneNumber} (auto-creates subscription if needed)`,
+      );
+    } else {
+      payload.include_aliases = {
+        external_id: [visitorId],
+      };
+      this.logger.debug(
+        `Sending SMS via visitor_id: ${visitorId} (uses existing subscriptions)`,
+      );
+    }
 
     await this.sendNotification(payload, 'SMS');
   }
@@ -113,6 +149,7 @@ export class OneSignalService {
       {
         reset_link: resetLink,
       },
+      email,
     );
   }
 
@@ -145,6 +182,7 @@ export class OneSignalService {
       {
         verification_code: verificationCode,
       },
+      email,
     );
   }
 
@@ -170,9 +208,14 @@ export class OneSignalService {
       `Sending phone verification code to visitor ${visitorId}${phoneNumber ? ` (${phoneNumber})` : ''}`,
     );
 
-    await this.sendTemplateSMS(templateId, visitorId, {
-      verification_code: verificationCode,
-    });
+    await this.sendTemplateSMS(
+      templateId,
+      visitorId,
+      {
+        verification_code: verificationCode,
+      },
+      phoneNumber,
+    );
   }
 
   /**
@@ -186,9 +229,7 @@ export class OneSignalService {
     tags: Record<string, string>,
   ): Promise<boolean> {
     if (!this.isConfigured()) {
-      this.logger.warn(
-        'OneSignal API is not configured. Skipping tag update.',
-      );
+      this.logger.warn('OneSignal API is not configured. Skipping tag update.');
       return false;
     }
 
@@ -201,13 +242,10 @@ export class OneSignalService {
         },
       };
 
-      this.logger.debug(
-        `Updating OneSignal tags for visitor ${visitorId}`,
-        {
-          tagCount: Object.keys(tags).length,
-          tags,
-        },
-      );
+      this.logger.debug(`Updating OneSignal tags for visitor ${visitorId}`, {
+        tagCount: Object.keys(tags).length,
+        tags,
+      });
 
       const response = await firstValueFrom(
         this.httpService.patch(apiUrl, payload, {
@@ -237,6 +275,135 @@ export class OneSignalService {
           statusCode: error.response?.status,
           response: error.response?.data,
           tags,
+        },
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Get user information including all subscriptions
+   * @param visitorId - The visitor ID (external_id in OneSignal)
+   * @returns User data including subscriptions, or null if user not found
+   */
+  async getUserSubscriptions(
+    visitorId: string,
+  ): Promise<OneSignalUserResponse | null> {
+    if (!this.isConfigured()) {
+      this.logger.warn(
+        'OneSignal API is not configured. Cannot fetch user subscriptions.',
+      );
+      return null;
+    }
+
+    try {
+      const apiUrl = `https://api.onesignal.com/apps/${this.appId}/users/by/external_id/${encodeURIComponent(visitorId)}`;
+
+      this.logger.debug(
+        `Fetching OneSignal subscriptions for visitor ${visitorId}`,
+      );
+
+      const response = await firstValueFrom(
+        this.httpService.get<OneSignalUserResponse>(apiUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Key ${this.apiKey}`,
+          },
+          timeout: 10000,
+        }),
+      );
+
+      this.logger.log(
+        `Successfully fetched OneSignal user data for visitor ${visitorId}`,
+        {
+          subscriptionCount: response.data.subscriptions?.length || 0,
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        this.logger.warn(`User not found in OneSignal: visitor ${visitorId}`);
+        return null;
+      }
+
+      this.logger.error(
+        `Failed to fetch OneSignal subscriptions for visitor ${visitorId}`,
+        {
+          error: error.message,
+          statusCode: error.response?.status,
+          response: error.response?.data,
+        },
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Disable a subscription by its token (email address or phone number)
+   * @param tokenType - The subscription type ('Email' or 'SMS')
+   * @param token - The email address or phone number
+   * @returns Promise<boolean> - Returns true if successful, false if failed (non-blocking)
+   */
+  async disableSubscription(
+    tokenType: 'Email' | 'SMS',
+    token: string,
+  ): Promise<boolean> {
+    if (!this.isConfigured()) {
+      this.logger.warn(
+        'OneSignal API is not configured. Skipping subscription disable.',
+      );
+      return false;
+    }
+
+    try {
+      const apiUrl = `https://api.onesignal.com/apps/${this.appId}/subscriptions_by_token/${tokenType}/${encodeURIComponent(token)}`;
+
+      const payload = {
+        subscription: {
+          enabled: false,
+          notification_types: -31, // Unsubscribed status per OneSignal docs
+        },
+      };
+
+      this.logger.debug(
+        `Disabling OneSignal ${tokenType} subscription for: ${token}`,
+      );
+
+      const response = await firstValueFrom(
+        this.httpService.patch(apiUrl, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Key ${this.apiKey}`,
+          },
+          timeout: 10000,
+        }),
+      );
+
+      this.logger.log(
+        `Successfully disabled OneSignal ${tokenType} subscription for: ${token}`,
+        {
+          statusCode: response.status,
+        },
+      );
+
+      return true;
+    } catch (error) {
+      // Non-blocking: log error but don't throw
+      // The subscription might not exist, which is fine
+      if (error.response?.status === 404) {
+        this.logger.debug(
+          `Subscription not found in OneSignal (may not exist yet): ${tokenType} ${token}`,
+        );
+        return false;
+      }
+
+      this.logger.error(
+        `Failed to disable OneSignal ${tokenType} subscription for: ${token}`,
+        {
+          error: error.message,
+          statusCode: error.response?.status,
+          response: error.response?.data,
         },
       );
       return false;
@@ -278,7 +445,18 @@ export class OneSignalService {
         {
           template_id: payload.template_id,
           target_channel: payload.target_channel,
-          recipient_count: payload.include_aliases.external_id.length,
+          recipient_count: payload.include_aliases
+            ? payload.include_aliases.external_id.length
+            : payload.include_email_tokens
+              ? payload.include_email_tokens.length
+              : payload.include_phone_numbers
+                ? payload.include_phone_numbers.length
+                : 0,
+          targeting_method: payload.include_email_tokens
+            ? 'email_tokens'
+            : payload.include_phone_numbers
+              ? 'phone_numbers'
+              : 'external_id',
         },
       );
 

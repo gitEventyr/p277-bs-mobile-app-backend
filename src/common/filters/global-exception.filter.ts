@@ -45,7 +45,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         } else if (typeof responseObj.message === 'string') {
           // Check if there are additional properties besides 'message' and 'statusCode'
           const additionalProps = Object.keys(responseObj).filter(
-            (key) => key !== 'message' && key !== 'statusCode' && key !== 'error',
+            (key) =>
+              key !== 'message' && key !== 'statusCode' && key !== 'error',
           );
 
           if (additionalProps.length > 0) {

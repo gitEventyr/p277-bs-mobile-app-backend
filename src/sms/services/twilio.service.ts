@@ -40,7 +40,10 @@ export class TwilioService {
     userId?: number,
     visitorId?: string,
   ): Promise<void> {
-    const smsProvider = this.configService.get<string>('SMS_PROVIDER', 'twilio');
+    const smsProvider = this.configService.get<string>(
+      'SMS_PROVIDER',
+      'twilio',
+    );
 
     // Route to OneSignal if configured
     if (smsProvider.toLowerCase() === 'onesignal') {
@@ -130,12 +133,17 @@ export class TwilioService {
     code: string,
     userId?: number,
   ): Promise<boolean> {
-    const smsProvider = this.configService.get<string>('SMS_PROVIDER', 'twilio');
+    const smsProvider = this.configService.get<string>(
+      'SMS_PROVIDER',
+      'twilio',
+    );
 
     // Route to database verification if using OneSignal
     if (smsProvider.toLowerCase() === 'onesignal') {
       if (!userId) {
-        this.logger.error('User ID is required for OneSignal code verification');
+        this.logger.error(
+          'User ID is required for OneSignal code verification',
+        );
         return false;
       }
 
@@ -161,9 +169,7 @@ export class TwilioService {
 
         // Check if token has expired
         if (new Date() > token.expires_at) {
-          this.logger.log(
-            `Verification token expired for user ${userId}`,
-          );
+          this.logger.log(`Verification token expired for user ${userId}`);
           return false;
         }
 

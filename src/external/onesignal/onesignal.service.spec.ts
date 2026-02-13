@@ -34,16 +34,18 @@ describe('OneSignalService', () => {
 
   beforeEach(async () => {
     // Reset mock implementation to default values
-    mockConfigService.get.mockImplementation((key: string, defaultValue?: string) => {
-      const config = {
-        ONE_SIGNAL_APP_ID: 'test-app-id',
-        ONE_SIGNAL_API_KEY: 'test-api-key-1234567890',
-        EMAIL_PASSWORD_RESET_TEMPLATE_ID: 'reset-template-id',
-        EMAIL_VALIDATION_OTP_TEMPLATE_ID: 'email-otp-template-id',
-        SMS_BONUS_SPINS_OTP_TEMPLATE_ID: 'sms-otp-template-id',
-      };
-      return config[key] || defaultValue;
-    });
+    mockConfigService.get.mockImplementation(
+      (key: string, defaultValue?: string) => {
+        const config = {
+          ONE_SIGNAL_APP_ID: 'test-app-id',
+          ONE_SIGNAL_API_KEY: 'test-api-key-1234567890',
+          EMAIL_PASSWORD_RESET_TEMPLATE_ID: 'reset-template-id',
+          EMAIL_VALIDATION_OTP_TEMPLATE_ID: 'email-otp-template-id',
+          SMS_BONUS_SPINS_OTP_TEMPLATE_ID: 'sms-otp-template-id',
+        };
+        return config[key] || defaultValue;
+      },
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -212,7 +214,9 @@ describe('OneSignalService', () => {
 
       await expect(
         service.sendTemplateEmail('invalid-template', 'test@example.com', {}),
-      ).rejects.toThrow('OneSignal API error: Invalid template ID, Invalid email');
+      ).rejects.toThrow(
+        'OneSignal API error: Invalid template ID, Invalid email',
+      );
     });
 
     it('should handle HTTP 4xx errors', async () => {
@@ -226,9 +230,7 @@ describe('OneSignalService', () => {
         message: 'Request failed',
       } as AxiosError;
 
-      mockHttpService.post.mockReturnValue(
-        throwError(() => error),
-      );
+      mockHttpService.post.mockReturnValue(throwError(() => error));
 
       await expect(
         service.sendTemplateEmail('template-id', 'test@example.com', {}),
@@ -244,13 +246,13 @@ describe('OneSignalService', () => {
         message: 'Internal server error',
       } as AxiosError;
 
-      mockHttpService.post.mockReturnValue(
-        throwError(() => error),
-      );
+      mockHttpService.post.mockReturnValue(throwError(() => error));
 
       await expect(
         service.sendTemplateEmail('template-id', 'test@example.com', {}),
-      ).rejects.toThrow('Unable to send email notification. Please try again later.');
+      ).rejects.toThrow(
+        'Unable to send email notification. Please try again later.',
+      );
     });
   });
 
@@ -358,7 +360,10 @@ describe('OneSignalService', () => {
       });
 
       await expect(
-        service.sendPasswordResetEmail('user@example.com', 'https://reset.link'),
+        service.sendPasswordResetEmail(
+          'user@example.com',
+          'https://reset.link',
+        ),
       ).rejects.toThrow('EMAIL_PASSWORD_RESET_TEMPLATE_ID is not configured');
     });
   });

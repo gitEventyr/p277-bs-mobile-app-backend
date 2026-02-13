@@ -216,16 +216,16 @@ describe('OneSignal Integration Test', () => {
         message: 'Request failed',
       };
 
-      mockHttpService.post.mockReturnValue(
-        throwError(() => errorResponse),
-      );
+      mockHttpService.post.mockReturnValue(throwError(() => errorResponse));
 
       const visitorId = 'visitor_error123';
       const resetLink = 'https://example.com/reset';
 
       await expect(
         service.sendPasswordResetEmail(visitorId, resetLink),
-      ).rejects.toThrow('OneSignal API error: Invalid external_id, Template not found');
+      ).rejects.toThrow(
+        'OneSignal API error: Invalid external_id, Template not found',
+      );
     });
 
     it('should throw error when OneSignal is not configured', async () => {

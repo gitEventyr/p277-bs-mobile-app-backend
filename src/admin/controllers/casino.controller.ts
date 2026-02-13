@@ -486,10 +486,16 @@ export class CasinoController {
     }
 
     // Find duplicates
-    const duplicateIds: Array<{ id: number; count: number; casinos: string[] }> =
-      [];
-    const duplicateNames: Array<{ name: string; count: number; ids: number[] }> =
-      [];
+    const duplicateIds: Array<{
+      id: number;
+      count: number;
+      casinos: string[];
+    }> = [];
+    const duplicateNames: Array<{
+      name: string;
+      count: number;
+      ids: number[];
+    }> = [];
 
     for (const [id, names] of idMap.entries()) {
       if (names.length > 1) {

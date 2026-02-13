@@ -138,9 +138,7 @@ export class RpBalanceService {
   ): Promise<void> {
     try {
       if (!visitorId) {
-        this.logger.warn(
-          'Cannot send RP balance tags: visitor_id not found',
-        );
+        this.logger.warn('Cannot send RP balance tags: visitor_id not found');
         return;
       }
 

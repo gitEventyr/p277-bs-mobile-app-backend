@@ -49,6 +49,7 @@ const devices_service_1 = require("../devices/services/devices.service");
 const twilio_service_1 = require("../sms/services/twilio.service");
 const casino_api_service_1 = require("../external/casino/casino-api.service");
 const rp_reward_event_service_1 = require("../users/services/rp-reward-event.service");
+const onesignal_service_1 = require("../external/onesignal/onesignal.service");
 class TestTokenDto {
     email;
     type;
@@ -76,8 +77,9 @@ let AuthController = AuthController_1 = class AuthController {
     casinoApiService;
     configService;
     rpRewardEventService;
+    oneSignalService;
     logger = new common_1.Logger(AuthController_1.name);
-    constructor(authService, playerRepository, passwordResetTokenRepository, emailVerificationTokenRepository, phoneVerificationTokenRepository, emailService, devicesService, twilioService, casinoApiService, configService, rpRewardEventService) {
+    constructor(authService, playerRepository, passwordResetTokenRepository, emailVerificationTokenRepository, phoneVerificationTokenRepository, emailService, devicesService, twilioService, casinoApiService, configService, rpRewardEventService, oneSignalService) {
         this.authService = authService;
         this.playerRepository = playerRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
@@ -89,6 +91,7 @@ let AuthController = AuthController_1 = class AuthController {
         this.casinoApiService = casinoApiService;
         this.configService = configService;
         this.rpRewardEventService = rpRewardEventService;
+        this.oneSignalService = oneSignalService;
     }
     generateVisitorId() {
         return ('visitor_' +
@@ -653,6 +656,10 @@ let AuthController = AuthController_1 = class AuthController {
         }
         verificationToken.used = true;
         await this.emailVerificationTokenRepository.save(verificationToken);
+        const currentUser = await this.playerRepository.findOne({
+            where: { id: user.id },
+        });
+        const oldEmail = currentUser?.email;
         const updateData = {
             email_verified: true,
             email_verified_at: new Date(),
@@ -668,6 +675,20 @@ let AuthController = AuthController_1 = class AuthController {
             updateData.email = trimmedNewEmail;
         }
         await this.playerRepository.update({ id: user.id }, updateData);
+        const emailProvider = this.configService.get('EMAIL_PROVIDER', 'smtp');
+        if (emailProvider.toLowerCase() === 'onesignal' &&
+            oldEmail &&
+            verifyEmailDto.newEmail &&
+            verifyEmailDto.newEmail.trim() &&
+            oldEmail !== verifyEmailDto.newEmail.trim()) {
+            try {
+                await this.oneSignalService.disableSubscription('Email', oldEmail);
+                this.logger.log(`Disabled old email subscription in OneSignal: ${oldEmail}`);
+            }
+            catch (error) {
+                this.logger.warn(`Failed to disable old email subscription in OneSignal: ${oldEmail}`, error);
+            }
+        }
         try {
             await this.rpRewardEventService.awardEmailVerificationReward(user.id);
         }
@@ -734,6 +755,7 @@ let AuthController = AuthController_1 = class AuthController {
         if (!isValid) {
             throw new common_1.BadRequestException('Invalid or expired verification code');
         }
+        const oldPhone = player.phone;
         const updateData = {
             phone_verified: true,
             phone_verified_at: new Date(),
@@ -742,6 +764,20 @@ let AuthController = AuthController_1 = class AuthController {
             updateData.phone = verifyPhoneDto.newPhone.trim();
         }
         await this.playerRepository.update({ id: user.id }, updateData);
+        const smsProvider = this.configService.get('SMS_PROVIDER', 'twilio');
+        if (smsProvider.toLowerCase() === 'onesignal' &&
+            oldPhone &&
+            verifyPhoneDto.newPhone &&
+            verifyPhoneDto.newPhone.trim() &&
+            oldPhone !== verifyPhoneDto.newPhone.trim()) {
+            try {
+                await this.oneSignalService.disableSubscription('SMS', oldPhone);
+                this.logger.log(`Disabled old phone subscription in OneSignal: ${oldPhone}`);
+            }
+            catch (error) {
+                this.logger.warn(`Failed to disable old phone subscription in OneSignal: ${oldPhone}`, error);
+            }
+        }
         try {
             await this.rpRewardEventService.awardPhoneVerificationReward(user.id);
         }
@@ -1199,6 +1235,7 @@ exports.AuthController = AuthController = AuthController_1 = __decorate([
         twilio_service_1.TwilioService,
         casino_api_service_1.CasinoApiService,
         config_1.ConfigService,
-        rp_reward_event_service_1.RpRewardEventService])
+        rp_reward_event_service_1.RpRewardEventService,
+        onesignal_service_1.OneSignalService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

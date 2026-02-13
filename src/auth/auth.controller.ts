@@ -79,6 +79,7 @@ import { DevicesService } from '../devices/services/devices.service';
 import { TwilioService } from '../sms/services/twilio.service';
 import { CasinoApiService } from '../external/casino/casino-api.service';
 import { RpRewardEventService } from '../users/services/rp-reward-event.service';
+import { OneSignalService } from '../external/onesignal/onesignal.service';
 import type {
   AuthenticatedUser,
   AuthenticatedAdmin,
@@ -118,6 +119,7 @@ export class AuthController {
     private readonly casinoApiService: CasinoApiService,
     private readonly configService: ConfigService,
     private readonly rpRewardEventService: RpRewardEventService,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   private generateVisitorId(): string {
@@ -1153,6 +1155,12 @@ export class AuthController {
     verificationToken.used = true;
     await this.emailVerificationTokenRepository.save(verificationToken);
 
+    // Get current user data to track old email
+    const currentUser = await this.playerRepository.findOne({
+      where: { id: user.id },
+    });
+    const oldEmail = currentUser?.email;
+
     // Update user's email verification status and email if newEmail is provided
     const updateData: any = {
       email_verified: true,
@@ -1176,6 +1184,32 @@ export class AuthController {
     }
 
     await this.playerRepository.update({ id: user.id }, updateData);
+
+    // Disable old email subscription in OneSignal if email was changed
+    const emailProvider = this.configService.get<string>(
+      'EMAIL_PROVIDER',
+      'smtp',
+    );
+    if (
+      emailProvider.toLowerCase() === 'onesignal' &&
+      oldEmail &&
+      verifyEmailDto.newEmail &&
+      verifyEmailDto.newEmail.trim() &&
+      oldEmail !== verifyEmailDto.newEmail.trim()
+    ) {
+      try {
+        await this.oneSignalService.disableSubscription('Email', oldEmail);
+        this.logger.log(
+          `Disabled old email subscription in OneSignal: ${oldEmail}`,
+        );
+      } catch (error) {
+        // Non-blocking: log but don't fail the verification
+        this.logger.warn(
+          `Failed to disable old email subscription in OneSignal: ${oldEmail}`,
+          error,
+        );
+      }
+    }
 
     // Award email verification RP reward
     try {
@@ -1333,6 +1367,9 @@ export class AuthController {
       throw new BadRequestException('Invalid or expired verification code');
     }
 
+    // Get old phone number before update
+    const oldPhone = player.phone;
+
     // Update user's phone verification status and phone if newPhone is provided
     const updateData: any = {
       phone_verified: true,
@@ -1345,6 +1382,32 @@ export class AuthController {
     }
 
     await this.playerRepository.update({ id: user.id }, updateData);
+
+    // Disable old phone subscription in OneSignal if phone was changed
+    const smsProvider = this.configService.get<string>(
+      'SMS_PROVIDER',
+      'twilio',
+    );
+    if (
+      smsProvider.toLowerCase() === 'onesignal' &&
+      oldPhone &&
+      verifyPhoneDto.newPhone &&
+      verifyPhoneDto.newPhone.trim() &&
+      oldPhone !== verifyPhoneDto.newPhone.trim()
+    ) {
+      try {
+        await this.oneSignalService.disableSubscription('SMS', oldPhone);
+        this.logger.log(
+          `Disabled old phone subscription in OneSignal: ${oldPhone}`,
+        );
+      } catch (error) {
+        // Non-blocking: log but don't fail the verification
+        this.logger.warn(
+          `Failed to disable old phone subscription in OneSignal: ${oldPhone}`,
+          error,
+        );
+      }
+    }
 
     // Award phone verification RP reward
     try {

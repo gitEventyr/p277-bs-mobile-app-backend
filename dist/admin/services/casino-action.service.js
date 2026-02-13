@@ -254,7 +254,9 @@ let CasinoActionService = CasinoActionService_1 = class CasinoActionService {
                     .where('action.visitor_id = :visitorId', {
                     visitorId: actionData.visitor_id,
                 })
-                    .andWhere('action.registration = :registration', { registration: true })
+                    .andWhere('action.registration = :registration', {
+                    registration: true,
+                })
                     .getRawMany();
                 const registrationCount = uniqueRegistrations.length;
                 if (registrationCount === 1) {

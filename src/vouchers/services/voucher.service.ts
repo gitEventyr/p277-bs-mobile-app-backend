@@ -154,9 +154,7 @@ export class VoucherService {
   ): Promise<void> {
     try {
       if (!visitorId) {
-        this.logger.warn(
-          'Cannot send RP balance tag: visitor_id not found',
-        );
+        this.logger.warn('Cannot send RP balance tag: visitor_id not found');
         return;
       }
 
