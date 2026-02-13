@@ -1185,27 +1185,52 @@ export class AuthController {
 
     await this.playerRepository.update({ id: user.id }, updateData);
 
-    // Disable old email subscription in OneSignal if email was changed
+    // Get the confirmed email address (either new or existing)
+    const confirmedEmail = (verifyEmailDto.newEmail && verifyEmailDto.newEmail.trim()) || currentUser?.email;
+
+    // Clean up old email subscriptions in OneSignal
     const emailProvider = this.configService.get<string>(
       'EMAIL_PROVIDER',
       'smtp',
     );
-    if (
-      emailProvider.toLowerCase() === 'onesignal' &&
-      oldEmail &&
-      verifyEmailDto.newEmail &&
-      verifyEmailDto.newEmail.trim() &&
-      oldEmail !== verifyEmailDto.newEmail.trim()
-    ) {
+    if (emailProvider.toLowerCase() === 'onesignal' && confirmedEmail && currentUser?.visitor_id) {
       try {
-        await this.oneSignalService.disableSubscription('Email', oldEmail);
-        this.logger.log(
-          `Disabled old email subscription in OneSignal: ${oldEmail}`,
-        );
+        // Get all user subscriptions from OneSignal
+        const userData = await this.oneSignalService.getUserSubscriptions(currentUser.visitor_id);
+
+        if (userData?.subscriptions) {
+          // Find all email subscriptions except the one just confirmed
+          const emailSubscriptionsToDisable = userData.subscriptions.filter(
+            (sub) => sub.type === 'Email' &&
+                     sub.token?.toLowerCase() !== confirmedEmail.toLowerCase() &&
+                     sub.enabled
+          );
+
+          // Disable each old email subscription
+          for (const subscription of emailSubscriptionsToDisable) {
+            try {
+              await this.oneSignalService.disableSubscription('Email', subscription.token);
+              this.logger.log(
+                `Disabled old email subscription in OneSignal: ${subscription.token}`,
+              );
+            } catch (subError) {
+              this.logger.warn(
+                `Failed to disable email subscription ${subscription.token}:`,
+                subError,
+              );
+            }
+          }
+
+          if (emailSubscriptionsToDisable.length > 0) {
+            this.logger.log(
+              `Cleaned up ${emailSubscriptionsToDisable.length} old email subscription(s) for user ${user.id}`,
+            );
+          }
+        }
       } catch (error) {
         // Non-blocking: log but don't fail the verification
         this.logger.warn(
-          `Failed to disable old email subscription in OneSignal: ${oldEmail}`,
+          `Failed to clean up old email subscriptions in OneSignal:`,
           error,
         );
       }
@@ -1383,27 +1408,52 @@ export class AuthController {
 
     await this.playerRepository.update({ id: user.id }, updateData);
 
-    // Disable old phone subscription in OneSignal if phone was changed
+    // Get the confirmed phone number (either new or existing)
+    const confirmedPhone = (verifyPhoneDto.newPhone && verifyPhoneDto.newPhone.trim()) || player.phone;
+
+    // Clean up old phone subscriptions in OneSignal
     const smsProvider = this.configService.get<string>(
       'SMS_PROVIDER',
       'twilio',
     );
-    if (
-      smsProvider.toLowerCase() === 'onesignal' &&
-      oldPhone &&
-      verifyPhoneDto.newPhone &&
-      verifyPhoneDto.newPhone.trim() &&
-      oldPhone !== verifyPhoneDto.newPhone.trim()
-    ) {
+    if (smsProvider.toLowerCase() === 'onesignal' && confirmedPhone && player?.visitor_id) {
       try {
-        await this.oneSignalService.disableSubscription('SMS', oldPhone);
-        this.logger.log(
-          `Disabled old phone subscription in OneSignal: ${oldPhone}`,
-        );
+        // Get all user subscriptions from OneSignal
+        const userData = await this.oneSignalService.getUserSubscriptions(player.visitor_id);
+
+        if (userData?.subscriptions) {
+          // Find all SMS subscriptions except the one just confirmed
+          const smsSubscriptionsToDisable = userData.subscriptions.filter(
+            (sub) => sub.type === 'SMS' &&
+                     sub.token !== confirmedPhone &&
+                     sub.enabled
+          );
+
+          // Disable each old SMS subscription
+          for (const subscription of smsSubscriptionsToDisable) {
+            try {
+              await this.oneSignalService.disableSubscription('SMS', subscription.token);
+              this.logger.log(
+                `Disabled old phone subscription in OneSignal: ${subscription.token}`,
+              );
+            } catch (subError) {
+              this.logger.warn(
+                `Failed to disable phone subscription ${subscription.token}:`,
+                subError,
+              );
+            }
+          }
+
+          if (smsSubscriptionsToDisable.length > 0) {
+            this.logger.log(
+              `Cleaned up ${smsSubscriptionsToDisable.length} old SMS subscription(s) for user ${user.id}`,
+            );
+          }
+        }
       } catch (error) {
         // Non-blocking: log but don't fail the verification
         this.logger.warn(
-          `Failed to disable old phone subscription in OneSignal: ${oldPhone}`,
+          `Failed to clean up old phone subscriptions in OneSignal:`,
           error,
         );
       }
