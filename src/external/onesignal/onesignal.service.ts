@@ -34,17 +34,17 @@ export class OneSignalService {
    * Create an email subscription for a user
    * @param visitorId - User's visitor ID (external_id)
    * @param email - Email address to subscribe
-   * @returns Promise<boolean> - Returns true if successful, false if failed (non-blocking)
+   * @returns Promise<string | null> - Returns subscription ID if successful, null if failed
    */
   async createEmailSubscription(
     visitorId: string,
     email: string,
-  ): Promise<boolean> {
+  ): Promise<string | null> {
     if (!this.isConfigured()) {
       this.logger.warn(
         'OneSignal API is not configured. Skipping email subscription creation.',
       );
-      return false;
+      return null;
     }
 
     try {
@@ -71,14 +71,17 @@ export class OneSignalService {
         }),
       );
 
+      const subscriptionId = response.data?.subscription?.id;
+
       this.logger.log(
         `Successfully created email subscription for visitor ${visitorId}: ${email}`,
         {
           statusCode: response.status,
+          subscriptionId,
         },
       );
 
-      return true;
+      return subscriptionId || null;
     } catch (error) {
       // Non-blocking: log error but don't throw
       this.logger.error(
@@ -89,7 +92,7 @@ export class OneSignalService {
           response: error.response?.data,
         },
       );
-      return false;
+      return null;
     }
   }
 
@@ -147,30 +150,24 @@ export class OneSignalService {
         this.logger.debug(
           `Email subscription not found, creating for visitor ${visitorId}: ${email}`,
         );
-        await this.createEmailSubscription(visitorId, email);
-
-        // Retry fetching to get the new subscription ID
-        const updatedUserData = await this.getUserSubscriptions(visitorId);
-        const newEmailSubscription = updatedUserData?.subscriptions?.find(
-          (sub) =>
-            sub.type === 'Email' &&
-            sub.token?.toLowerCase() === email.toLowerCase() &&
-            sub.enabled,
+        const newSubscriptionId = await this.createEmailSubscription(
+          visitorId,
+          email,
         );
 
-        if (newEmailSubscription) {
+        if (newSubscriptionId) {
           this.logger.debug(
-            `Sending to newly created email subscription ID: ${newEmailSubscription.id} for ${email}`,
+            `Sending to newly created email subscription ID: ${newSubscriptionId} for ${email}`,
           );
-          payload.include_subscription_ids = [newEmailSubscription.id];
+          payload.include_subscription_ids = [newSubscriptionId];
         } else {
-          // Fallback: if we still can't find the subscription, use external_id
-          this.logger.warn(
-            `Could not find email subscription after creation, falling back to external_id for visitor ${visitorId}`,
+          // Failed to create subscription or get ID
+          this.logger.error(
+            `Failed to create email subscription for visitor ${visitorId}: ${email}. Cannot send notification.`,
           );
-          payload.include_aliases = {
-            external_id: [visitorId],
-          };
+          throw new BadRequestException(
+            'Unable to send email notification. Please try again later.',
+          );
         }
       }
     } else {
