@@ -19,6 +19,7 @@ import { DevicesModule } from '../devices/devices.module';
 import { SmsModule } from '../sms/sms.module';
 import { CasinoApiModule } from '../external/casino/casino-api.module';
 import { UsersModule } from '../users/users.module';
+import { OneSignalModule } from '../external/onesignal/onesignal.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { UsersModule } from '../users/users.module';
     DevicesModule,
     SmsModule,
     CasinoApiModule,
+    OneSignalModule,
     forwardRef(() => UsersModule),
   ],
   controllers: [AuthController],
